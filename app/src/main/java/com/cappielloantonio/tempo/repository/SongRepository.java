@@ -7,12 +7,15 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.cappielloantonio.tempo.App;
 import com.cappielloantonio.tempo.database.AppDatabase;
+import com.cappielloantonio.tempo.database.dao.DownloadDao;
 import com.cappielloantonio.tempo.database.dao.ScrobbleDao;
+import com.cappielloantonio.tempo.model.Download;
 import com.cappielloantonio.tempo.model.Scrobble;
 import com.cappielloantonio.tempo.subsonic.base.ApiResponse;
 import com.cappielloantonio.tempo.subsonic.models.Child;
 import com.cappielloantonio.tempo.subsonic.models.SubsonicResponse;
 import com.cappielloantonio.tempo.util.Constants.SeedType;
+import com.cappielloantonio.tempo.util.NetworkUtil;
 import com.cappielloantonio.tempo.util.Preferences;
 
 import com.cappielloantonio.tempo.subsonic.api.navidrome.NavidromeClient;
@@ -460,17 +463,39 @@ public class SongRepository {
         return songsByGenre;
     }
 
+    @androidx.media3.common.util.UnstableApi
     public MutableLiveData<Child> getSong(String id) {
         MutableLiveData<Child> song = new MutableLiveData<>();
+
+        if (NetworkUtil.isServerUnreachable()) {
+            loadSongFromDownloads(id, song);
+            return song;
+        }
+
         App.getSubsonicClientInstance(false).getBrowsingClient().getSong(id).enqueue(new Callback<ApiResponse>() {
             @Override public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
+                if (response.isSuccessful() && response.body() != null && response.body().getSubsonicResponse().getSong() != null) {
                     song.setValue(response.body().getSubsonicResponse().getSong());
+                } else {
+                    loadSongFromDownloads(id, song);
                 }
             }
-            @Override public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {}
+            @Override public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
+                loadSongFromDownloads(id, song);
+            }
         });
         return song;
+    }
+
+    @androidx.media3.common.util.UnstableApi
+    private void loadSongFromDownloads(String id, MutableLiveData<Child> target) {
+        new Thread(() -> {
+            DownloadDao downloadDao = AppDatabase.getInstance().downloadDao();
+            Download download = downloadDao.getOne(id);
+            if (download != null) {
+                target.postValue(download);
+            }
+        }).start();
     }
 
     public MutableLiveData<String> getSongLyrics(Child song) {
