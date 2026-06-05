@@ -66,6 +66,7 @@ import com.cappielloantonio.tempo.util.ExternalAudioReader;
 import com.cappielloantonio.tempo.util.ExternalAudioWriter;
 import com.cappielloantonio.tempo.util.MappingUtil;
 import com.cappielloantonio.tempo.util.MusicUtil;
+import com.cappielloantonio.tempo.util.NetworkUtil;
 import com.cappielloantonio.tempo.util.Preferences;
 import com.cappielloantonio.tempo.util.UIUtil;
 import com.cappielloantonio.tempo.viewmodel.HomeViewModel;
@@ -142,6 +143,7 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         initSyncStarredAlbumsView();
         initSyncStarredArtistsView();
         initHomeReorganizer();
+        initOfflineBanner();
 
         reorder();
         observeScrobbleEvents();
@@ -497,6 +499,20 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         });
 
         bind.gridTracksPreTextView.setOnClickListener(view -> showPopupMenu(view, R.menu.filter_top_songs_popup_menu));
+    }
+
+    private void initOfflineBanner() {
+        activity.getServerReachable().observe(getViewLifecycleOwner(), reachable -> {
+            if (bind != null) {
+                boolean offline = Boolean.FALSE.equals(reachable);
+                bind.homeOfflineBanner.setVisibility(offline ? View.VISIBLE : View.GONE);
+                if (offline && bind.homeOfflineBanner.getParent() == null) {
+                    bind.homeLinearLayoutContainer.addView(bind.homeOfflineBanner, 0);
+                } else if (!offline && bind.homeOfflineBanner.getParent() != null) {
+                    bind.homeLinearLayoutContainer.removeView(bind.homeOfflineBanner);
+                }
+            }
+        });
     }
 
     private void initSyncStarredView() {
@@ -1345,6 +1361,10 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
     public void reorder() {
         if (bind != null && homeViewModel.getHomeSectorList() != null) {
             bind.homeLinearLayoutContainer.removeAllViews();
+
+            if (bind.homeOfflineBanner.getVisibility() == View.VISIBLE) {
+                bind.homeLinearLayoutContainer.addView(bind.homeOfflineBanner);
+            }
 
             if (bind.homeSyncStarredCard.getVisibility() == View.VISIBLE) {
                 bind.homeLinearLayoutContainer.addView(bind.homeSyncStarredCard);

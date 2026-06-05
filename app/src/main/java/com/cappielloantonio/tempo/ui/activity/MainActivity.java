@@ -21,6 +21,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.core.splashscreen.SplashScreen;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MediaMetadata;
@@ -46,6 +47,7 @@ import com.cappielloantonio.tempo.ui.fragment.PlayerBottomSheetFragment;
 import com.cappielloantonio.tempo.util.AssetLinkNavigator;
 import com.cappielloantonio.tempo.util.AssetLinkUtil;
 import com.cappielloantonio.tempo.util.Constants;
+import com.cappielloantonio.tempo.util.NetworkUtil;
 import com.cappielloantonio.tempo.util.Preferences;
 import com.cappielloantonio.tempo.util.UIUtil;
 import com.cappielloantonio.tempo.viewmodel.MainViewModel;
@@ -76,6 +78,11 @@ public class MainActivity extends BaseActivity {
     private ViewGroup dockContainer;
     ConnectivityStatusBroadcastReceiver connectivityStatusBroadcastReceiver;
     private Intent pendingDownloadPlaybackIntent;
+    private final MutableLiveData<Boolean> serverReachable = new MutableLiveData<>(true);
+
+    public MutableLiveData<Boolean> getServerReachable() {
+        return serverReachable;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -543,17 +550,23 @@ public class MainActivity extends BaseActivity {
         if (Preferences.isInUseServerAddressLocal()) {
             mainViewModel.ping().observe(this, subsonicResponse -> {
                 if (subsonicResponse == null) {
+                    NetworkUtil.setServerReachable(false);
+                    serverReachable.setValue(false);
                     Preferences.setServerSwitchableTimer();
                     Preferences.switchInUseServerAddress();
                     App.refreshSubsonicClient();
                     pingServer();
                     resetView();
                 } else {
+                    NetworkUtil.setServerReachable(true);
+                    serverReachable.setValue(true);
                     Preferences.setOpenSubsonic(subsonicResponse.getOpenSubsonic() != null && subsonicResponse.getOpenSubsonic());
                 }
             });
         } else {
             if (Preferences.isServerSwitchable()) {
+                NetworkUtil.setServerReachable(false);
+                serverReachable.setValue(false);
                 Preferences.setServerSwitchableTimer();
                 Preferences.switchInUseServerAddress();
                 App.refreshSubsonicClient();
@@ -562,11 +575,15 @@ public class MainActivity extends BaseActivity {
             } else {
                 mainViewModel.ping().observe(this, subsonicResponse -> {
                     if (subsonicResponse == null) {
+                        NetworkUtil.setServerReachable(false);
+                        serverReachable.setValue(false);
                         if (Preferences.showServerUnreachableDialog() && getSupportFragmentManager().findFragmentByTag("ServerUnreachableDialog") == null) {
                             ServerUnreachableDialog dialog = new ServerUnreachableDialog();
                             dialog.show(getSupportFragmentManager(), "ServerUnreachableDialog");
                         }
                     } else {
+                        NetworkUtil.setServerReachable(true);
+                        serverReachable.setValue(true);
                         Preferences.setOpenSubsonic(subsonicResponse.getOpenSubsonic() != null && subsonicResponse.getOpenSubsonic());
                     }
                 });

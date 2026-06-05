@@ -5,7 +5,9 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.cappielloantonio.tempo.App;
 import com.cappielloantonio.tempo.database.AppDatabase;
+import com.cappielloantonio.tempo.database.dao.DownloadDao;
 import com.cappielloantonio.tempo.database.dao.RecentSearchDao;
+import com.cappielloantonio.tempo.model.Download;
 import com.cappielloantonio.tempo.model.RecentSearch;
 import com.cappielloantonio.tempo.subsonic.base.ApiResponse;
 import com.cappielloantonio.tempo.subsonic.models.AlbumID3;
@@ -13,6 +15,7 @@ import com.cappielloantonio.tempo.subsonic.models.ArtistID3;
 import com.cappielloantonio.tempo.subsonic.models.Child;
 import com.cappielloantonio.tempo.subsonic.models.SearchResult2;
 import com.cappielloantonio.tempo.subsonic.models.SearchResult3;
+import com.cappielloantonio.tempo.util.NetworkUtil;
 import com.cappielloantonio.tempo.util.Preferences;
 
 import java.util.ArrayList;
@@ -52,24 +55,44 @@ public class SearchingRepository {
     public MutableLiveData<SearchResult3> search3(String query) {
         MutableLiveData<SearchResult3> result = new MutableLiveData<>();
 
+        if (NetworkUtil.isServerUnreachable()) {
+            searchDownloads(query, result);
+            return result;
+        }
+
         App.getSubsonicClientInstance(false)
                 .getSearchingClient()
                 .search3(query, 20, 20, 20)
                 .enqueue(new Callback<ApiResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
-                        if (response.isSuccessful() && response.body() != null) {
+                        if (response.isSuccessful() && response.body() != null
+                                && response.raw().networkResponse() != null) {
                             result.setValue(response.body().getSubsonicResponse().getSearchResult3());
+                        } else {
+                            searchDownloads(query, result);
                         }
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
-
+                        searchDownloads(query, result);
                     }
                 });
 
         return result;
+    }
+
+    @androidx.media3.common.util.UnstableApi
+    private void searchDownloads(String query, MutableLiveData<SearchResult3> result) {
+        new Thread(() -> {
+            DownloadDao downloadDao = AppDatabase.getInstance().downloadDao();
+            List<Download> downloads = downloadDao.searchSync(query);
+            SearchResult3 localResult = new SearchResult3();
+            List<Child> songs = new ArrayList<>(downloads);
+            localResult.setSongs(songs);
+            result.postValue(localResult);
+        }).start();
     }
 
     public MutableLiveData<List<String>> getSuggestions(String query) {

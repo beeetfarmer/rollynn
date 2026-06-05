@@ -9,6 +9,16 @@ import android.net.NetworkInfo;
 import com.cappielloantonio.tempo.App;
 
 public class NetworkUtil {
+    private static volatile boolean serverReachable = true;
+
+    public static void setServerReachable(boolean reachable) {
+        serverReachable = reachable;
+    }
+
+    public static boolean isServerUnreachable() {
+        return !serverReachable || isOffline();
+    }
+
     public static boolean isOffline() {
         ConnectivityManager connectivityManager = (ConnectivityManager) App.getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
 

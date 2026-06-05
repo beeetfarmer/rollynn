@@ -31,7 +31,7 @@ public class CacheUtil {
         Request request = chain.request();
         if (!isConnected()) {
             request = request.newBuilder()
-                    .header("Cache-Control", "public, only-if-cached, max-stale=" + maxStale)
+                    .header("Cache-Control", "no-cache")
                     .removeHeader("Pragma")
                     .build();
         }

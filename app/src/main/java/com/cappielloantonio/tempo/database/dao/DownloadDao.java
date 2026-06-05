@@ -38,4 +38,13 @@ public interface DownloadDao {
 
     @Query("DELETE FROM download")
     void deleteAll();
+
+    @Query("SELECT * FROM download WHERE playlist_id = :playlistId AND download_state = 1 ORDER BY disc_number, track ASC")
+    List<Download> getByPlaylistIdSync(String playlistId);
+
+    @Query("SELECT playlist_id, playlist_name, COUNT(*) as song_count, MIN(cover_art_id) as cover_art_id FROM download WHERE playlist_id IS NOT NULL AND download_state = 1 GROUP BY playlist_id, playlist_name")
+    List<DownloadedPlaylistInfo> getDownloadedPlaylistsSync();
+
+    @Query("SELECT * FROM download WHERE download_state = 1 AND (title LIKE '%' || :query || '%' OR artist LIKE '%' || :query || '%' OR album LIKE '%' || :query || '%') ORDER BY artist, album, disc_number, track ASC")
+    List<Download> searchSync(String query);
 }
