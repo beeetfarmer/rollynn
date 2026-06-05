@@ -48,9 +48,10 @@ public class PlaylistRepository {
     }
 
     public void refreshAllPlaylists() {
-        loadPlaylistsFromDownloads();
-
-        if (NetworkUtil.isServerUnreachable()) return;
+        if (NetworkUtil.isServerUnreachable()) {
+            loadPlaylistsFromDownloads();
+            return;
+        }
 
         App.getSubsonicClientInstance(false)
                 .getPlaylistClient()
@@ -59,15 +60,17 @@ public class PlaylistRepository {
                     @Override
                     public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
                         if (response.isSuccessful() && response.body() != null
-                                && response.body().getSubsonicResponse().getPlaylists() != null
-                                && response.raw().networkResponse() != null) {
+                                && response.body().getSubsonicResponse().getPlaylists() != null) {
                             List<Playlist> playlists = response.body().getSubsonicResponse().getPlaylists().getPlaylists();
                             allPlaylistsLiveData.postValue(playlists);
+                        } else {
+                            loadPlaylistsFromDownloads();
                         }
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
+                        loadPlaylistsFromDownloads();
                     }
                 });
     }
@@ -128,9 +131,10 @@ public class PlaylistRepository {
     public MutableLiveData<List<Child>> getPlaylistSongs(String id) {
         MutableLiveData<List<Child>> listLivePlaylistSongs = new MutableLiveData<>();
 
-        loadPlaylistFromDownloads(id, listLivePlaylistSongs);
-
-        if (NetworkUtil.isServerUnreachable()) return listLivePlaylistSongs;
+        if (NetworkUtil.isServerUnreachable()) {
+            loadPlaylistFromDownloads(id, listLivePlaylistSongs);
+            return listLivePlaylistSongs;
+        }
 
         App.getSubsonicClientInstance(false)
                 .getPlaylistClient()
@@ -139,15 +143,17 @@ public class PlaylistRepository {
                     @Override
                     public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
                         if (response.isSuccessful() && response.body() != null
-                                && response.body().getSubsonicResponse().getPlaylist() != null
-                                && response.raw().networkResponse() != null) {
+                                && response.body().getSubsonicResponse().getPlaylist() != null) {
                             List<Child> songs = response.body().getSubsonicResponse().getPlaylist().getEntries();
                             listLivePlaylistSongs.postValue(songs);
+                        } else {
+                            loadPlaylistFromDownloads(id, listLivePlaylistSongs);
                         }
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
+                        loadPlaylistFromDownloads(id, listLivePlaylistSongs);
                     }
                 });
 

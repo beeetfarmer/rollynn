@@ -66,8 +66,7 @@ public class SearchingRepository {
                 .enqueue(new Callback<ApiResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
-                        if (response.isSuccessful() && response.body() != null
-                                && response.raw().networkResponse() != null) {
+                        if (response.isSuccessful() && response.body() != null) {
                             result.setValue(response.body().getSubsonicResponse().getSearchResult3());
                         } else {
                             searchDownloads(query, result);
