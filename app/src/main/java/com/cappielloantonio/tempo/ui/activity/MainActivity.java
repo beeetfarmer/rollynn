@@ -124,7 +124,6 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        pingServer();
     }
 
     @Override
@@ -563,9 +562,9 @@ public class MainActivity extends BaseActivity {
             } else {
                 mainViewModel.ping().observe(this, subsonicResponse -> {
                     if (subsonicResponse == null) {
-                        if (Preferences.showServerUnreachableDialog()) {
+                        if (Preferences.showServerUnreachableDialog() && getSupportFragmentManager().findFragmentByTag("ServerUnreachableDialog") == null) {
                             ServerUnreachableDialog dialog = new ServerUnreachableDialog();
-                            dialog.show(getSupportFragmentManager(), null);
+                            dialog.show(getSupportFragmentManager(), "ServerUnreachableDialog");
                         }
                     } else {
                         Preferences.setOpenSubsonic(subsonicResponse.getOpenSubsonic() != null && subsonicResponse.getOpenSubsonic());
