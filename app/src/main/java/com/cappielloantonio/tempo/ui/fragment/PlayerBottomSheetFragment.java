@@ -360,6 +360,7 @@ public class PlayerBottomSheetFragment extends Fragment {
     public void setBodyVisibility(boolean visible) {
         if (bind != null) {
             bind.playerBodyLayout.getRoot().setVisibility(visible ? View.VISIBLE : View.GONE);
+            bind.getRoot().setBackgroundColor(visible ? UIUtil.getPlayerBackgroundColor(requireContext()) : Color.TRANSPARENT);
         }
     }
 
