@@ -20,6 +20,11 @@
         android:title="@string/menu_download_all_button"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_remove_downloads"
+        android:title="@string/playlist_remove_downloads"
+        android:visible="false"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_pin_playlist"
         android:icon="@drawable/ic_add"
         android:title="@string/menu_pin_button"

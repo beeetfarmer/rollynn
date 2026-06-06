@@ -50,4 +50,7 @@ public interface DownloadDao {
 
     @Query("SELECT * FROM download WHERE download_state = 1 AND (title LIKE '%' || :query || '%' OR artist LIKE '%' || :query || '%' OR album LIKE '%' || :query || '%') ORDER BY artist, album, disc_number, track ASC")
     List<Download> searchSync(String query);
+
+    @Query("SELECT COUNT(*) FROM download WHERE playlist_id = :playlistId AND download_state = 1")
+    int getDownloadCountForPlaylist(String playlistId);
 }

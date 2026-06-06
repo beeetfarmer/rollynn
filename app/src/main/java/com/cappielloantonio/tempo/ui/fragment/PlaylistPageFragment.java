@@ -25,6 +25,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
 import com.cappielloantonio.tempo.R;
+import com.cappielloantonio.tempo.database.AppDatabase;
+import com.cappielloantonio.tempo.database.dao.DownloadDao;
 import com.cappielloantonio.tempo.databinding.FragmentPlaylistPageBinding;
 import com.cappielloantonio.tempo.glide.CustomGlideRequest;
 import com.cappielloantonio.tempo.interfaces.ClickCallback;
@@ -43,11 +45,14 @@ import com.cappielloantonio.tempo.util.Preferences;
 import com.cappielloantonio.tempo.subsonic.models.Playlist;
 import com.cappielloantonio.tempo.viewmodel.PlaybackViewModel;
 import com.cappielloantonio.tempo.viewmodel.PlaylistPageViewModel;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import android.widget.PopupMenu;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -61,6 +66,7 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
     private SongHorizontalAdapter songHorizontalAdapter;
 
     private ListenableFuture<MediaBrowser> mediaBrowserListenableFuture;
+    private Menu optionsMenu;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -92,7 +98,9 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
 
         searchView.setPadding(-32, 0, 0, 0);
 
+        optionsMenu = menu;
         initMenuOption(menu);
+        updateRemoveDownloadsVisibility();
     }
 
     @Override
@@ -168,6 +176,14 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
                     }
                 }
             });
+            return true;
+        } else if (item.getItemId() == R.id.action_remove_downloads) {
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.playlist_remove_downloads)
+                    .setMessage(R.string.playlist_remove_downloads_confirm)
+                    .setPositiveButton(R.string.playlist_editor_dialog_neutral_button, (dialog, which) -> removePlaylistDownloads())
+                    .setNegativeButton(R.string.playlist_editor_dialog_negative_button, null)
+                    .show();
             return true;
         } else if (item.getItemId() == R.id.action_pin_playlist) {
             playlistPageViewModel.setPinned(true);
@@ -359,5 +375,42 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
 
     private void setMediaBrowserListenableFuture() {
         songHorizontalAdapter.setMediaBrowserListenableFuture(mediaBrowserListenableFuture);
+    }
+
+    private void updateRemoveDownloadsVisibility() {
+        if (optionsMenu == null) return;
+        String playlistId = playlistPageViewModel.getPlaylist().getId();
+        new Thread(() -> {
+            DownloadDao downloadDao = AppDatabase.getInstance().downloadDao();
+            int count = downloadDao.getDownloadCountForPlaylist(playlistId);
+            if (getActivity() != null) {
+                requireActivity().runOnUiThread(() -> {
+                    if (optionsMenu != null) {
+                        MenuItem removeItem = optionsMenu.findItem(R.id.action_remove_downloads);
+                        if (removeItem != null) removeItem.setVisible(count > 0);
+                    }
+                });
+            }
+        }).start();
+    }
+
+    private void removePlaylistDownloads() {
+        String playlistId = playlistPageViewModel.getPlaylist().getId();
+        new Thread(() -> {
+            DownloadDao downloadDao = AppDatabase.getInstance().downloadDao();
+            List<Download> downloads = new ArrayList<>(downloadDao.getByPlaylistIdSync(playlistId));
+            if (!downloads.isEmpty()) {
+                List<androidx.media3.common.MediaItem> mediaItems = downloads.stream()
+                        .map(MappingUtil::mapDownload)
+                        .collect(Collectors.toList());
+                if (getActivity() != null) {
+                    requireActivity().runOnUiThread(() -> {
+                        DownloadUtil.getDownloadTracker(requireContext()).remove(mediaItems, downloads);
+                        PlaylistCoverCache.remove(playlistId);
+                        updateRemoveDownloadsVisibility();
+                    });
+                }
+            }
+        }).start();
     }
 }
