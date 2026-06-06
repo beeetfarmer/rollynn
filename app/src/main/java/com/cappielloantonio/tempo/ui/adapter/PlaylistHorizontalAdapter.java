@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cappielloantonio.tempo.R;
+import com.cappielloantonio.tempo.database.AppDatabase;
+import com.cappielloantonio.tempo.database.dao.DownloadDao;
 import com.cappielloantonio.tempo.databinding.ItemHorizontalPlaylistBinding;
 import com.cappielloantonio.tempo.glide.CustomGlideRequest;
 import com.cappielloantonio.tempo.interfaces.ClickCallback;
@@ -20,13 +22,16 @@ import com.cappielloantonio.tempo.util.MusicUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PlaylistHorizontalAdapter extends RecyclerView.Adapter<PlaylistHorizontalAdapter.ViewHolder> implements Filterable {
     private final ClickCallback click;
 
     private List<Playlist> playlists;
     private List<Playlist> playlistsFull;
+    private Set<String> downloadedPlaylistIds = new HashSet<>();
 
     private final Filter filtering = new Filter() {
         @Override
@@ -86,6 +91,7 @@ public class PlaylistHorizontalAdapter extends RecyclerView.Adapter<PlaylistHori
         holder.item.playlistSubtitleTextView.setText(holder.itemView.getContext().getString(R.string.playlist_counted_tracks, playlist.getSongCount(), MusicUtil.getReadableDurationString(playlist.getDuration(), false)));
 
         holder.item.playlistPinnedIcon.setVisibility(playlist.isPinned() ? android.view.View.VISIBLE : android.view.View.GONE);
+        holder.item.playlistDownloadIcon.setVisibility(downloadedPlaylistIds.contains(playlist.getId()) ? android.view.View.VISIBLE : android.view.View.GONE);
 
         CustomGlideRequest.Builder
                 .from(holder.itemView.getContext(), playlist.getCoverArtId(), CustomGlideRequest.ResourceType.Playlist)
@@ -102,6 +108,7 @@ public class PlaylistHorizontalAdapter extends RecyclerView.Adapter<PlaylistHori
         return playlists.get(id);
     }
 
+    @androidx.media3.common.util.UnstableApi
     public void setItems(List<Playlist> playlists) {
         if (playlists == null) return;
         synchronized (playlistsFull) {
@@ -110,8 +117,18 @@ public class PlaylistHorizontalAdapter extends RecyclerView.Adapter<PlaylistHori
         }
         this.playlists.clear();
         this.playlists.addAll(this.playlistsFull);
+        refreshDownloadedIds();
         sort(null);
         notifyDataSetChanged();
+    }
+
+    @androidx.media3.common.util.UnstableApi
+    private void refreshDownloadedIds() {
+        new Thread(() -> {
+            DownloadDao downloadDao = AppDatabase.getInstance().downloadDao();
+            List<String> ids = downloadDao.getDownloadedPlaylistIds();
+            downloadedPlaylistIds = new HashSet<>(ids);
+        }).start();
     }
 
     public void setPinnedIds(List<String> pinnedIds) {

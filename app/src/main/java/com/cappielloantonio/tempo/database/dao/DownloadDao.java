@@ -53,4 +53,7 @@ public interface DownloadDao {
 
     @Query("SELECT COUNT(*) FROM download WHERE playlist_id = :playlistId AND download_state = 1")
     int getDownloadCountForPlaylist(String playlistId);
+
+    @Query("SELECT DISTINCT playlist_id FROM download WHERE playlist_id IS NOT NULL AND download_state = 1")
+    List<String> getDownloadedPlaylistIds();
 }
