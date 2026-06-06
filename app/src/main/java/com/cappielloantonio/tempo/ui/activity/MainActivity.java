@@ -56,8 +56,17 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.color.DynamicColors;
 import com.google.common.util.concurrent.MoreExecutors;
 
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+
+import com.cappielloantonio.tempo.service.PlaylistSyncWorker;
+
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ExecutionException;
 
 @UnstableApi
@@ -569,6 +578,7 @@ public class MainActivity extends BaseActivity {
                     serverReachable.setValue(true);
                     Preferences.setOpenSubsonic(subsonicResponse.getOpenSubsonic() != null && subsonicResponse.getOpenSubsonic());
                     com.cappielloantonio.tempo.glide.CoverArtCache.cacheAllDownloads();
+                    schedulePlaylistSync();
                 }
             });
         } else {
@@ -594,10 +604,27 @@ public class MainActivity extends BaseActivity {
                         serverReachable.setValue(true);
                         Preferences.setOpenSubsonic(subsonicResponse.getOpenSubsonic() != null && subsonicResponse.getOpenSubsonic());
                         com.cappielloantonio.tempo.glide.CoverArtCache.cacheAllDownloads();
+                        schedulePlaylistSync();
                     }
                 });
             }
         }
+    }
+
+    private void schedulePlaylistSync() {
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        PeriodicWorkRequest syncRequest = new PeriodicWorkRequest.Builder(
+                PlaylistSyncWorker.class, 1, TimeUnit.HOURS)
+                .setConstraints(constraints)
+                .build();
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "playlist_sync",
+                ExistingPeriodicWorkPolicy.KEEP,
+                syncRequest);
     }
 
     private void resetView() {
