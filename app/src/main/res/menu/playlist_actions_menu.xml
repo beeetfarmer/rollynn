@@ -7,6 +7,12 @@
         android:id="@+id/menu_playlist_edit"
         android:title="@string/menu_edit" />
     <item
+        android:id="@+id/menu_playlist_move_to_folder"
+        android:title="@string/playlist_move_to_folder" />
+    <item
+        android:id="@+id/menu_playlist_select"
+        android:title="@string/playlist_select_mode" />
+    <item
         android:id="@+id/menu_playlist_delete"
         android:title="@string/menu_delete" />
 </menu>
