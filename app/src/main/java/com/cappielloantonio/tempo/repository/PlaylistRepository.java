@@ -17,6 +17,7 @@ import com.cappielloantonio.tempo.subsonic.base.ApiResponse;
 import com.cappielloantonio.tempo.subsonic.models.Child;
 import com.cappielloantonio.tempo.subsonic.models.Playlist;
 import com.cappielloantonio.tempo.util.NetworkUtil;
+import com.cappielloantonio.tempo.util.PlaylistCoverCache;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,6 +63,9 @@ public class PlaylistRepository {
                         if (response.isSuccessful() && response.body() != null
                                 && response.body().getSubsonicResponse().getPlaylists() != null) {
                             List<Playlist> playlists = response.body().getSubsonicResponse().getPlaylists().getPlaylists();
+                            for (Playlist p : playlists) {
+                                PlaylistCoverCache.save(p.getId(), p.getCoverArtId());
+                            }
                             allPlaylistsLiveData.postValue(playlists);
                         } else {
                             loadPlaylistsFromDownloads();
@@ -91,6 +95,9 @@ public class PlaylistRepository {
                             break;
                         }
                     }
+                }
+                if (coverArtId == null) {
+                    coverArtId = PlaylistCoverCache.get(info.playlistId);
                 }
                 Playlist p = new Playlist(info.playlistId, info.playlistName, 0, info.songCount, coverArtId);
                 playlists.add(p);

@@ -38,7 +38,9 @@ import com.cappielloantonio.tempo.util.DownloadUtil;
 import com.cappielloantonio.tempo.util.MappingUtil;
 import com.cappielloantonio.tempo.util.MusicUtil;
 import com.cappielloantonio.tempo.util.ExternalAudioWriter;
+import com.cappielloantonio.tempo.util.PlaylistCoverCache;
 import com.cappielloantonio.tempo.util.Preferences;
+import com.cappielloantonio.tempo.subsonic.models.Playlist;
 import com.cappielloantonio.tempo.viewmodel.PlaybackViewModel;
 import com.cappielloantonio.tempo.viewmodel.PlaylistPageViewModel;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -149,13 +151,15 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
         } else if (item.getItemId() == R.id.action_download_playlist) {
             playlistPageViewModel.getPlaylistSongLiveList().observe(getViewLifecycleOwner(), songs -> {
                 if (isVisible() && getActivity() != null) {
+                    Playlist downloadPlaylist = playlistPageViewModel.getPlaylist();
+                    PlaylistCoverCache.save(downloadPlaylist.getId(), downloadPlaylist.getCoverArtId());
                     if (Preferences.getDownloadDirectoryUri() == null) {
                         DownloadUtil.getDownloadTracker(requireContext()).download(
                             MappingUtil.mapDownloads(songs),
                             songs.stream().map(child -> {
                                 Download toDownload = new Download(child);
-                                toDownload.setPlaylistId(playlistPageViewModel.getPlaylist().getId());
-                                toDownload.setPlaylistName(playlistPageViewModel.getPlaylist().getName());
+                                toDownload.setPlaylistId(downloadPlaylist.getId());
+                                toDownload.setPlaylistName(downloadPlaylist.getName());
                                 return toDownload;
                             }).collect(Collectors.toList())
                         );
