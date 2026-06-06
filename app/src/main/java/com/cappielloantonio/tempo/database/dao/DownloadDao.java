@@ -21,6 +21,9 @@ public interface DownloadDao {
     @Query("SELECT * FROM download WHERE id = :id")
     Download getOne(String id);
 
+    @Query("SELECT * FROM download WHERE cover_art_id = :coverArtId AND download_state = 1 LIMIT 1")
+    Download getByCoverArtId(String coverArtId);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(Download download);
 

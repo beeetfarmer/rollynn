@@ -74,6 +74,7 @@ public class DownloaderManager {
 
         DownloadService.sendAddDownload(context, DownloaderService.class, buildDownloadRequest(mediaItem), false);
         insertDatabase(download);
+        com.cappielloantonio.tempo.glide.CoverArtCache.cacheInBackground(download.getCoverArtId());
     }
 
     public void download(List<MediaItem> mediaItems, List<com.cappielloantonio.tempo.model.Download> downloads) {

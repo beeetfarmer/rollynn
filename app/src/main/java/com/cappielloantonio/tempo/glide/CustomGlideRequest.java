@@ -125,9 +125,11 @@ public class CustomGlideRequest {
 
     public static class Builder {
         private final RequestManager requestManager;
+        private final String coverArtId;
         private String item;
 
         private Builder(Context context, String item, ResourceType type) {
+            this.coverArtId = item;
             this.requestManager = Glide.with(context);
 
             if (item != null && !Preferences.isDataSavingMode()) {
@@ -142,9 +144,17 @@ public class CustomGlideRequest {
         }
 
         public RequestBuilder<Drawable> build() {
-            return requestManager
+            RequestBuilder<Drawable> request = requestManager
                     .load(item)
                     .transition(DrawableTransitionOptions.withCrossFade());
+
+            if (coverArtId != null) {
+                request = request.error(
+                        requestManager.load(new EmbeddedCoverArtModel(coverArtId))
+                );
+            }
+
+            return request;
         }
     }
 }

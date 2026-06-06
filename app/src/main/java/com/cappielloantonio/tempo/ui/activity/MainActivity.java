@@ -568,6 +568,7 @@ public class MainActivity extends BaseActivity {
                     NetworkUtil.setServerReachable(true);
                     serverReachable.setValue(true);
                     Preferences.setOpenSubsonic(subsonicResponse.getOpenSubsonic() != null && subsonicResponse.getOpenSubsonic());
+                    com.cappielloantonio.tempo.glide.CoverArtCache.cacheAllDownloads();
                 }
             });
         } else {
@@ -592,6 +593,7 @@ public class MainActivity extends BaseActivity {
                         NetworkUtil.setServerReachable(true);
                         serverReachable.setValue(true);
                         Preferences.setOpenSubsonic(subsonicResponse.getOpenSubsonic() != null && subsonicResponse.getOpenSubsonic());
+                        com.cappielloantonio.tempo.glide.CoverArtCache.cacheAllDownloads();
                     }
                 });
             }

@@ -28,5 +28,6 @@ public class CustomGlideModule extends AppGlideModule {
     @Override
     public void registerComponents(@NonNull Context context, @NonNull Glide glide, @NonNull Registry registry) {
         registry.replace(String.class, InputStream.class, new IPv6StringLoader.Factory());
+        registry.prepend(EmbeddedCoverArtModel.class, InputStream.class, new EmbeddedCoverArtLoader.Factory(context));
     }
 }
