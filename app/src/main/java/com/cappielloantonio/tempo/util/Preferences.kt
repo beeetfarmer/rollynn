@@ -47,6 +47,12 @@ object Preferences {
     private const val PODCAST_SECTION_VISIBILITY = "podcast_section_visibility"
     private const val RADIO_SECTION_VISIBILITY = "radio_section_visibility"
     private const val AUTO_DOWNLOAD_LYRICS = "auto_download_lyrics"
+    private const val LYRICS_ROMANIZATION = "lyrics_romanization"
+    private const val TRANSLATION_PROVIDER = "translation_provider"
+    private const val TRANSLATION_API_KEY = "translation_api_key"
+    private const val TRANSLATION_TARGET_LANGUAGE = "translation_target_language"
+    private const val TRANSLATION_MODEL = "translation_model"
+    private const val TRANSLATION_API_URL = "translation_api_url"
     private const val MUSIC_DIRECTORY_SECTION_VISIBILITY = "music_directory_section_visibility"
     private const val REPLAY_GAIN_MODE = "replay_gain_mode"
     private const val AUDIO_TRANSCODE_PRIORITY = "audio_transcode_priority"
@@ -214,6 +220,80 @@ object Preferences {
         App.getInstance().preferences.edit()
             .putBoolean(AUTO_DOWNLOAD_LYRICS, isEnabled)
             .apply()
+    }
+
+    @JvmStatic
+    fun isLyricsRomanizationEnabled(): Boolean {
+        return App.getInstance().preferences.getBoolean(LYRICS_ROMANIZATION, false)
+    }
+
+    @JvmStatic
+    fun setLyricsRomanizationEnabled(isEnabled: Boolean) {
+        App.getInstance().preferences.edit()
+            .putBoolean(LYRICS_ROMANIZATION, isEnabled)
+            .apply()
+    }
+
+    @JvmStatic
+    fun getTranslationProvider(): String {
+        return App.getInstance().preferences.getString(TRANSLATION_PROVIDER, "openrouter") ?: "openrouter"
+    }
+
+    @JvmStatic
+    fun setTranslationProvider(provider: String) {
+        App.getInstance().preferences.edit().putString(TRANSLATION_PROVIDER, provider).apply()
+    }
+
+    @JvmStatic
+    fun getTranslationApiKey(): String? {
+        val app = App.getInstance()
+        val encrypted = app.encryptedPreferences.getString(TRANSLATION_API_KEY, null)
+        if (!encrypted.isNullOrEmpty()) return encrypted
+        val plain = app.preferences.getString(TRANSLATION_API_KEY, null)
+        if (!plain.isNullOrEmpty() && app.encryptedPreferences !== app.preferences) {
+            app.encryptedPreferences.edit().putString(TRANSLATION_API_KEY, plain).apply()
+            app.preferences.edit().remove(TRANSLATION_API_KEY).apply()
+        }
+        return plain
+    }
+
+    @JvmStatic
+    fun setTranslationApiKey(apiKey: String?) {
+        val app = App.getInstance()
+        app.encryptedPreferences.edit().putString(TRANSLATION_API_KEY, apiKey).apply()
+        if (app.encryptedPreferences !== app.preferences) {
+            app.preferences.edit().remove(TRANSLATION_API_KEY).apply()
+        }
+    }
+
+    @JvmStatic
+    fun getTranslationTargetLanguage(): String? {
+        return App.getInstance().preferences.getString(TRANSLATION_TARGET_LANGUAGE, "en")
+    }
+
+    @JvmStatic
+    fun setTranslationTargetLanguage(language: String) {
+        App.getInstance().preferences.edit().putString(TRANSLATION_TARGET_LANGUAGE, language).apply()
+    }
+
+    @JvmStatic
+    fun getTranslationModel(): String? {
+        return App.getInstance().preferences.getString(TRANSLATION_MODEL, null)
+    }
+
+    @JvmStatic
+    fun setTranslationModel(model: String?) {
+        App.getInstance().preferences.edit().putString(TRANSLATION_MODEL, model).apply()
+    }
+
+    @JvmStatic
+    fun getTranslationApiUrl(): String? {
+        return App.getInstance().preferences.getString(TRANSLATION_API_URL, null)
+    }
+
+    @JvmStatic
+    fun setTranslationApiUrl(url: String?) {
+        App.getInstance().preferences.edit().putString(TRANSLATION_API_URL, url).apply()
     }
 
     @JvmStatic

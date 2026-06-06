@@ -305,6 +305,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         actionDeleteDownloadStorage();
         actionKeepScreenOn();
         actionAutoDownloadLyrics();
+        actionLyricsRomanization();
+        actionTranslationSettings();
         actionMiniPlayerHeart();
         actionConfigureDock();
         actionConfigureMetadata();
@@ -736,6 +738,85 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
                 return true;
             });
         }
+    }
+
+    private void actionLyricsRomanization() {
+        SwitchPreference preference = findPreference("lyrics_romanization");
+        if (preference != null) {
+            preference.setChecked(Preferences.isLyricsRomanizationEnabled());
+            preference.setOnPreferenceChangeListener((pref, newValue) -> {
+                if (newValue instanceof Boolean) {
+                    Preferences.setLyricsRomanizationEnabled((Boolean) newValue);
+                }
+                return true;
+            });
+        }
+    }
+
+    private void actionTranslationSettings() {
+        EditTextPreference apiKeyPref = findPreference("translation_api_key");
+        if (apiKeyPref != null) {
+            apiKeyPref.setSummaryProvider(null);
+            String currentKey = Preferences.getTranslationApiKey();
+            if (currentKey != null && !currentKey.isEmpty()) {
+                String masked = currentKey.substring(0, Math.min(4, currentKey.length())) + "****";
+                apiKeyPref.setSummary(masked);
+            }
+            apiKeyPref.setOnPreferenceChangeListener((pref, newValue) -> {
+                String key = (String) newValue;
+                Preferences.setTranslationApiKey(key);
+                if (key != null && !key.isEmpty()) {
+                    String masked = key.substring(0, Math.min(4, key.length())) + "****";
+                    pref.setSummary(masked);
+                } else {
+                    pref.setSummary(R.string.settings_translation_api_key_summary);
+                }
+                return false;
+            });
+        }
+
+        EditTextPreference modelPref = findPreference("translation_model");
+        if (modelPref != null) {
+            modelPref.setOnPreferenceChangeListener((pref, newValue) -> {
+                Preferences.setTranslationModel((String) newValue);
+                return true;
+            });
+        }
+
+        EditTextPreference urlPref = findPreference("translation_api_url");
+        if (urlPref != null) {
+            urlPref.setOnPreferenceChangeListener((pref, newValue) -> {
+                Preferences.setTranslationApiUrl((String) newValue);
+                return true;
+            });
+        }
+
+        ListPreference providerPref = findPreference("translation_provider");
+        if (providerPref != null) {
+            providerPref.setOnPreferenceChangeListener((pref, newValue) -> {
+                Preferences.setTranslationProvider((String) newValue);
+                updateTranslationSettingsVisibility((String) newValue);
+                return true;
+            });
+            updateTranslationSettingsVisibility(Preferences.getTranslationProvider());
+        }
+
+        ListPreference langPref = findPreference("translation_target_language");
+        if (langPref != null) {
+            langPref.setOnPreferenceChangeListener((pref, newValue) -> {
+                Preferences.setTranslationTargetLanguage((String) newValue);
+                return true;
+            });
+        }
+    }
+
+    private void updateTranslationSettingsVisibility(String provider) {
+        EditTextPreference modelPref = findPreference("translation_model");
+        EditTextPreference urlPref = findPreference("translation_api_url");
+
+        boolean isAI = !"deepl".equals(provider);
+        if (modelPref != null) modelPref.setVisible(isAI);
+        if (urlPref != null) urlPref.setVisible(isAI);
     }
 
     private void getScanStatus() {

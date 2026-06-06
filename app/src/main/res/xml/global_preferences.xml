@@ -267,6 +267,57 @@
                 android:key="auto_download_lyrics"
                 app:icon="@drawable/ic_lyrics" />
 
+            <SwitchPreference
+                android:title="@string/settings_lyrics_romanization"
+                android:defaultValue="false"
+                android:summary="@string/settings_lyrics_romanization_summary"
+                android:key="lyrics_romanization"
+                app:icon="@drawable/ic_lyrics" />
+
+        </PreferenceCategory>
+
+        <PreferenceCategory app:title="@string/settings_translation_category">
+
+            <ListPreference
+                app:defaultValue="openrouter"
+                app:dialogTitle="@string/settings_translation_provider"
+                app:entries="@array/translation_provider_titles"
+                app:entryValues="@array/translation_provider_values"
+                app:key="translation_provider"
+                app:title="@string/settings_translation_provider"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_translate" />
+
+            <EditTextPreference
+                android:key="translation_api_key"
+                android:title="@string/settings_translation_api_key"
+                android:summary="@string/settings_translation_api_key_summary"
+                app:icon="@drawable/ic_link" />
+
+            <ListPreference
+                app:defaultValue="en"
+                app:dialogTitle="@string/settings_translation_target_language"
+                app:entries="@array/translation_language_titles"
+                app:entryValues="@array/translation_language_values"
+                app:key="translation_target_language"
+                app:title="@string/settings_translation_target_language"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_translate" />
+
+            <EditTextPreference
+                android:key="translation_model"
+                android:title="@string/settings_translation_model"
+                android:summary="@string/settings_translation_model_summary"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_settings" />
+
+            <EditTextPreference
+                android:key="translation_api_url"
+                android:title="@string/settings_translation_api_url"
+                android:summary="@string/settings_translation_api_url_summary"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_link" />
+
             <ListPreference
                 app:defaultValue="top"
                 app:dialogTitle="@string/settings_play_next_behavior_title"

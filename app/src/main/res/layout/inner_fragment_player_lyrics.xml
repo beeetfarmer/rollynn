@@ -73,6 +73,23 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/translate_lyrics_button"
+        style="@style/Widget.Material3.Button.TonalButton.Icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_margin="16dp"
+        android:alpha="0.7"
+        android:insetLeft="0dp"
+        android:insetTop="0dp"
+        android:insetRight="0dp"
+        android:insetBottom="0dp"
+        android:visibility="gone"
+        app:cornerRadius="64dp"
+        app:icon="@drawable/ic_translate"
+        app:layout_constraintBottom_toTopOf="@+id/download_lyrics_button"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/download_lyrics_button"
         style="@style/Widget.Material3.Button.TonalButton.Icon"
         android:layout_width="48dp"
