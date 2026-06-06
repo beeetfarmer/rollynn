@@ -232,11 +232,18 @@ public class MainActivity extends BaseActivity {
                                 playerBottomSheetFragment.goBackToFirstPage();
                                 playerBottomSheetFragment.setBodyVisibility(false);
                             }
+                            if (bind.offlineModeTextView.getTag() != null) {
+                                bind.offlineModeTextView.setVisibility(View.VISIBLE);
+                            }
                             applyPlayerSystemBarColors(false);
                             break;
                         case BottomSheetBehavior.STATE_EXPANDED:
                             if (playerBottomSheetFragment != null) {
                                 playerBottomSheetFragment.setBodyVisibility(true);
+                            }
+                            if (bind.offlineModeTextView.getVisibility() == View.VISIBLE) {
+                                bind.offlineModeTextView.setTag(true);
+                                bind.offlineModeTextView.setVisibility(View.GONE);
                             }
                             applyPlayerSystemBarColors(true);
                             break;

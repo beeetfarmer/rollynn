@@ -357,13 +357,19 @@ public class SongRepository {
         return randomSongsSample;
     }
 
+    @androidx.media3.common.util.UnstableApi
     public void scrobble(String id, boolean submission) {
         scrobble(id, submission, null);
     }
 
+    @androidx.media3.common.util.UnstableApi
     public void scrobble(String id, boolean submission, Long time) {
         String server = Preferences.getServerId();
         long scrobbleTime = time != null ? time : System.currentTimeMillis();
+
+        if (submission) {
+            incrementDownloadPlayCount(id);
+        }
 
         App.getSubsonicClientInstance(false).getMediaAnnotationClient().scrobble(id, submission, time).enqueue(new Callback<ApiResponse>() {
             @Override
@@ -423,11 +429,13 @@ public class SongRepository {
         }).start();
     }
 
+    @androidx.media3.common.util.UnstableApi
     public void setRating(String id, int rating) {
         App.getSubsonicClientInstance(false).getMediaAnnotationClient().setRating(id, rating).enqueue(new Callback<ApiResponse>() {
             @Override public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {}
             @Override public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {}
         });
+        updateDownloadField(id, download -> download.setUserRating(rating));
     }
 
     public MutableLiveData<List<Child>> getSongsByGenre(String id, int page) {
@@ -475,7 +483,9 @@ public class SongRepository {
         App.getSubsonicClientInstance(false).getBrowsingClient().getSong(id).enqueue(new Callback<ApiResponse>() {
             @Override public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().getSubsonicResponse().getSong() != null) {
-                    song.setValue(response.body().getSubsonicResponse().getSong());
+                    Child serverSong = response.body().getSubsonicResponse().getSong();
+                    song.setValue(serverSong);
+                    updateDownloadRecord(serverSong);
                 } else {
                     loadSongFromDownloads(id, song);
                 }
@@ -496,6 +506,45 @@ public class SongRepository {
                 target.postValue(download);
             }
         }).start();
+    }
+
+    @androidx.media3.common.util.UnstableApi
+    private void updateDownloadRecord(Child serverSong) {
+        new Thread(() -> {
+            DownloadDao downloadDao = AppDatabase.getInstance().downloadDao();
+            Download download = downloadDao.getOne(serverSong.getId());
+            if (download != null) {
+                download.setPlayCount(serverSong.getPlayCount());
+                download.setUserRating(serverSong.getUserRating());
+                download.setStarred(serverSong.getStarred());
+                downloadDao.insert(download);
+            }
+        }).start();
+    }
+
+    @androidx.media3.common.util.UnstableApi
+    private void updateDownloadField(String id, java.util.function.Consumer<Download> updater) {
+        new Thread(() -> {
+            DownloadDao downloadDao = AppDatabase.getInstance().downloadDao();
+            Download download = downloadDao.getOne(id);
+            if (download != null) {
+                updater.accept(download);
+                downloadDao.insert(download);
+            }
+        }).start();
+    }
+
+    @androidx.media3.common.util.UnstableApi
+    public void updateDownloadStarred(String id, java.util.Date starred) {
+        updateDownloadField(id, download -> download.setStarred(starred));
+    }
+
+    @androidx.media3.common.util.UnstableApi
+    private void incrementDownloadPlayCount(String id) {
+        updateDownloadField(id, download -> {
+            Long count = download.getPlayCount();
+            download.setPlayCount(count != null ? count + 1 : 1);
+        });
     }
 
     public MutableLiveData<String> getSongLyrics(Child song) {

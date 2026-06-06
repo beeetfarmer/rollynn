@@ -28,10 +28,12 @@ public class ConnectivityStatusBroadcastReceiver extends BroadcastReceiver {
 
             if (noConnectivity) {
                 NetworkUtil.setServerReachable(false);
+                activity.bind.offlineModeTextView.setTag(true);
                 activity.bind.offlineModeTextView.setVisibility(View.VISIBLE);
                 activity.getServerReachable().setValue(false);
             } else {
                 NetworkUtil.setServerReachable(true);
+                activity.bind.offlineModeTextView.setTag(null);
                 activity.bind.offlineModeTextView.setVisibility(View.GONE);
                 activity.getServerReachable().setValue(true);
                 MediaManager.submitPendingScrobbles();

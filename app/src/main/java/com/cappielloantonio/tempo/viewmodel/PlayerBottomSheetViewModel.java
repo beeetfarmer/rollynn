@@ -128,19 +128,20 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
         media.setStarred(null);
         liveMedia.postValue(media);
         MediaManager.postFavoriteEvent(media.getId(), null);
+        songRepository.updateDownloadStarred(media.getId(), null);
     }
 
     private void removeFavoriteOnline(Child media) {
         favoriteRepository.unstar(media.getId(), null, null, new StarCallback() {
             @Override
             public void onError() {
-                // media.setStarred(new Date());
                 favoriteRepository.starLater(media.getId(), null, null, false);
             }
         });
         media.setStarred(null);
         liveMedia.postValue(media);
         MediaManager.postFavoriteEvent(media.getId(), null);
+        songRepository.updateDownloadStarred(media.getId(), null);
     }
 
     private void setFavoriteOffline(Child media) {
@@ -148,13 +149,13 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
         media.setStarred(new Date());
         liveMedia.postValue(media);
         MediaManager.postFavoriteEvent(media.getId(), media.getStarred());
+        songRepository.updateDownloadStarred(media.getId(), media.getStarred());
     }
 
     private void setFavoriteOnline(Context context, Child media) {
         favoriteRepository.star(media.getId(), null, null, new StarCallback() {
             @Override
             public void onError() {
-                // media.setStarred(null);
                 favoriteRepository.starLater(media.getId(), null, null, true);
             }
         });
@@ -162,6 +163,7 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
         media.setStarred(new Date());
         liveMedia.postValue(media);
         MediaManager.postFavoriteEvent(media.getId(), media.getStarred());
+        songRepository.updateDownloadStarred(media.getId(), media.getStarred());
 
         if (Preferences.isStarredSyncEnabled() && Preferences.getDownloadDirectoryUri() == null) {
             DownloadUtil.getDownloadTracker(context).download(

@@ -366,6 +366,13 @@ open class BaseMediaService : MediaLibraryService() {
                         MediaManager.saveChronology(oldPosition.mediaItem)
                     }
 
+                    if (oldPosition.mediaItemIndex == newPosition.mediaItemIndex) {
+                        currentTrackScrobbled = false
+                        if (newPosition.mediaItem != null) {
+                            MediaManager.scrobble(newPosition.mediaItem, false)
+                        }
+                    }
+
                     if (newPosition.mediaItem?.mediaMetadata?.extras?.getString("type") == Constants.MEDIA_TYPE_MUSIC) {
                         MediaManager.setLastPlayedTimestamp(newPosition.mediaItem)
                     }
