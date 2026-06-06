@@ -3,6 +3,8 @@ package com.cappielloantonio.tempo.ui.fragment;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.util.UnstableApi;
+import androidx.media3.exoplayer.offline.DownloadManager;
 import androidx.media3.session.MediaBrowser;
 import androidx.media3.session.SessionToken;
 import androidx.navigation.Navigation;
@@ -52,7 +55,9 @@ import android.widget.PopupMenu;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -67,6 +72,9 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
 
     private ListenableFuture<MediaBrowser> mediaBrowserListenableFuture;
     private Menu optionsMenu;
+    private int downloadTotalCount = 0;
+    private final Handler progressHandler = new Handler(Looper.getMainLooper());
+    private boolean trackingDownloads = false;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -162,6 +170,8 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
                     Playlist downloadPlaylist = playlistPageViewModel.getPlaylist();
                     PlaylistCoverCache.save(downloadPlaylist.getId(), downloadPlaylist.getCoverArtId());
                     if (Preferences.getDownloadDirectoryUri() == null) {
+                        downloadTotalCount = songs.size();
+                        showDownloadProgress(0, downloadTotalCount);
                         DownloadUtil.getDownloadTracker(requireContext()).download(
                             MappingUtil.mapDownloads(songs),
                             songs.stream().map(child -> {
@@ -171,6 +181,7 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
                                 return toDownload;
                             }).collect(Collectors.toList())
                         );
+                        startTrackingDownloadProgress();
                     } else {
                         songs.forEach(child -> ExternalAudioWriter.downloadToUserDirectory(requireContext(), child));
                     }
@@ -412,5 +423,74 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
                 }
             }
         }).start();
+    }
+
+    private void showDownloadProgress(int completed, int total) {
+        if (bind == null) return;
+        bind.downloadProgressLayout.setVisibility(View.VISIBLE);
+        bind.downloadProgressBar.setMax(total);
+        bind.downloadProgressBar.setProgress(completed);
+        if (completed >= total) {
+            bind.downloadProgressText.setText(R.string.playlist_download_complete);
+            progressHandler.postDelayed(() -> {
+                if (bind != null) bind.downloadProgressLayout.setVisibility(View.GONE);
+                updateRemoveDownloadsVisibility();
+            }, 2000);
+        } else {
+            bind.downloadProgressText.setText(getString(R.string.playlist_downloading_progress, completed, total));
+        }
+    }
+
+    private void startTrackingDownloadProgress() {
+        if (trackingDownloads) return;
+        trackingDownloads = true;
+        String playlistId = playlistPageViewModel.getPlaylist().getId();
+        pollDownloadProgress(playlistId);
+    }
+
+    private void pollDownloadProgress(String playlistId) {
+        if (!trackingDownloads || bind == null) return;
+        new Thread(() -> {
+            DownloadDao downloadDao = AppDatabase.getInstance().downloadDao();
+            int completed = downloadDao.getDownloadCountForPlaylist(playlistId);
+            Map<String, Float> perTrackProgress = getPerTrackProgress();
+            if (getActivity() != null) {
+                requireActivity().runOnUiThread(() -> {
+                    if (bind == null) return;
+                    showDownloadProgress(completed, downloadTotalCount);
+                    if (songHorizontalAdapter != null) {
+                        songHorizontalAdapter.updateDownloadProgress(perTrackProgress);
+                    }
+                    if (completed < downloadTotalCount) {
+                        progressHandler.postDelayed(() -> pollDownloadProgress(playlistId), 500);
+                    } else {
+                        trackingDownloads = false;
+                        if (songHorizontalAdapter != null) {
+                            songHorizontalAdapter.updateDownloadProgress(null);
+                        }
+                    }
+                });
+            }
+        }).start();
+    }
+
+    private Map<String, Float> getPerTrackProgress() {
+        Map<String, Float> progressMap = new HashMap<>();
+        try {
+            DownloadManager downloadManager = DownloadUtil.getDownloadManager(requireContext());
+            androidx.media3.exoplayer.offline.DownloadIndex downloadIndex = downloadManager.getDownloadIndex();
+            try (androidx.media3.exoplayer.offline.DownloadCursor cursor = downloadIndex.getDownloads()) {
+                while (cursor.moveToNext()) {
+                    androidx.media3.exoplayer.offline.Download download = cursor.getDownload();
+                    if (download.state == androidx.media3.exoplayer.offline.Download.STATE_DOWNLOADING) {
+                        progressMap.put(download.request.id, download.getPercentDownloaded() / 100f);
+                    } else if (download.state == androidx.media3.exoplayer.offline.Download.STATE_QUEUED) {
+                        progressMap.put(download.request.id, 0f);
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return progressMap;
     }
 }

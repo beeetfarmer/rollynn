@@ -285,6 +285,8 @@
     <string name="playlist_song_count">Playlist  •  %1$d songs</string>
     <string name="playlist_remove_downloads">Remove downloads</string>
     <string name="playlist_remove_downloads_confirm">Remove all downloaded tracks from this playlist?</string>
+    <string name="playlist_downloading_progress">Downloading %1$d of %2$d</string>
+    <string name="playlist_download_complete">Download complete</string>
     <string name="podcast_bottom_sheet_add_to_queue">Add to queue</string>
     <string name="podcast_bottom_sheet_delete">Delete</string>
     <string name="podcast_bottom_sheet_download">Download</string>

@@ -182,6 +182,34 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/playlist_page_button_layout" />
 
+                <LinearLayout
+                    android:id="@+id/download_progress_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="18dp"
+                    android:visibility="gone"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/playlist_page_button_layout">
+
+                    <TextView
+                        android:id="@+id/download_progress_text"
+                        style="@style/LabelSmall"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAlignment="center" />
+
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/download_progress_bar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="4dp"
+                        app:trackCornerRadius="2dp"
+                        app:trackThickness="4dp" />
+                </LinearLayout>
+
                 <View
                     android:id="@+id/bottom_button_divider"
                     style="@style/Divider"
@@ -190,7 +218,7 @@
                     android:layout_marginBottom="18dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/playlist_page_button_layout" />
+                    app:layout_constraintTop_toBottomOf="@+id/download_progress_layout" />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.appbar.AppBarLayout>
 
