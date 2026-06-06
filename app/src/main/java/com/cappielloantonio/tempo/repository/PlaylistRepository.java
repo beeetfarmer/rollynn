@@ -99,7 +99,7 @@ public class PlaylistRepository {
                 if (coverArtId == null) {
                     coverArtId = PlaylistCoverCache.get(info.playlistId);
                 }
-                Playlist p = new Playlist(info.playlistId, info.playlistName, 0, info.songCount, coverArtId);
+                Playlist p = new Playlist(info.playlistId, info.playlistName, info.totalDuration, info.songCount, coverArtId);
                 playlists.add(p);
             }
             allPlaylistsLiveData.postValue(playlists);

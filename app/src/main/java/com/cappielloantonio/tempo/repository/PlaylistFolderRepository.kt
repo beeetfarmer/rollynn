@@ -33,6 +33,10 @@ class PlaylistFolderRepository {
         return dao.getPlaylistIdsInFolder(folderId)
     }
 
+    fun getPlaylistIdsInFolderSync(folderId: Long?): List<String> {
+        return dao.getPlaylistIdsInFolderSync(folderId)
+    }
+
     fun getAllAssignedPlaylistIds(): LiveData<List<String>> {
         return dao.getAllAssignedPlaylistIds()
     }

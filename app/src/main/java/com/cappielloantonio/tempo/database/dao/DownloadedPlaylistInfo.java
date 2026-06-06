@@ -14,4 +14,7 @@ public class DownloadedPlaylistInfo {
 
     @ColumnInfo(name = "cover_art_id")
     public String coverArtId;
+
+    @ColumnInfo(name = "total_duration")
+    public long totalDuration;
 }

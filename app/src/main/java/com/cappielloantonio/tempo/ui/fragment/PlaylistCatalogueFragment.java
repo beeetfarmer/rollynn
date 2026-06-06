@@ -39,6 +39,7 @@ import com.cappielloantonio.tempo.ui.dialog.PlaylistEditorDialog;
 import com.cappielloantonio.tempo.ui.dialog.PlaylistFolderChooserDialog;
 import com.cappielloantonio.tempo.ui.dialog.PlaylistFolderEditorDialog;
 import com.cappielloantonio.tempo.util.Constants;
+import com.cappielloantonio.tempo.util.NetworkUtil;
 import com.cappielloantonio.tempo.viewmodel.PlaylistCatalogueViewModel;
 import com.cappielloantonio.tempo.viewmodel.PlaylistFolderViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -181,8 +182,12 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
 
             folderViewModel.getChildFoldersLive().observe(getViewLifecycleOwner(), folders -> {
                 if (folders != null) {
-                    folderAdapter.setItems(folders);
-                    updateFolderSubtitles(folders);
+                    if (NetworkUtil.isServerUnreachable()) {
+                        filterAndShowFoldersOffline(folders);
+                    } else {
+                        folderAdapter.setItems(folders);
+                        updateFolderSubtitles(folders);
+                    }
                 }
             });
 
@@ -263,6 +268,59 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
                 getActivity().runOnUiThread(() -> folderAdapter.notifyDataSetChanged());
             }
         }).start();
+    }
+
+    private void filterAndShowFoldersOffline(List<PlaylistFolder> folders) {
+        Set<String> availableIds = allPlaylists.stream()
+                .map(Playlist::getId)
+                .collect(Collectors.toSet());
+
+        new Thread(() -> {
+            PlaylistFolderRepository repo = new PlaylistFolderRepository();
+            List<PlaylistFolder> visible = new ArrayList<>();
+
+            for (PlaylistFolder folder : folders) {
+                int downloadedCount = countDownloadedInFolder(repo, folder.getId(), availableIds);
+                if (downloadedCount > 0 || hasChildFoldersWithDownloads(repo, folder.getId(), availableIds)) {
+                    visible.add(folder);
+                    String subtitle;
+                    int subCount = repo.getChildFolderCount(folder.getId());
+                    if (downloadedCount > 0 && subCount > 0) {
+                        subtitle = getString(R.string.playlist_folder_subtitle_items, downloadedCount, subCount);
+                    } else if (downloadedCount > 0) {
+                        subtitle = getString(R.string.playlist_folder_subtitle_playlists_only, downloadedCount);
+                    } else {
+                        subtitle = getString(R.string.playlist_folder_subtitle_folders_only, subCount);
+                    }
+                    folderAdapter.setSubtitle(folder.getId(), subtitle);
+                }
+            }
+
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(() -> {
+                    folderAdapter.setItems(visible);
+                    folderAdapter.notifyDataSetChanged();
+                });
+            }
+        }).start();
+    }
+
+    private int countDownloadedInFolder(PlaylistFolderRepository repo, long folderId, Set<String> availableIds) {
+        List<String> assignedIds = repo.getPlaylistIdsInFolderSync(folderId);
+        int count = 0;
+        for (String id : assignedIds) {
+            if (availableIds.contains(id)) count++;
+        }
+        return count;
+    }
+
+    private boolean hasChildFoldersWithDownloads(PlaylistFolderRepository repo, long parentId, Set<String> availableIds) {
+        List<PlaylistFolder> children = repo.getChildFoldersSync(parentId);
+        for (PlaylistFolder child : children) {
+            if (countDownloadedInFolder(repo, child.getId(), availableIds) > 0) return true;
+            if (hasChildFoldersWithDownloads(repo, child.getId(), availableIds)) return true;
+        }
+        return false;
     }
 
     private void initBackNavigation() {
