@@ -248,6 +248,8 @@
     <string name="player_lyrics_source_lrclib_content_description">Using LRCLIB lyrics. Tap to switch source.</string>
     <string name="player_lyrics_source_server_label">SERVER</string>
     <string name="player_lyrics_source_lrclib_label">LRCLIB</string>
+    <string name="player_lyrics_source_betterlyrics_label">TTML</string>
+    <string name="player_lyrics_source_betterlyrics_content_description">Using word-synced lyrics. Tap to switch source.</string>
     <string name="player_lyrics_source_active">Lyrics source: %1$s</string>
     <string name="player_lyrics_source_switch_unavailable">Only one lyrics source is available for this track.</string>
     <string name="player_server_priority">Server Priority</string>

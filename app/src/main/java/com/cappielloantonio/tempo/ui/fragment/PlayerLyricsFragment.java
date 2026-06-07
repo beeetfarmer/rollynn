@@ -33,6 +33,7 @@ import com.cappielloantonio.tempo.databinding.InnerFragmentPlayerLyricsBinding;
 import com.cappielloantonio.tempo.service.MediaService;
 import com.cappielloantonio.tempo.subsonic.models.Line;
 import com.cappielloantonio.tempo.subsonic.models.LyricsList;
+import com.cappielloantonio.tempo.subsonic.models.Word;
 import com.cappielloantonio.tempo.util.LyricsRomanizer;
 import com.cappielloantonio.tempo.util.LyricsTranslator;
 import com.cappielloantonio.tempo.util.MusicUtil;
@@ -60,6 +61,7 @@ public class PlayerLyricsFragment extends Fragment {
     private String currentLyrics;
     private LyricsList currentLyricsList;
     private Integer lastLineIdx;
+    private Integer lastWordIdx;
     private String currentDescription;
     private boolean lyricsSourceSwitchAvailable;
     private List<String> translatedLines;
@@ -123,6 +125,7 @@ public class PlayerLyricsFragment extends Fragment {
         currentLyricsList = null;
         currentDescription = null;
         lastLineIdx = null;
+        lastWordIdx = null;
         lyricsSourceSwitchAvailable = false;
         translatedLines = null;
         isTranslating = false;
@@ -184,16 +187,21 @@ public class PlayerLyricsFragment extends Fragment {
         });
 
         bind.lyricsSourceToggleButton.setOnClickListener(view -> {
-            Integer sourceBefore = playerBottomSheetViewModel.getLyricsSource().getValue();
             boolean switched = playerBottomSheetViewModel.switchLyricsSource();
             if (!switched) {
                 Toast.makeText(requireContext(), R.string.player_lyrics_source_switch_unavailable, Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            int labelRes = sourceBefore != null && sourceBefore == PlayerBottomSheetViewModel.LYRICS_SOURCE_SERVER
-                    ? R.string.player_lyrics_source_lrclib_label
-                    : R.string.player_lyrics_source_server_label;
+            Integer sourceAfter = playerBottomSheetViewModel.getLyricsSource().getValue();
+            int labelRes;
+            if (sourceAfter != null && sourceAfter == PlayerBottomSheetViewModel.LYRICS_SOURCE_LRCLIB) {
+                labelRes = R.string.player_lyrics_source_lrclib_label;
+            } else if (sourceAfter != null && sourceAfter == PlayerBottomSheetViewModel.LYRICS_SOURCE_BETTERLYRICS) {
+                labelRes = R.string.player_lyrics_source_betterlyrics_label;
+            } else {
+                labelRes = R.string.player_lyrics_source_server_label;
+            }
             Toast.makeText(requireContext(), getString(R.string.player_lyrics_source_active, getString(labelRes)), Toast.LENGTH_SHORT).show();
         });
     }
@@ -234,6 +242,7 @@ public class PlayerLyricsFragment extends Fragment {
         playerBottomSheetViewModel.getLiveLyricsList().observe(getViewLifecycleOwner(), lyricsList -> {
             currentLyricsList = lyricsList;
             lastLineIdx = null;
+            lastWordIdx = null;
             translatedLines = null;
             updatePanelContent();
         });
@@ -273,6 +282,9 @@ public class PlayerLyricsFragment extends Fragment {
             if (source != null && source == PlayerBottomSheetViewModel.LYRICS_SOURCE_LRCLIB) {
                 bind.lyricsSourceToggleButton.setText(getString(R.string.player_lyrics_source_lrclib_label));
                 bind.lyricsSourceToggleButton.setContentDescription(getString(R.string.player_lyrics_source_lrclib_content_description));
+            } else if (source != null && source == PlayerBottomSheetViewModel.LYRICS_SOURCE_BETTERLYRICS) {
+                bind.lyricsSourceToggleButton.setText(getString(R.string.player_lyrics_source_betterlyrics_label));
+                bind.lyricsSourceToggleButton.setContentDescription(getString(R.string.player_lyrics_source_betterlyrics_content_description));
             } else {
                 bind.lyricsSourceToggleButton.setText(getString(R.string.player_lyrics_source_server_label));
                 bind.lyricsSourceToggleButton.setContentDescription(getString(R.string.player_lyrics_source_server_content_description));
@@ -406,6 +418,9 @@ public class PlayerLyricsFragment extends Fragment {
                 return;
             }
 
+            boolean hasWordSync = hasWordSyncData(lyricsList);
+            int interval = hasWordSync ? 50 : 250;
+
             syncLyricsHandler = new Handler();
             syncLyricsRunnable = () -> {
                 if (syncLyricsHandler != null) {
@@ -413,12 +428,22 @@ public class PlayerLyricsFragment extends Fragment {
                         displaySyncedLyrics();
                     }
 
-                    syncLyricsHandler.postDelayed(syncLyricsRunnable, 250);
+                    syncLyricsHandler.postDelayed(syncLyricsRunnable, interval);
                 }
             };
 
-            syncLyricsHandler.postDelayed(syncLyricsRunnable, 250);
+            syncLyricsHandler.postDelayed(syncLyricsRunnable, interval);
         });
+    }
+
+    private boolean hasWordSyncData(LyricsList lyricsList) {
+        if (!hasStructuredLyrics(lyricsList)) return false;
+        List<Line> lines = lyricsList.getStructuredLyrics().get(0).getLine();
+        if (lines == null) return false;
+        for (Line line : lines) {
+            if (line.getWords() != null && !line.getWords().isEmpty()) return true;
+        }
+        return false;
     }
 
     private void displaySyncedLyrics() {
@@ -440,57 +465,103 @@ public class PlayerLyricsFragment extends Fragment {
                 }
             }
 
-            if (lastLineIdx != null && curIdx == lastLineIdx) {
+            int curWordIdx = -1;
+            if (curIdx >= 0 && curIdx < lines.size()) {
+                List<Word> words = lines.get(curIdx).getWords();
+                if (words != null && !words.isEmpty()) {
+                    for (int w = 0; w < words.size(); w++) {
+                        if (words.get(w).getStart() <= timestamp) {
+                            curWordIdx = w;
+                        }
+                    }
+                }
+            }
+
+            if (lastLineIdx != null && curIdx == lastLineIdx
+                    && lastWordIdx != null && curWordIdx == lastWordIdx) {
                 return;
             }
             lastLineIdx = curIdx;
+            lastWordIdx = curWordIdx;
 
+            int highlightColor = requireContext().getResources().getColor(R.color.lyricsTextColor, null);
+            int shadowColor = requireContext().getResources().getColor(R.color.shadowsLyricsTextColor, null);
             boolean romanize = Preferences.isLyricsRomanizationEnabled();
             int secondarySize = (int) (bind.nowPlayingSongLyricsTextView.getTextSize() * 0.75f);
             SpannableStringBuilder builder = new SpannableStringBuilder();
 
             int highlightStart = -1;
             for (int i = 0; i < lines.size(); ++i) {
-                String text = lines.get(i).getValue().trim();
-                boolean highlight = i == curIdx;
-                if (highlight) highlightStart = builder.length();
+                boolean isCurrent = i == curIdx;
+                if (isCurrent) highlightStart = builder.length();
 
-                int lineTextStart = builder.length();
-                builder.append(text);
-                int lineTextEnd = builder.length();
+                List<Word> words = lines.get(i).getWords();
+                String lineText;
 
-                final int lineStart = lines.get(i).getStart();
-                final boolean isHighlight = highlight;
-                builder.setSpan(new ClickableSpan() {
-                    @Override
-                    public void onClick(@NonNull View view) {
-                        mediaBrowser.seekTo(lineStart + 1);
-                    }
+                if (isCurrent && words != null && !words.isEmpty()) {
+                    for (int w = 0; w < words.size(); w++) {
+                        Word word = words.get(w);
+                        int wordStart = builder.length();
+                        builder.append(word.getText());
+                        int wordEnd = builder.length();
 
-                    @Override
-                    public void updateDrawState(@NonNull TextPaint ds) {
-                        super.updateDrawState(ds);
-                        ds.setUnderlineText(false);
-                        if (isHighlight) {
-                            ds.setColor(requireContext().getResources().getColor(R.color.lyricsTextColor, null));
-                        } else {
-                            ds.setColor(requireContext().getResources().getColor(R.color.shadowsLyricsTextColor, null));
+                        boolean wordSpoken = word.getStart() <= timestamp;
+                        final int seekTarget = word.getStart();
+                        final int wordColor = wordSpoken ? highlightColor : shadowColor;
+                        builder.setSpan(new ClickableSpan() {
+                            @Override
+                            public void onClick(@NonNull View view) {
+                                mediaBrowser.seekTo(seekTarget + 1);
+                            }
+
+                            @Override
+                            public void updateDrawState(@NonNull TextPaint ds) {
+                                super.updateDrawState(ds);
+                                ds.setUnderlineText(false);
+                                ds.setColor(wordColor);
+                            }
+                        }, wordStart, wordEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                        if (w < words.size() - 1) {
+                            String text = word.getText();
+                            if (!text.endsWith(" ") && !text.endsWith("-")) {
+                                builder.append(" ");
+                            }
                         }
                     }
-                }, lineTextStart, lineTextEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    lineText = lines.get(i).getValue().trim();
+                } else {
+                    lineText = lines.get(i).getValue().trim();
+                    int lineTextStart = builder.length();
+                    builder.append(lineText);
+                    int lineTextEnd = builder.length();
+
+                    final int lineStart = lines.get(i).getStart();
+                    final int lineColor = isCurrent ? highlightColor : shadowColor;
+                    builder.setSpan(new ClickableSpan() {
+                        @Override
+                        public void onClick(@NonNull View view) {
+                            mediaBrowser.seekTo(lineStart + 1);
+                        }
+
+                        @Override
+                        public void updateDrawState(@NonNull TextPaint ds) {
+                            super.updateDrawState(ds);
+                            ds.setUnderlineText(false);
+                            ds.setColor(lineColor);
+                        }
+                    }, lineTextStart, lineTextEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
 
                 if (romanize) {
-                    String rom = LyricsRomanizer.romanize(text);
-                    if (rom != null && !rom.equals(text)) {
+                    String rom = LyricsRomanizer.romanize(lineText);
+                    if (rom != null && !rom.equals(lineText)) {
                         builder.append("\n");
                         int romStart = builder.length();
                         builder.append(rom);
                         int romEnd = builder.length();
                         builder.setSpan(new AbsoluteSizeSpan(secondarySize), romStart, romEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        int romColor = isHighlight
-                                ? requireContext().getResources().getColor(R.color.lyricsTextColor, null)
-                                : requireContext().getResources().getColor(R.color.shadowsLyricsTextColor, null);
-                        builder.setSpan(new ForegroundColorSpan(romColor), romStart, romEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        builder.setSpan(new ForegroundColorSpan(isCurrent ? highlightColor : shadowColor), romStart, romEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                     }
                 }
 
@@ -500,10 +571,7 @@ public class PlayerLyricsFragment extends Fragment {
                     builder.append(translatedLines.get(i));
                     int transEnd = builder.length();
                     builder.setSpan(new AbsoluteSizeSpan(secondarySize), transStart, transEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    int transColor = isHighlight
-                            ? requireContext().getResources().getColor(R.color.lyricsTextColor, null)
-                            : requireContext().getResources().getColor(R.color.shadowsLyricsTextColor, null);
-                    builder.setSpan(new ForegroundColorSpan(transColor), transStart, transEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    builder.setSpan(new ForegroundColorSpan(isCurrent ? highlightColor : shadowColor), transStart, transEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
 
                 builder.append("\n\n");

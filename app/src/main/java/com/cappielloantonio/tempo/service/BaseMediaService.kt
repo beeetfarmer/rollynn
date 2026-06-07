@@ -110,6 +110,8 @@ open class BaseMediaService : MediaLibraryService() {
 
     private val binder = LocalBinder()
     private var currentTrackScrobbled = false
+    private var stallPosition: Long = -1
+    private var stallCount: Int = 0
 
     open fun playerInitHook() {
         initializeExoPlayer()
@@ -348,6 +350,26 @@ open class BaseMediaService : MediaLibraryService() {
                     MediaManager.scrobble(player.currentMediaItem, true, System.currentTimeMillis())
                     MediaManager.saveChronology(player.currentMediaItem)
                 }
+
+                if (playbackState == Player.STATE_BUFFERING) {
+                    val pos = player.currentPosition
+                    if (pos == stallPosition) {
+                        stallCount++
+                        if (stallCount >= 20) {
+                            Log.w(TAG, "Stall detected at $pos ms, seeking forward")
+                            stallCount = 0
+                            stallPosition = -1
+                            player.seekTo(player.currentMediaItemIndex, pos + 5000)
+                        }
+                    } else {
+                        stallPosition = pos
+                        stallCount = 1
+                    }
+                } else if (playbackState == Player.STATE_READY && player.currentPosition != stallPosition) {
+                    stallCount = 0
+                    stallPosition = -1
+                }
+
                 updateWidget(player)
             }
 
@@ -376,6 +398,23 @@ open class BaseMediaService : MediaLibraryService() {
                     if (newPosition.mediaItem?.mediaMetadata?.extras?.getString("type") == Constants.MEDIA_TYPE_MUSIC) {
                         MediaManager.setLastPlayedTimestamp(newPosition.mediaItem)
                     }
+                }
+            }
+
+            override fun onPlayerError(error: PlaybackException) {
+                Log.e(TAG, "onPlayerError: ${error.errorCodeName}", error)
+                val duration = player.duration
+                val position = player.currentPosition
+                if (duration > 0 && position > 0 && position * 100 / duration >= 90) {
+                    if (player.hasNextMediaItem()) {
+                        player.seekToNextMediaItem()
+                        player.prepare()
+                    } else {
+                        player.seekTo(player.currentMediaItemIndex, 0)
+                        player.pause()
+                    }
+                } else {
+                    player.prepare()
                 }
             }
 
