@@ -307,6 +307,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         actionAutoDownloadLyrics();
         actionLyricsRomanization();
         actionTranslationSettings();
+        actionLastFmSettings();
         actionMiniPlayerHeart();
         actionConfigureDock();
         actionConfigureMetadata();
@@ -806,6 +807,29 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
             langPref.setOnPreferenceChangeListener((pref, newValue) -> {
                 Preferences.setTranslationTargetLanguage((String) newValue);
                 return true;
+            });
+        }
+    }
+
+    private void actionLastFmSettings() {
+        EditTextPreference apiKeyPref = findPreference("last_fm_api_key");
+        if (apiKeyPref != null) {
+            apiKeyPref.setSummaryProvider(null);
+            String currentKey = Preferences.getLastFmApiKey();
+            if (currentKey != null && !currentKey.isEmpty()) {
+                String masked = currentKey.substring(0, Math.min(4, currentKey.length())) + "****";
+                apiKeyPref.setSummary(masked);
+            }
+            apiKeyPref.setOnPreferenceChangeListener((pref, newValue) -> {
+                String key = (String) newValue;
+                Preferences.setLastFmApiKey(key);
+                if (key != null && !key.isEmpty()) {
+                    String masked = key.substring(0, Math.min(4, key.length())) + "****";
+                    pref.setSummary(masked);
+                } else {
+                    pref.setSummary(null);
+                }
+                return false;
             });
         }
     }

@@ -39,7 +39,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 @UnstableApi
 @Database(
-        version = 17,
+        version = 18,
         entities = {Queue.class, Server.class, RecentSearch.class, Download.class, Chronology.class, Favorite.class, SessionMediaItem.class, Playlist.class, LyricsCache.class, Scrobble.class, PlaylistFolder.class, PlaylistFolderEntry.class},
         autoMigrations = {@AutoMigration(from = 10, to = 11), @AutoMigration(from = 11, to = 12)}
 )
@@ -70,10 +70,29 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_17_18 = new Migration(17, 18) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS `server_new` (" +
+                    "`id` TEXT NOT NULL, " +
+                    "`server_name` TEXT NOT NULL, " +
+                    "`username` TEXT NOT NULL, " +
+                    "`address` TEXT NOT NULL, " +
+                    "`local_address` TEXT, " +
+                    "`timestamp` INTEGER NOT NULL, " +
+                    "`low_security` INTEGER NOT NULL DEFAULT false, " +
+                    "PRIMARY KEY(`id`))");
+            db.execSQL("INSERT INTO `server_new` (`id`, `server_name`, `username`, `address`, `local_address`, `timestamp`, `low_security`) " +
+                    "SELECT `id`, `server_name`, `username`, `address`, `local_address`, `timestamp`, `low_security` FROM `server`");
+            db.execSQL("DROP TABLE `server`");
+            db.execSQL("ALTER TABLE `server_new` RENAME TO `server`");
+        }
+    };
+
     public static synchronized AppDatabase getInstance() {
         if (instance == null) {
             instance = Room.databaseBuilder(App.getContext(), AppDatabase.class, DB_NAME)
-                    .addMigrations(MIGRATION_16_17)
+                    .addMigrations(MIGRATION_16_17, MIGRATION_17_18)
                     .fallbackToDestructiveMigration()
                     .build();
         }

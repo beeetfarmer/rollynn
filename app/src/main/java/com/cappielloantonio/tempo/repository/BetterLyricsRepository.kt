@@ -7,6 +7,7 @@ import com.cappielloantonio.tempo.subsonic.models.LyricsList
 import com.cappielloantonio.tempo.util.TTMLParser
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import okhttp3.ConnectionSpec
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -17,6 +18,7 @@ import java.util.concurrent.TimeUnit
 class BetterLyricsRepository {
 
     private val client = OkHttpClient.Builder()
+        .connectionSpecs(listOf(ConnectionSpec.MODERN_TLS))
         .connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(15, TimeUnit.SECONDS)
         .build()

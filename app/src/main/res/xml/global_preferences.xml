@@ -292,6 +292,7 @@
                 android:key="translation_api_key"
                 android:title="@string/settings_translation_api_key"
                 android:summary="@string/settings_translation_api_key_summary"
+                android:inputType="textPassword"
                 app:icon="@drawable/ic_link" />
 
             <ListPreference
@@ -516,7 +517,7 @@
                     <EditTextPreference
                         android:key="last_fm_api_key"
                         android:title="API Key"
-                        app:useSimpleSummaryProvider="true"
+                        android:inputType="textPassword"
                         app:icon="@drawable/ic_link" />
                 </PreferenceCategory>
             </PreferenceScreen>

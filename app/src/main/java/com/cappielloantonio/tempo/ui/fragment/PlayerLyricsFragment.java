@@ -14,10 +14,13 @@ import android.text.SpannableStringBuilder;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Toast;
+
+import com.cappielloantonio.tempo.ui.span.WipeSpan;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -46,6 +49,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 @OptIn(markerClass = UnstableApi.class)
@@ -129,6 +133,8 @@ public class PlayerLyricsFragment extends Fragment {
         lyricsSourceSwitchAvailable = false;
         translatedLines = null;
         isTranslating = false;
+        cachedLineIdx = -1;
+        hasWipeSpans = false;
     }
 
     private void initOverlay() {
@@ -244,6 +250,8 @@ public class PlayerLyricsFragment extends Fragment {
             lastLineIdx = null;
             lastWordIdx = null;
             translatedLines = null;
+            cachedLineIdx = -1;
+            hasWipeSpans = false;
             updatePanelContent();
         });
 
@@ -419,7 +427,7 @@ public class PlayerLyricsFragment extends Fragment {
             }
 
             boolean hasWordSync = hasWordSyncData(lyricsList);
-            int interval = hasWordSync ? 50 : 250;
+            int interval = hasWordSync ? 16 : 250;
 
             syncLyricsHandler = new Handler();
             syncLyricsRunnable = () -> {
@@ -446,143 +454,150 @@ public class PlayerLyricsFragment extends Fragment {
         return false;
     }
 
+    private int cachedLineIdx = -1;
+    private boolean hasWipeSpans = false;
+    private final AtomicLong wipeTimestamp = new AtomicLong(0);
+
+    @SuppressLint("ClickableViewAccessibility")
     private void displaySyncedLyrics() {
         LyricsList lyricsList = playerBottomSheetViewModel.getLiveLyricsList().getValue();
-        int timestamp = (int) (mediaBrowser.getCurrentPosition());
+        long timestamp = mediaBrowser.getCurrentPosition();
 
-        if (hasStructuredLyrics(lyricsList)) {
-            List<Line> lines = lyricsList.getStructuredLyrics().get(0).getLine();
-            if (lines == null || lines.isEmpty()) {
-                return;
+        if (!hasStructuredLyrics(lyricsList)) return;
+
+        List<Line> lines = lyricsList.getStructuredLyrics().get(0).getLine();
+        if (lines == null || lines.isEmpty()) return;
+
+        int curIdx = 0;
+        for (; curIdx < lines.size(); ++curIdx) {
+            Integer start = lines.get(curIdx).getStart();
+            if (start != null && start > timestamp) {
+                curIdx--;
+                break;
             }
+        }
 
-            int curIdx = 0;
-            for (; curIdx < lines.size(); ++curIdx) {
-                Integer start = lines.get(curIdx).getStart();
-                if (start != null && start > timestamp) {
-                    curIdx--;
-                    break;
-                }
-            }
+        wipeTimestamp.set(timestamp);
 
-            int curWordIdx = -1;
-            if (curIdx >= 0 && curIdx < lines.size()) {
-                List<Word> words = lines.get(curIdx).getWords();
-                if (words != null && !words.isEmpty()) {
-                    for (int w = 0; w < words.size(); w++) {
-                        if (words.get(w).getStart() <= timestamp) {
-                            curWordIdx = w;
+        if (hasWipeSpans && cachedLineIdx == curIdx) {
+            bind.nowPlayingSongLyricsTextView.invalidate();
+            return;
+        }
+
+        cachedLineIdx = curIdx;
+
+        int highlightColor = requireContext().getResources().getColor(R.color.lyricsTextColor, null);
+        int shadowColor = requireContext().getResources().getColor(R.color.shadowsLyricsTextColor, null);
+        boolean romanize = Preferences.isLyricsRomanizationEnabled();
+        int secondarySize = (int) (bind.nowPlayingSongLyricsTextView.getTextSize() * 0.75f);
+
+        SpannableStringBuilder builder = new SpannableStringBuilder();
+        hasWipeSpans = false;
+
+        int highlightStart = -1;
+        for (int i = 0; i < lines.size(); ++i) {
+            boolean isCurrent = i == curIdx;
+            if (isCurrent) highlightStart = builder.length();
+
+            List<Word> words = lines.get(i).getWords();
+            String lineText;
+
+            if (isCurrent && words != null && !words.isEmpty()) {
+                hasWipeSpans = true;
+                for (int w = 0; w < words.size(); w++) {
+                    Word word = words.get(w);
+                    int wordStart = builder.length();
+                    builder.append(word.getText());
+                    int wordEnd = builder.length();
+
+                    builder.setSpan(
+                            new WipeSpan(highlightColor, shadowColor, word.getStart(), word.getEnd(), wipeTimestamp, word.getStart()),
+                            wordStart, wordEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    );
+
+                    if (w < words.size() - 1) {
+                        String text = word.getText();
+                        if (!text.endsWith(" ") && !text.endsWith("-")) {
+                            builder.append(" ");
                         }
                     }
                 }
+                lineText = lines.get(i).getValue().trim();
+            } else {
+                lineText = lines.get(i).getValue().trim();
+                int lineTextStart = builder.length();
+                builder.append(lineText);
+                int lineTextEnd = builder.length();
+
+                final int lineStart = lines.get(i).getStart();
+                final int lineColor = isCurrent ? highlightColor : shadowColor;
+                builder.setSpan(new ClickableSpan() {
+                    @Override
+                    public void onClick(@NonNull View view) {
+                        mediaBrowser.seekTo(lineStart + 1);
+                    }
+
+                    @Override
+                    public void updateDrawState(@NonNull TextPaint ds) {
+                        super.updateDrawState(ds);
+                        ds.setUnderlineText(false);
+                        ds.setColor(lineColor);
+                    }
+                }, lineTextStart, lineTextEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
 
-            if (lastLineIdx != null && curIdx == lastLineIdx
-                    && lastWordIdx != null && curWordIdx == lastWordIdx) {
-                return;
-            }
-            lastLineIdx = curIdx;
-            lastWordIdx = curWordIdx;
-
-            int highlightColor = requireContext().getResources().getColor(R.color.lyricsTextColor, null);
-            int shadowColor = requireContext().getResources().getColor(R.color.shadowsLyricsTextColor, null);
-            boolean romanize = Preferences.isLyricsRomanizationEnabled();
-            int secondarySize = (int) (bind.nowPlayingSongLyricsTextView.getTextSize() * 0.75f);
-            SpannableStringBuilder builder = new SpannableStringBuilder();
-
-            int highlightStart = -1;
-            for (int i = 0; i < lines.size(); ++i) {
-                boolean isCurrent = i == curIdx;
-                if (isCurrent) highlightStart = builder.length();
-
-                List<Word> words = lines.get(i).getWords();
-                String lineText;
-
-                if (isCurrent && words != null && !words.isEmpty()) {
-                    for (int w = 0; w < words.size(); w++) {
-                        Word word = words.get(w);
-                        int wordStart = builder.length();
-                        builder.append(word.getText());
-                        int wordEnd = builder.length();
-
-                        boolean wordSpoken = word.getStart() <= timestamp;
-                        final int seekTarget = word.getStart();
-                        final int wordColor = wordSpoken ? highlightColor : shadowColor;
-                        builder.setSpan(new ClickableSpan() {
-                            @Override
-                            public void onClick(@NonNull View view) {
-                                mediaBrowser.seekTo(seekTarget + 1);
-                            }
-
-                            @Override
-                            public void updateDrawState(@NonNull TextPaint ds) {
-                                super.updateDrawState(ds);
-                                ds.setUnderlineText(false);
-                                ds.setColor(wordColor);
-                            }
-                        }, wordStart, wordEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-                        if (w < words.size() - 1) {
-                            String text = word.getText();
-                            if (!text.endsWith(" ") && !text.endsWith("-")) {
-                                builder.append(" ");
-                            }
-                        }
-                    }
-                    lineText = lines.get(i).getValue().trim();
-                } else {
-                    lineText = lines.get(i).getValue().trim();
-                    int lineTextStart = builder.length();
-                    builder.append(lineText);
-                    int lineTextEnd = builder.length();
-
-                    final int lineStart = lines.get(i).getStart();
-                    final int lineColor = isCurrent ? highlightColor : shadowColor;
-                    builder.setSpan(new ClickableSpan() {
-                        @Override
-                        public void onClick(@NonNull View view) {
-                            mediaBrowser.seekTo(lineStart + 1);
-                        }
-
-                        @Override
-                        public void updateDrawState(@NonNull TextPaint ds) {
-                            super.updateDrawState(ds);
-                            ds.setUnderlineText(false);
-                            ds.setColor(lineColor);
-                        }
-                    }, lineTextStart, lineTextEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                }
-
-                if (romanize) {
-                    String rom = LyricsRomanizer.romanize(lineText);
-                    if (rom != null && !rom.equals(lineText)) {
-                        builder.append("\n");
-                        int romStart = builder.length();
-                        builder.append(rom);
-                        int romEnd = builder.length();
-                        builder.setSpan(new AbsoluteSizeSpan(secondarySize), romStart, romEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        builder.setSpan(new ForegroundColorSpan(isCurrent ? highlightColor : shadowColor), romStart, romEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    }
-                }
-
-                if (translatedLines != null && i < translatedLines.size() && !translatedLines.get(i).isEmpty()) {
+            if (romanize) {
+                String rom = LyricsRomanizer.romanize(lineText);
+                if (rom != null && !rom.equals(lineText)) {
                     builder.append("\n");
-                    int transStart = builder.length();
-                    builder.append(translatedLines.get(i));
-                    int transEnd = builder.length();
-                    builder.setSpan(new AbsoluteSizeSpan(secondarySize), transStart, transEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    builder.setSpan(new ForegroundColorSpan(isCurrent ? highlightColor : shadowColor), transStart, transEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    int romStart = builder.length();
+                    builder.append(rom);
+                    int romEnd = builder.length();
+                    builder.setSpan(new AbsoluteSizeSpan(secondarySize), romStart, romEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    builder.setSpan(new ForegroundColorSpan(isCurrent ? highlightColor : shadowColor), romStart, romEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
-
-                builder.append("\n\n");
             }
 
-            bind.nowPlayingSongLyricsTextView.setMovementMethod(LinkMovementMethod.getInstance());
-            bind.nowPlayingSongLyricsTextView.setText(builder);
-
-            if (highlightStart >= 0 && playerBottomSheetViewModel.getSyncLyricsState()) {
-                bind.nowPlayingSongLyricsSrollView.smoothScrollTo(0, getScroll(highlightStart));
+            if (translatedLines != null && i < translatedLines.size() && !translatedLines.get(i).isEmpty()) {
+                builder.append("\n");
+                int transStart = builder.length();
+                builder.append(translatedLines.get(i));
+                int transEnd = builder.length();
+                builder.setSpan(new AbsoluteSizeSpan(secondarySize), transStart, transEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                builder.setSpan(new ForegroundColorSpan(isCurrent ? highlightColor : shadowColor), transStart, transEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
+
+            builder.append("\n\n");
+        }
+
+        bind.nowPlayingSongLyricsTextView.setMovementMethod(LinkMovementMethod.getInstance());
+        bind.nowPlayingSongLyricsTextView.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                Layout layout = bind.nowPlayingSongLyricsTextView.getLayout();
+                if (layout != null) {
+                    int x = (int) event.getX() - bind.nowPlayingSongLyricsTextView.getTotalPaddingLeft();
+                    int y = (int) event.getY() - bind.nowPlayingSongLyricsTextView.getTotalPaddingTop();
+                    int line = layout.getLineForVertical(y);
+                    int offset = layout.getOffsetForHorizontal(line, x);
+                    Spannable spannable = (Spannable) bind.nowPlayingSongLyricsTextView.getText();
+                    WipeSpan[] spans = spannable.getSpans(offset, offset, WipeSpan.class);
+                    if (spans.length > 0) {
+                        mediaBrowser.seekTo(spans[0].getSeekTarget() + 1);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
+        bind.nowPlayingSongLyricsTextView.setText(builder);
+
+        if (highlightStart >= 0 && playerBottomSheetViewModel.getSyncLyricsState()) {
+            final int scrollTarget = highlightStart;
+            bind.nowPlayingSongLyricsTextView.post(() -> {
+                if (bind != null) {
+                    bind.nowPlayingSongLyricsSrollView.smoothScrollTo(0, getScroll(scrollTarget));
+                }
+            });
         }
     }
 

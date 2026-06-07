@@ -1,6 +1,7 @@
 package com.cappielloantonio.tempo.lastfm
 
 import com.cappielloantonio.tempo.BuildConfig
+import okhttp3.ConnectionSpec
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -15,6 +16,7 @@ class LastFmRetrofitClient {
 
     private fun getOkHttpClient(): OkHttpClient {
         return OkHttpClient.Builder()
+            .connectionSpecs(listOf(ConnectionSpec.MODERN_TLS))
             .addInterceptor(getHttpLoggingInterceptor())
             .build()
     }

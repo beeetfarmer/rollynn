@@ -9,6 +9,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
+    <permission
+        android:name="${applicationId}.permission.MEDIA_CONTROL"
+        android:protectionLevel="signature" />
+
     <application
         android:name="App"
         android:allowBackup="false"
@@ -53,7 +57,8 @@
         <service
             android:name=".service.MediaService"
             android:exported="true"
-            android:foregroundServiceType="mediaPlayback">
+            android:foregroundServiceType="mediaPlayback"
+            android:permission="${applicationId}.permission.MEDIA_CONTROL">
             <intent-filter>
                 <action android:name="androidx.media3.session.MediaLibraryService" />
                 <action android:name="android.media.browse.MediaBrowserService"/>
@@ -64,7 +69,8 @@
         <service
             android:name=".service.DownloaderService"
             android:exported="true"
-            android:foregroundServiceType="dataSync">
+            android:foregroundServiceType="dataSync"
+            android:permission="${applicationId}.permission.MEDIA_CONTROL">
             <intent-filter>
                 <action android:name="androidx.media3.exoplayer.downloadService.action.RESTART" />
                 <category android:name="android.intent.category.DEFAULT" />

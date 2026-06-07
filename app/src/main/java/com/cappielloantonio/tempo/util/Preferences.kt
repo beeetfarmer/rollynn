@@ -142,6 +142,21 @@ object Preferences {
     @JvmStatic
     fun setPassword(password: String?) {
         App.getInstance().encryptedPreferences.edit().putString(PASSWORD, password).apply()
+        val serverId = getServerId()
+        if (serverId != null && password != null) {
+            App.getInstance().encryptedPreferences.edit()
+                .putString("password_$serverId", password).apply()
+        }
+    }
+
+    @JvmStatic
+    fun getPasswordForServer(serverId: String): String? {
+        return App.getInstance().encryptedPreferences.getString("password_$serverId", null)
+    }
+
+    @JvmStatic
+    fun removePasswordForServer(serverId: String) {
+        App.getInstance().encryptedPreferences.edit().remove("password_$serverId").apply()
     }
 
     @JvmStatic

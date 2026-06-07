@@ -38,6 +38,7 @@ import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.broadcast.receiver.ConnectivityStatusBroadcastReceiver;
 import com.cappielloantonio.tempo.databinding.ActivityMainBinding;
 import com.cappielloantonio.tempo.github.utils.UpdateUtil;
+import com.cappielloantonio.tempo.subsonic.api.navidrome.NavidromeClient;
 import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.ui.activity.base.BaseActivity;
 import com.cappielloantonio.tempo.ui.dialog.ConnectionAlertDialog;
@@ -529,7 +530,8 @@ public class MainActivity extends BaseActivity {
         Preferences.setLocalAddress(null);
         Preferences.setUser(null);
 
-        // TODO Enter all settings to be reset
+        NavidromeClient.clearCredentials();
+
         Preferences.setOpenSubsonic(false);
         Preferences.setPlaybackSpeed(1.0f);
         Preferences.setSkipSilenceMode(false);

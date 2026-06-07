@@ -29,6 +29,14 @@ class NavidromeClient {
         fun refresh() {
             instance = null
         }
+
+        @JvmStatic
+        fun clearCredentials() {
+            synchronized(this) {
+                instance?.jwtToken = null
+                instance = null
+            }
+        }
     }
 
     private val service: NavidromeService
