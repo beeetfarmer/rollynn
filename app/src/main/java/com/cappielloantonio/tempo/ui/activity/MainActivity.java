@@ -99,14 +99,11 @@ public class MainActivity extends BaseActivity {
         SplashScreen.installSplashScreen(this);
         
         int accentColor = Preferences.getAccentColor();
-        if (accentColor != -1) {
-            com.google.android.material.color.DynamicColors.applyToActivityIfAvailable(this, 
-                new com.google.android.material.color.DynamicColorsOptions.Builder()
-                    .setContentBasedSource(android.graphics.Bitmap.createBitmap(new int[]{accentColor}, 1, 1, android.graphics.Bitmap.Config.ARGB_8888))
-                    .build());
-        } else {
-            DynamicColors.applyToActivityIfAvailable(this);
-        }
+        if (accentColor == -1) accentColor = 0xFF6750A4;
+        com.google.android.material.color.DynamicColors.applyToActivityIfAvailable(this,
+            new com.google.android.material.color.DynamicColorsOptions.Builder()
+                .setContentBasedSource(android.graphics.Bitmap.createBitmap(new int[]{accentColor}, 1, 1, android.graphics.Bitmap.Config.ARGB_8888))
+                .build());
 
         super.onCreate(savedInstanceState);
 
@@ -563,6 +560,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void pingServer() {
+        if (Preferences.getServer() == null) return;
         if (Preferences.getToken() == null && Preferences.getPassword() == null) return;
 
         if (Preferences.isInUseServerAddressLocal()) {
@@ -637,7 +635,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void getOpenSubsonicExtensions() {
-        if (Preferences.getToken() != null || Preferences.getPassword() != null) {
+        if (Preferences.getServer() != null && (Preferences.getToken() != null || Preferences.getPassword() != null)) {
             mainViewModel.getOpenSubsonicExtensions().observe(this, openSubsonicExtensions -> {
                 if (openSubsonicExtensions != null) {
                     Preferences.setOpenSubsonicExtensions(openSubsonicExtensions);

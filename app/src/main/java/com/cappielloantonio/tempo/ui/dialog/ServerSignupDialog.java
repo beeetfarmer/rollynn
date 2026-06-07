@@ -138,6 +138,7 @@ public class ServerSignupDialog extends DialogFragment {
 
     private void saveServerPreference() {
         String serverID = loginViewModel.getServerToEdit() != null ? loginViewModel.getServerToEdit().getServerId() : UUID.randomUUID().toString();
+        Preferences.setServerId(serverID);
         Preferences.setPassword(this.password);
         loginViewModel.addServer(new Server(serverID, this.serverName, this.username, this.server, this.localAddress, System.currentTimeMillis(), this.lowSecurity));
     }

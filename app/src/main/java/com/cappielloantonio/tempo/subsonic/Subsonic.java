@@ -138,7 +138,9 @@ public class Subsonic {
     }
 
     public String getUrl() {
-        String url = preferences.getServerUrl() + "/rest/";
+        String serverUrl = preferences.getServerUrl();
+        if (serverUrl == null) return "http://localhost/rest/";
+        String url = serverUrl + "/rest/";
         return url.replace("//rest", "/rest");
     }
 
@@ -146,12 +148,15 @@ public class Subsonic {
         Map<String, String> params = new HashMap<>();
         params.put("u", preferences.getUsername());
 
-        if (preferences.getAuthentication().getPassword() != null)
-            params.put("p", preferences.getAuthentication().getPassword());
-        if (preferences.getAuthentication().getSalt() != null)
-            params.put("s", preferences.getAuthentication().getSalt());
-        if (preferences.getAuthentication().getToken() != null)
-            params.put("t", preferences.getAuthentication().getToken());
+        SubsonicPreferences.SubsonicAuthentication auth = preferences.getAuthentication();
+        if (auth != null) {
+            if (auth.getPassword() != null)
+                params.put("p", auth.getPassword());
+            if (auth.getSalt() != null)
+                params.put("s", auth.getSalt());
+            if (auth.getToken() != null)
+                params.put("t", auth.getToken());
+        }
 
         params.put("v", getApiVersion().getVersionString());
         params.put("c", preferences.getClientName());
