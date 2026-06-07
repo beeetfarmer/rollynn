@@ -310,6 +310,7 @@
         style="@style/ExoStyledControls.Button.Center.PlayPause"
         android:layout_width="80dp"
         android:layout_height="80dp"
+        android:background="@drawable/ripple_player_button"
         app:layout_constraintBottom_toBottomOf="@+id/player_play_pause_placeholder_view"
         app:layout_constraintEnd_toEndOf="@+id/player_play_pause_placeholder_view"
         app:layout_constraintStart_toStartOf="@+id/player_play_pause_placeholder_view"

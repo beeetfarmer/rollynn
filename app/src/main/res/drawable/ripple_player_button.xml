@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="#18ffffff">
-    <item android:id="@android:id/mask">
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
         <shape android:shape="oval">
-            <solid android:color="#FFFFFF" />
+            <solid android:color="#20ffffff" />
         </shape>
     </item>
-</ripple>
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+</selector>

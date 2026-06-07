@@ -5,7 +5,13 @@ import com.atilika.kuromoji.ipadic.Tokenizer
 
 object LyricsRomanizer {
 
-    private val kuromojiTokenizer: Tokenizer by lazy { Tokenizer() }
+    private val kuromojiTokenizer: Tokenizer? by lazy {
+        try {
+            Tokenizer()
+        } catch (_: Exception) {
+            null
+        }
+    }
 
     private val KANA_ROMAJI_MAP: Map<String, String> = mapOf(
         "キャ" to "kya", "キュ" to "kyu", "キョ" to "kyo",
@@ -150,7 +156,8 @@ object LyricsRomanizer {
 
     @JvmStatic
     fun romanizeJapanese(text: String): String {
-        val tokens = kuromojiTokenizer.tokenize(text)
+        val tokenizer = kuromojiTokenizer ?: return text
+        val tokens = tokenizer.tokenize(text)
         return tokens.joinToString(" ") { token ->
             val reading = if (token.reading.isNullOrEmpty() || token.reading == "*") {
                 token.surface

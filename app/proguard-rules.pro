@@ -32,6 +32,8 @@
 
 -keep class com.cappielloantonio.tempo.ui.span.WipeSpan { *; }
 
+-keep class com.atilika.kuromoji.** { *; }
+
 -dontwarn com.google.api.client.http.GenericUrl
 -dontwarn com.google.api.client.http.HttpHeaders
 -dontwarn com.google.api.client.http.HttpRequest
