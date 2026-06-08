@@ -280,13 +280,6 @@
 
         <PreferenceCategory app:title="Behavior">
             <SwitchPreference
-                android:title="@string/settings_show_mini_shuffle_button"
-                android:defaultValue="false"
-                android:summary="@string/settings_show_mini_shuffle_button_summary"
-                android:key="mini_shuffle_button_visibility"
-                app:icon="@drawable/ic_shuffle" />
-
-            <SwitchPreference
                 android:title="@string/settings_auto_download_lyrics"
                 android:defaultValue="false"
                 android:summary="@string/settings_auto_download_lyrics_summary"
@@ -299,6 +292,38 @@
                 android:summary="@string/settings_lyrics_romanization_summary"
                 android:key="lyrics_romanization"
                 app:icon="@drawable/ic_lyrics" />
+
+            <ListPreference
+                app:defaultValue="top"
+                app:dialogTitle="@string/settings_play_next_behavior_title"
+                app:entries="@array/play_next_behavior_titles"
+                app:entryValues="@array/play_next_behavior_values"
+                app:key="play_next_behavior"
+                app:title="@string/settings_play_next_behavior_title"
+                app:summary="@string/settings_play_next_behavior_summary"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_navigate_next" />
+
+        </PreferenceCategory>
+
+        <PreferenceCategory app:title="@string/settings_title_scrobbling">
+
+            <SwitchPreference
+                android:title="@string/settings_scrobble_title"
+                android:defaultValue="true"
+                android:summary="@string/settings_summary_scrobble"
+                android:key="scrobbling"
+                app:icon="@drawable/ic_refresh" />
+
+            <SeekBarPreference
+                android:key="scrobble_threshold"
+                android:title="@string/settings_scrobble_threshold_title"
+                app:showSeekBarValue="true"
+                android:defaultValue="90"
+                app:min="10"
+                android:max="100"
+                app:seekBarIncrement="5"
+                app:icon="@drawable/ic_done" />
 
         </PreferenceCategory>
 
@@ -345,33 +370,6 @@
                 app:useSimpleSummaryProvider="true"
                 app:icon="@drawable/ic_link" />
 
-            <ListPreference
-                app:defaultValue="top"
-                app:dialogTitle="@string/settings_play_next_behavior_title"
-                app:entries="@array/play_next_behavior_titles"
-                app:entryValues="@array/play_next_behavior_values"
-                app:key="play_next_behavior"
-                app:title="@string/settings_play_next_behavior_title"
-                app:summary="@string/settings_play_next_behavior_summary"
-                app:useSimpleSummaryProvider="true"
-                app:icon="@drawable/ic_navigate_next" />
-
-            <SwitchPreference
-                android:title="@string/settings_scrobble_title"
-                android:defaultValue="true"
-                android:summary="@string/settings_summary_scrobble"
-                android:key="scrobbling"
-                app:icon="@drawable/ic_refresh" />
-
-            <SeekBarPreference
-                android:key="scrobble_threshold"
-                android:title="@string/settings_scrobble_threshold_title"
-                app:showSeekBarValue="true"
-                android:defaultValue="90"
-                app:min="10"
-                android:max="100"
-                app:seekBarIncrement="5"
-                app:icon="@drawable/ic_done" />
         </PreferenceCategory>
 
     </PreferenceScreen>

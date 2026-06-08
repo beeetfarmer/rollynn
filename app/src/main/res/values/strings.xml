@@ -488,6 +488,7 @@
     <string name="settings_title_share">Share</string>
     <string name="settings_title_syncing">Syncing</string>
     <string name="settings_title_transcoding">Transcoding</string>
+    <string name="settings_title_scrobbling">Scrobbling</string>
     <string name="settings_title_transcoding_download">Transcoding Download</string>
     <string name="settings_title_ui">UI</string>
     <string name="settings_title_ui_landscape_items_per_row">Items per row on landscape</string>

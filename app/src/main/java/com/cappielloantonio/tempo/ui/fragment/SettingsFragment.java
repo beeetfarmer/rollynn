@@ -308,7 +308,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         actionLyricsRomanization();
         actionTranslationSettings();
         actionLastFmSettings();
-        actionMiniPlayerHeart();
         actionConfigureDock();
         actionConfigureMetadata();
 
@@ -710,19 +709,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
             pref.setOnPreferenceClickListener(preference -> {
                 DeleteDownloadStorageDialog dialog = new DeleteDownloadStorageDialog();
                 dialog.show(activity.getSupportFragmentManager(), null);
-                return true;
-            });
-        }
-    }
-
-    private void actionMiniPlayerHeart() {
-        SwitchPreference preference = findPreference("mini_shuffle_button_visibility");
-        if (preference != null) {
-            preference.setChecked(Preferences.showShuffleInsteadOfHeart());
-            preference.setOnPreferenceChangeListener((pref, newValue) -> {
-                if (newValue instanceof Boolean) {
-                    Preferences.setShuffleInsteadOfHeart((Boolean) newValue);
-                }
                 return true;
             });
         }

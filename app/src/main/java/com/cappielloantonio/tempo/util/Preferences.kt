@@ -85,7 +85,6 @@ object Preferences {
     private const val DEFAULT_HOME_SORT_PLAYLISTS_SORT_ORDER = Constants.PLAYLIST_ORDER_BY_RANDOM
     private const val EQUALIZER_ENABLED = "equalizer_enabled"
     private const val EQUALIZER_BAND_LEVELS = "equalizer_band_levels"
-    private const val MINI_SHUFFLE_BUTTON_VISIBILITY = "mini_shuffle_button_visibility"
     private const val ALBUM_DETAIL = "album_detail"
     private const val ALBUM_SORT_ORDER = "album_sort_order"
     private const val DEFAULT_ALBUM_SORT_ORDER = Constants.ALBUM_ORDER_BY_NAME
@@ -499,16 +498,6 @@ object Preferences {
         App.getInstance().preferences.edit().putBoolean(
                 SYNC_STARRED_TRACKS_FOR_OFFLINE_USE, isStarredSyncEnabled
         ).apply()
-    }
-
-    @JvmStatic
-    fun showShuffleInsteadOfHeart(): Boolean {
-        return App.getInstance().preferences.getBoolean(MINI_SHUFFLE_BUTTON_VISIBILITY, false)
-    }
-
-    @JvmStatic
-    fun setShuffleInsteadOfHeart(enabled: Boolean) {
-        App.getInstance().preferences.edit().putBoolean(MINI_SHUFFLE_BUTTON_VISIBILITY, enabled).apply()
     }
 
     @JvmStatic
