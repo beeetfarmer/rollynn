@@ -82,6 +82,7 @@ public class MainActivity extends BaseActivity {
     public NavController navController;
     private BottomSheetBehavior bottomSheetBehavior;
     private boolean isLandscape = false;
+    private boolean playerBarsExpanded = false;
     private AssetLinkNavigator assetLinkNavigator;
     private AssetLinkUtil.AssetLink pendingAssetLink;
 
@@ -270,10 +271,16 @@ public class MainActivity extends BaseActivity {
                     if (!isLandscape) {
                          animateBottomNavigation(slideOffset, navigationHeight);
                     }
+
+                    boolean usePlayerColor = slideOffset >= 0.99f;
+                    if (usePlayerColor != playerBarsExpanded) {
+                        applyPlayerSystemBarColors(usePlayerColor);
+                    }
             }
     };
 
     private void applyPlayerSystemBarColors(boolean playerExpanded) {
+        playerBarsExpanded = playerExpanded;
         if (playerExpanded) {
             applySystemBarColors(UIUtil.getPlayerBackgroundColor(this));
         } else {
