@@ -2,6 +2,8 @@ package com.cappielloantonio.tempo.ui.fragment;
 
 import android.content.ComponentName;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -51,6 +53,8 @@ public class SearchFragment extends Fragment implements ClickCallback {
     private SongHorizontalAdapter songHorizontalAdapter;
 
     private ListenableFuture<MediaBrowser> mediaBrowserListenableFuture;
+    private final Handler suggestionHandler = new Handler(Looper.getMainLooper());
+    private Runnable pendingSuggestion;
 
     @Nullable
     @Override
@@ -93,6 +97,7 @@ public class SearchFragment extends Fragment implements ClickCallback {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (pendingSuggestion != null) suggestionHandler.removeCallbacks(pendingSuggestion);
         bind = null;
     }
 
@@ -154,8 +159,12 @@ public class SearchFragment extends Fragment implements ClickCallback {
 
                     @Override
                     public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
-                        if (start + count > 1) {
-                            setSearchSuggestions(charSequence.toString());
+                        if (pendingSuggestion != null) suggestionHandler.removeCallbacks(pendingSuggestion);
+
+                        if (charSequence.length() > 1) {
+                            String query = charSequence.toString();
+                            pendingSuggestion = () -> setSearchSuggestions(query);
+                            suggestionHandler.postDelayed(pendingSuggestion, 350);
                         } else {
                             setRecentSuggestions();
                         }
@@ -215,6 +224,7 @@ public class SearchFragment extends Fragment implements ClickCallback {
     }
 
     public void search(String query) {
+        if (pendingSuggestion != null) suggestionHandler.removeCallbacks(pendingSuggestion);
         searchViewModel.setQuery(query);
         bind.searchBar.setText(query);
         bind.searchView.hide();

@@ -99,7 +99,11 @@ object Preferences {
     private const val PLAY_NEXT_BEHAVIOR = "play_next_behavior"
     const val PLAY_NEXT_BEHAVIOR_TOP = "top"
     const val PLAY_NEXT_BEHAVIOR_SEQUENTIAL = "sequential"
-    
+    private const val METADATA_ALIGNMENT = "metadata_alignment"
+    const val METADATA_ALIGNMENT_LEFT = "left"
+    const val METADATA_ALIGNMENT_CENTER = "center"
+    const val METADATA_ALIGNMENT_RIGHT = "right"
+
 
     @JvmStatic
     fun getServer(): String? {
@@ -933,4 +937,15 @@ object Preferences {
             plainPrefs.edit().remove(Constants.LAST_FM_API_KEY).apply()
         }
     }
+
+    @JvmStatic
+    fun getMetadataAlignment(): String {
+        return App.getInstance().preferences.getString(METADATA_ALIGNMENT, METADATA_ALIGNMENT_CENTER) ?: METADATA_ALIGNMENT_CENTER
+    }
+
+    @JvmStatic
+    fun setMetadataAlignment(alignment: String) {
+        App.getInstance().preferences.edit().putString(METADATA_ALIGNMENT, alignment).apply()
+    }
+
 }

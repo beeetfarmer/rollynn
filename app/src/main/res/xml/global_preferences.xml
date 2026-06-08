@@ -74,6 +74,18 @@
                 android:title="Now Playing Metadata"
                 android:summary="Reorganize and enable/disable metadata fields"
                 app:icon="@drawable/ic_info_stream" />
+
+            <ListPreference
+                app:defaultValue="center"
+                app:dialogTitle="@string/settings_metadata_alignment"
+                app:entries="@array/metadata_alignment_titles"
+                app:entryValues="@array/metadata_alignment_values"
+                app:key="metadata_alignment"
+                app:title="@string/settings_metadata_alignment"
+                app:summary="@string/settings_metadata_alignment_summary"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_sort_list" />
+
         </PreferenceCategory>
 
     </PreferenceScreen>

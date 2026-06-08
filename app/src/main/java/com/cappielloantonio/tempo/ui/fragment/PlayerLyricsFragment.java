@@ -133,8 +133,9 @@ public class PlayerLyricsFragment extends Fragment {
         lyricsSourceSwitchAvailable = false;
         translatedLines = null;
         isTranslating = false;
-        cachedLineIdx = -1;
+        cachedLineIdx = Integer.MIN_VALUE;
         hasWipeSpans = false;
+        progressHandlerObserverRegistered = false;
     }
 
     private void initOverlay() {
@@ -232,6 +233,7 @@ public class PlayerLyricsFragment extends Fragment {
             try {
                 mediaBrowser = mediaBrowserListenableFuture.get();
                 defineProgressHandler();
+                startSyncLoop();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -250,7 +252,7 @@ public class PlayerLyricsFragment extends Fragment {
             lastLineIdx = null;
             lastWordIdx = null;
             translatedLines = null;
-            cachedLineIdx = -1;
+            cachedLineIdx = Integer.MIN_VALUE;
             hasWipeSpans = false;
             updatePanelContent();
         });
@@ -415,33 +417,37 @@ public class PlayerLyricsFragment extends Fragment {
     }
 
     private void defineProgressHandler() {
-        playerBottomSheetViewModel.getLiveLyricsList().observe(getViewLifecycleOwner(), lyricsList -> {
-            if (!hasStructuredLyrics(lyricsList)) {
-                releaseHandler();
-                return;
-            }
+        if (progressHandlerObserverRegistered) return;
+        progressHandlerObserverRegistered = true;
 
-            if (!lyricsList.getStructuredLyrics().get(0).getSynced()) {
-                releaseHandler();
-                return;
-            }
+        playerBottomSheetViewModel.getLiveLyricsList().observe(getViewLifecycleOwner(), lyricsList -> startSyncLoop());
+    }
 
-            boolean hasWordSync = hasWordSyncData(lyricsList);
-            int interval = hasWordSync ? 16 : 250;
+    private void startSyncLoop() {
+        releaseHandler();
 
-            syncLyricsHandler = new Handler();
-            syncLyricsRunnable = () -> {
-                if (syncLyricsHandler != null) {
-                    if (bind != null) {
-                        displaySyncedLyrics();
-                    }
+        if (bind == null || mediaBrowser == null) return;
 
-                    syncLyricsHandler.postDelayed(syncLyricsRunnable, interval);
+        LyricsList lyricsList = playerBottomSheetViewModel.getLiveLyricsList().getValue();
+
+        if (!hasStructuredLyrics(lyricsList)) return;
+        if (!lyricsList.getStructuredLyrics().get(0).getSynced()) return;
+
+        boolean hasWordSync = hasWordSyncData(lyricsList);
+        int interval = hasWordSync ? 16 : 250;
+
+        syncLyricsHandler = new Handler();
+        syncLyricsRunnable = () -> {
+            if (syncLyricsHandler != null) {
+                if (bind != null) {
+                    displaySyncedLyrics();
                 }
-            };
 
-            syncLyricsHandler.postDelayed(syncLyricsRunnable, interval);
-        });
+                syncLyricsHandler.postDelayed(syncLyricsRunnable, interval);
+            }
+        };
+
+        syncLyricsHandler.post(syncLyricsRunnable);
     }
 
     private boolean hasWordSyncData(LyricsList lyricsList) {
@@ -454,8 +460,9 @@ public class PlayerLyricsFragment extends Fragment {
         return false;
     }
 
-    private int cachedLineIdx = -1;
+    private int cachedLineIdx = Integer.MIN_VALUE;
     private boolean hasWipeSpans = false;
+    private boolean progressHandlerObserverRegistered = false;
     private final AtomicLong wipeTimestamp = new AtomicLong(0);
 
     @SuppressLint("ClickableViewAccessibility")
@@ -479,8 +486,8 @@ public class PlayerLyricsFragment extends Fragment {
 
         wipeTimestamp.set(timestamp);
 
-        if (hasWipeSpans && cachedLineIdx == curIdx) {
-            bind.nowPlayingSongLyricsTextView.invalidate();
+        if (cachedLineIdx == curIdx) {
+            if (hasWipeSpans) bind.nowPlayingSongLyricsTextView.invalidate();
             return;
         }
 

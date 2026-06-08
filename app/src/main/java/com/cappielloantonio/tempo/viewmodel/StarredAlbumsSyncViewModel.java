@@ -16,13 +16,14 @@ import com.cappielloantonio.tempo.subsonic.models.Child;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class StarredAlbumsSyncViewModel extends AndroidViewModel {
     private final AlbumRepository albumRepository;
 
     private final MutableLiveData<List<AlbumID3>> starredAlbums = new MutableLiveData<>(null);
     private final MutableLiveData<List<Child>> starredAlbumSongs = new MutableLiveData<>(null);
+    private boolean fetchingAlbumSongs = false;
 
     public StarredAlbumsSyncViewModel(@NonNull Application application) {
         super(application);
@@ -35,19 +36,32 @@ public class StarredAlbumsSyncViewModel extends AndroidViewModel {
     }
 
     public LiveData<List<Child>> getAllStarredAlbumSongs() {
-        albumRepository.getStarredAlbums(false, -1).observeForever(new Observer<List<AlbumID3>>() {
+        if (fetchingAlbumSongs) return starredAlbumSongs;
+        fetchingAlbumSongs = true;
+
+        LiveData<List<AlbumID3>> source = albumRepository.getStarredAlbums(false, -1);
+        source.observeForever(new Observer<List<AlbumID3>>() {
             @Override
             public void onChanged(List<AlbumID3> albums) {
+                source.removeObserver(this);
                 if (albums != null && !albums.isEmpty()) {
-                    collectAllAlbumSongs(albums, starredAlbumSongs::postValue);
+                    collectAllAlbumSongs(albums, songs -> {
+                        starredAlbumSongs.postValue(songs);
+                        fetchingAlbumSongs = false;
+                    });
                 } else {
                     starredAlbumSongs.postValue(new ArrayList<>());
+                    fetchingAlbumSongs = false;
                 }
-                albumRepository.getStarredAlbums(false, -1).removeObserver(this);
             }
         });
-        
+
         return starredAlbumSongs;
+    }
+
+    public void refreshStarredAlbumSongs() {
+        fetchingAlbumSongs = false;
+        getAllStarredAlbumSongs();
     }
 
     public LiveData<List<Child>> getStarredAlbumSongs(Activity activity) {
@@ -63,21 +77,21 @@ public class StarredAlbumsSyncViewModel extends AndroidViewModel {
 
     private void collectAllAlbumSongs(List<AlbumID3> albums, AlbumSongsCallback callback) {
         List<Child> allSongs = new ArrayList<>();
-        CountDownLatch latch = new CountDownLatch(albums.size());
-        
+        AtomicInteger remaining = new AtomicInteger(albums.size());
+
         for (AlbumID3 album : albums) {
             LiveData<List<Child>> albumTracks = albumRepository.getAlbumTracks(album.getId());
             albumTracks.observeForever(new Observer<List<Child>>() {
                 @Override
                 public void onChanged(List<Child> songs) {
+                    albumTracks.removeObserver(this);
                     if (songs != null) {
-                        allSongs.addAll(songs);
+                        synchronized (allSongs) {
+                            allSongs.addAll(songs);
+                        }
                     }
-                    latch.countDown();
-                    
-                    if (latch.getCount() == 0) {
+                    if (remaining.decrementAndGet() == 0) {
                         callback.onSongsCollected(allSongs);
-                        albumTracks.removeObserver(this);
                     }
                 }
             });

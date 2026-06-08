@@ -18,7 +18,6 @@ import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.session.MediaBrowser;
@@ -109,6 +108,10 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
 
     private ListenableFuture<MediaBrowser> mediaBrowserListenableFuture;
     private final Handler scrobbleRefreshHandler = new Handler(Looper.getMainLooper());
+    private final Handler reorderHandler = new Handler(Looper.getMainLooper());
+    private Runnable pendingReorder;
+    private boolean albumSyncObserverRegistered = false;
+    private boolean artistSyncObserverRegistered = false;
     private final Runnable refreshRecentlyPlayedAlbumsRunnable = () -> {
         if (homeViewModel == null || homeViewModel.checkHomeSectorVisibility(Constants.HOME_SECTOR_LAST_PLAYED)) {
             return;
@@ -312,6 +315,7 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
     public void onDestroyView() {
         super.onDestroyView();
         scrobbleRefreshHandler.removeCallbacks(refreshRecentlyPlayedAlbumsRunnable);
+        if (pendingReorder != null) reorderHandler.removeCallbacks(pendingReorder);
         bind = null;
 
         discoverSongAdapter = null;
@@ -333,6 +337,8 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         recentlyPlayedArtistAdapter = null;
         topPlayedArtistAdapter = null;
         topPlayedSongAdapter = null;
+        albumSyncObserverRegistered = false;
+        artistSyncObserverRegistered = false;
     }
 
     private void observeScrobbleEvents() {
@@ -517,63 +523,59 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
 
     private void initSyncStarredView() {
         if (Preferences.isStarredSyncEnabled()) {
-            homeViewModel.getAllStarredTracks().observe(getViewLifecycleOwner(), new Observer<List<Child>>() {
-                @Override
-                public void onChanged(List<Child> songs) {
-                    if (songs != null && !songs.isEmpty()) {
-                        int songsToSyncCount = 0;
-                        List<String> toSyncSample = new ArrayList<>();
+            homeViewModel.getAllStarredTracks().observe(getViewLifecycleOwner(), songs -> {
+                if (bind == null) return;
+                if (songs != null && !songs.isEmpty()) {
+                    int songsToSyncCount = 0;
+                    List<String> toSyncSample = new ArrayList<>();
 
-                        if (Preferences.getDownloadDirectoryUri() == null) {
-                            DownloaderManager manager = DownloadUtil.getDownloadTracker(requireContext());
-                            for (Child song : songs) {
-                                if (!manager.isDownloaded(song.getId())) {
-                                    songsToSyncCount++;
-                                    if (toSyncSample.size() < 3) {
-                                        toSyncSample.add(song.getTitle());
-                                    }
-                                }
-                            }
-                        } else {
-                            for (Child song : songs) {
-                                if (ExternalAudioReader.getUri(song) == null) {
-                                    songsToSyncCount++;
-                                    if (toSyncSample.size() < 3) {
-                                        toSyncSample.add(song.getTitle());
-                                    }
+                    if (Preferences.getDownloadDirectoryUri() == null) {
+                        DownloaderManager manager = DownloadUtil.getDownloadTracker(requireContext());
+                        for (Child song : songs) {
+                            if (!manager.isDownloaded(song.getId())) {
+                                songsToSyncCount++;
+                                if (toSyncSample.size() < 3) {
+                                    toSyncSample.add(song.getTitle());
                                 }
                             }
                         }
-
-                        if (songsToSyncCount > 0) {
-                            bind.homeSyncStarredCard.setVisibility(View.VISIBLE);
-
-                            StringBuilder displayText = new StringBuilder();
-                            if (!toSyncSample.isEmpty()) {
-                                displayText.append(String.join(", ", toSyncSample));
-                                if (songsToSyncCount > 3) {
-                                    displayText.append("...");
+                    } else {
+                        for (Child song : songs) {
+                            if (ExternalAudioReader.getUri(song) == null) {
+                                songsToSyncCount++;
+                                if (toSyncSample.size() < 3) {
+                                    toSyncSample.add(song.getTitle());
                                 }
                             }
-
-                            String countText = getResources().getQuantityString(
-                                    R.plurals.home_sync_starred_songs_count,
-                                    songsToSyncCount,
-                                    songsToSyncCount
-                            );
-
-                            if (displayText.length() > 0) {
-                                bind.homeSyncStarredTracksToSync.setText(displayText.toString() + "\n" + countText);
-                            } else {
-                                bind.homeSyncStarredTracksToSync.setText(countText);
-                            }
-
-                            if (getActivity() != null) {
-                                getActivity().runOnUiThread(() -> reorder());
-                            }
-                        } else {
-                            bind.homeSyncStarredCard.setVisibility(View.GONE);
                         }
+                    }
+
+                    if (songsToSyncCount > 0) {
+                        bind.homeSyncStarredCard.setVisibility(View.VISIBLE);
+
+                        StringBuilder displayText = new StringBuilder();
+                        if (!toSyncSample.isEmpty()) {
+                            displayText.append(String.join(", ", toSyncSample));
+                            if (songsToSyncCount > 3) {
+                                displayText.append("...");
+                            }
+                        }
+
+                        String countText = getResources().getQuantityString(
+                                R.plurals.home_sync_starred_songs_count,
+                                songsToSyncCount,
+                                songsToSyncCount
+                        );
+
+                        if (displayText.length() > 0) {
+                            bind.homeSyncStarredTracksToSync.setText(displayText.toString() + "\n" + countText);
+                        } else {
+                            bind.homeSyncStarredTracksToSync.setText(countText);
+                        }
+
+                        debouncedReorder();
+                    } else {
+                        bind.homeSyncStarredCard.setVisibility(View.GONE);
                     }
                 }
             });
@@ -581,329 +583,291 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
 
         bind.homeSyncStarredCancel.setOnClickListener(v -> {
             bind.homeSyncStarredCard.setVisibility(View.GONE);
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(() -> reorder());
-            }
+            debouncedReorder();
         });
 
-        bind.homeSyncStarredDownload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                homeViewModel.getAllStarredTracks().observe(getViewLifecycleOwner(), new Observer<List<Child>>() {
-                    @Override
-                    public void onChanged(List<Child> songs) {
-                        if (songs != null && !songs.isEmpty()) {
-                            int downloadedCount = 0;
+        bind.homeSyncStarredDownload.setOnClickListener(v -> {
+            List<Child> songs = homeViewModel.getAllStarredTracks().getValue();
+            if (songs != null && !songs.isEmpty()) {
+                int downloadedCount = 0;
 
-                            if (Preferences.getDownloadDirectoryUri() == null) {
-                                DownloaderManager manager = DownloadUtil.getDownloadTracker(requireContext());
-                                for (Child song : songs) {
-                                    if (!manager.isDownloaded(song.getId())) {
-                                        manager.download(MappingUtil.mapDownload(song), new Download(song));
-                                        downloadedCount++;
-                                    }
-                                }
-                            } else {
-                                for (Child song : songs) {
-                                    if (ExternalAudioReader.getUri(song) == null) {
-                                        ExternalAudioWriter.downloadToUserDirectory(requireContext(), song);
-                                        downloadedCount++;
-                                    }
-                                }
-                            }
-
-                            if (downloadedCount > 0) {
-                                Toast.makeText(requireContext(),
-                                        getResources().getQuantityString(R.plurals.songs_download_started, downloadedCount, downloadedCount),
-                                        Toast.LENGTH_SHORT).show();
-                            }
-                        }
-
-                        bind.homeSyncStarredCard.setVisibility(View.GONE);
-                        if (getActivity() != null) {
-                            getActivity().runOnUiThread(() -> reorder());
+                if (Preferences.getDownloadDirectoryUri() == null) {
+                    DownloaderManager manager = DownloadUtil.getDownloadTracker(requireContext());
+                    for (Child song : songs) {
+                        if (!manager.isDownloaded(song.getId())) {
+                            manager.download(MappingUtil.mapDownload(song), new Download(song));
+                            downloadedCount++;
                         }
                     }
-                });
+                } else {
+                    for (Child song : songs) {
+                        if (ExternalAudioReader.getUri(song) == null) {
+                            ExternalAudioWriter.downloadToUserDirectory(requireContext(), song);
+                            downloadedCount++;
+                        }
+                    }
+                }
+
+                if (downloadedCount > 0) {
+                    Toast.makeText(requireContext(),
+                            getResources().getQuantityString(R.plurals.songs_download_started, downloadedCount, downloadedCount),
+                            Toast.LENGTH_SHORT).show();
+                }
             }
+
+            bind.homeSyncStarredCard.setVisibility(View.GONE);
+            debouncedReorder();
         });
     }
 
     private void initSyncStarredAlbumsView() {
-
         if (Preferences.isStarredAlbumsSyncEnabled()) {
-            homeViewModel.getStarredAlbums(getViewLifecycleOwner()).observe(getViewLifecycleOwner(), new Observer<List<AlbumID3>>() {
-                @Override
-                public void onChanged(List<AlbumID3> albums) {
-                    if (albums != null && !albums.isEmpty()) {
-                        checkIfAlbumsNeedSync(albums);
-                    }
+            homeViewModel.getStarredAlbums(getViewLifecycleOwner()).observe(getViewLifecycleOwner(), albums -> {
+                if (albums != null && !albums.isEmpty()) {
+                    checkIfAlbumsNeedSync(albums);
                 }
             });
         }
 
         bind.homeSyncStarredAlbumsCancel.setOnClickListener(v -> {
             bind.homeSyncStarredAlbumsCard.setVisibility(View.GONE);
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(() -> reorder());
-            }
+            debouncedReorder();
         });
 
         bind.homeSyncStarredAlbumsDownload.setOnClickListener(v -> {
-            homeViewModel.getAllStarredAlbumSongs().observe(getViewLifecycleOwner(), new Observer<List<Child>>() {
-                @Override
-                public void onChanged(List<Child> allSongs) {
-                    if (allSongs != null && !allSongs.isEmpty()) {
-                        int songsToDownload = 0;
+            List<Child> allSongs = homeViewModel.getAllStarredAlbumSongs().getValue();
+            if (allSongs != null && !allSongs.isEmpty()) {
+                int songsToDownload = 0;
 
-                        if (Preferences.getDownloadDirectoryUri() == null) {
-                            DownloaderManager manager = DownloadUtil.getDownloadTracker(requireContext());
-                            for (Child song : allSongs) {
-                                if (!manager.isDownloaded(song.getId())) {
-                                    manager.download(MappingUtil.mapDownload(song), new Download(song));
-                                    songsToDownload++;
-                                }
-                            }
-                        } else {
-                            for (Child song : allSongs) {
-                                if (ExternalAudioReader.getUri(song) == null) {
-                                    ExternalAudioWriter.downloadToUserDirectory(requireContext(), song);
-                                    songsToDownload++;
-                                }
-                            }
-                        }
-
-                        if (songsToDownload > 0) {
-                            Toast.makeText(requireContext(),
-                                getResources().getQuantityString(R.plurals.songs_download_started, songsToDownload, songsToDownload),
-                                Toast.LENGTH_SHORT).show();
+                if (Preferences.getDownloadDirectoryUri() == null) {
+                    DownloaderManager manager = DownloadUtil.getDownloadTracker(requireContext());
+                    for (Child song : allSongs) {
+                        if (!manager.isDownloaded(song.getId())) {
+                            manager.download(MappingUtil.mapDownload(song), new Download(song));
+                            songsToDownload++;
                         }
                     }
-
-                    bind.homeSyncStarredAlbumsCard.setVisibility(View.GONE);
-                    if (getActivity() != null) {
-                        getActivity().runOnUiThread(() -> reorder());
+                } else {
+                    for (Child song : allSongs) {
+                        if (ExternalAudioReader.getUri(song) == null) {
+                            ExternalAudioWriter.downloadToUserDirectory(requireContext(), song);
+                            songsToDownload++;
+                        }
                     }
                 }
-            });
+
+                if (songsToDownload > 0) {
+                    Toast.makeText(requireContext(),
+                        getResources().getQuantityString(R.plurals.songs_download_started, songsToDownload, songsToDownload),
+                        Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            bind.homeSyncStarredAlbumsCard.setVisibility(View.GONE);
+            debouncedReorder();
         });
     }
 
     private void checkIfAlbumsNeedSync(List<AlbumID3> albums) {
-        homeViewModel.getAllStarredAlbumSongs().observe(getViewLifecycleOwner(), new Observer<List<Child>>() {
-            @Override
-            public void onChanged(List<Child> allSongs) {
-                if (allSongs != null) {
-                    int songsToDownload = 0;
-                    List<String> albumsNeedingSync = new ArrayList<>();
+        if (albumSyncObserverRegistered) return;
+        albumSyncObserverRegistered = true;
 
-                    if (Preferences.getDownloadDirectoryUri() == null) {
-                        DownloaderManager manager = DownloadUtil.getDownloadTracker(requireContext());
-                        
-                        for (AlbumID3 album : albums) {
-                            boolean albumNeedsSync = false;
-                            for (Child song : allSongs) {
-                                if (song.getAlbumId() != null && song.getAlbumId().equals(album.getId()) &&
-                                        !manager.isDownloaded(song.getId())) {
-                                    songsToDownload++;
-                                    albumNeedsSync = true;
-                                }
-                            }
-                            if (albumNeedsSync) {
-                                albumsNeedingSync.add(album.getName());
-                            }
-                        }
-                    } else {
-                        for (AlbumID3 album : albums) {
-                            boolean albumNeedsSync = false;
-                            for (Child song : allSongs) {
-                                if (song.getAlbumId() != null && song.getAlbumId().equals(album.getId()) &&
-                                        ExternalAudioReader.getUri(song) == null) {
-                                    songsToDownload++;
-                                    albumNeedsSync = true;
-                                }
-                            }
-                            if (albumNeedsSync) {
-                                albumsNeedingSync.add(album.getName());
-                            }
+        homeViewModel.getAllStarredAlbumSongs().observe(getViewLifecycleOwner(), allSongs -> {
+            if (bind == null || allSongs == null) return;
+
+            int songsToDownload = 0;
+            List<String> albumsNeedingSync = new ArrayList<>();
+
+            if (Preferences.getDownloadDirectoryUri() == null) {
+                DownloaderManager manager = DownloadUtil.getDownloadTracker(requireContext());
+
+                for (AlbumID3 album : albums) {
+                    boolean albumNeedsSync = false;
+                    for (Child song : allSongs) {
+                        if (song.getAlbumId() != null && song.getAlbumId().equals(album.getId()) &&
+                                !manager.isDownloaded(song.getId())) {
+                            songsToDownload++;
+                            albumNeedsSync = true;
                         }
                     }
-
-                    if (songsToDownload > 0) {
-                        bind.homeSyncStarredAlbumsCard.setVisibility(View.VISIBLE);
-                        
-                        StringBuilder displayText = new StringBuilder();
-                        List<String> sampleAlbums = new ArrayList<>();
-                        
-                        for (int i = 0; i < Math.min(albumsNeedingSync.size(), 3); i++) {
-                            sampleAlbums.add(albumsNeedingSync.get(i));
-                        }
-                        
-                        if (!sampleAlbums.isEmpty()) {
-                            displayText.append(String.join(", ", sampleAlbums));
-                            if (albumsNeedingSync.size() > 3) {
-                                displayText.append("...");
-                            }
-                        }
-                        
-                        String countText = getResources().getQuantityString(
-                            R.plurals.home_sync_starred_albums_count,
-                            albumsNeedingSync.size(),
-                            albumsNeedingSync.size()
-                        );
-                        
-                        if (displayText.length() > 0) {
-                            bind.homeSyncStarredAlbumsToSync.setText(displayText.toString() + "\n" + countText);
-                        } else {
-                            bind.homeSyncStarredAlbumsToSync.setText(countText);
-                        }
-                        
-                        if (getActivity() != null) {
-                            getActivity().runOnUiThread(() -> reorder());
-                        }
-                    } else {
-                        bind.homeSyncStarredAlbumsCard.setVisibility(View.GONE);
+                    if (albumNeedsSync) {
+                        albumsNeedingSync.add(album.getName());
                     }
                 }
+            } else {
+                for (AlbumID3 album : albums) {
+                    boolean albumNeedsSync = false;
+                    for (Child song : allSongs) {
+                        if (song.getAlbumId() != null && song.getAlbumId().equals(album.getId()) &&
+                                ExternalAudioReader.getUri(song) == null) {
+                            songsToDownload++;
+                            albumNeedsSync = true;
+                        }
+                    }
+                    if (albumNeedsSync) {
+                        albumsNeedingSync.add(album.getName());
+                    }
+                }
+            }
+
+            if (songsToDownload > 0) {
+                bind.homeSyncStarredAlbumsCard.setVisibility(View.VISIBLE);
+
+                StringBuilder displayText = new StringBuilder();
+                List<String> sampleAlbums = new ArrayList<>();
+
+                for (int i = 0; i < Math.min(albumsNeedingSync.size(), 3); i++) {
+                    sampleAlbums.add(albumsNeedingSync.get(i));
+                }
+
+                if (!sampleAlbums.isEmpty()) {
+                    displayText.append(String.join(", ", sampleAlbums));
+                    if (albumsNeedingSync.size() > 3) {
+                        displayText.append("...");
+                    }
+                }
+
+                String countText = getResources().getQuantityString(
+                    R.plurals.home_sync_starred_albums_count,
+                    albumsNeedingSync.size(),
+                    albumsNeedingSync.size()
+                );
+
+                if (displayText.length() > 0) {
+                    bind.homeSyncStarredAlbumsToSync.setText(displayText.toString() + "\n" + countText);
+                } else {
+                    bind.homeSyncStarredAlbumsToSync.setText(countText);
+                }
+
+                debouncedReorder();
+            } else {
+                bind.homeSyncStarredAlbumsCard.setVisibility(View.GONE);
             }
         });
     }
 
     private void initSyncStarredArtistsView() {
         if (Preferences.isStarredArtistsSyncEnabled()) {
-            homeViewModel.getStarredArtists(getViewLifecycleOwner()).observe(getViewLifecycleOwner(), new Observer<List<ArtistID3>>() {
-                @Override
-                public void onChanged(List<ArtistID3> artists) {
-                    if (artists != null && !artists.isEmpty()) {
-                        checkIfArtistsNeedSync(artists);
-                    }
+            homeViewModel.getStarredArtists(getViewLifecycleOwner()).observe(getViewLifecycleOwner(), artists -> {
+                if (artists != null && !artists.isEmpty()) {
+                    checkIfArtistsNeedSync(artists);
                 }
             });
         }
 
         bind.homeSyncStarredArtistsCancel.setOnClickListener(v -> {
             bind.homeSyncStarredArtistsCard.setVisibility(View.GONE);
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(() -> reorder());
-            }
+            debouncedReorder();
         });
 
         bind.homeSyncStarredArtistsDownload.setOnClickListener(v -> {
-            homeViewModel.getAllStarredArtistSongs().observe(getViewLifecycleOwner(), new Observer<List<Child>>() {
-                @Override
-                public void onChanged(List<Child> allSongs) {
-                    if (allSongs != null && !allSongs.isEmpty()) {
-                        int songsToDownload = 0;
+            List<Child> allSongs = homeViewModel.getAllStarredArtistSongs().getValue();
+            if (allSongs != null && !allSongs.isEmpty()) {
+                int songsToDownload = 0;
 
-                        if (Preferences.getDownloadDirectoryUri() == null) {
-                            DownloaderManager manager = DownloadUtil.getDownloadTracker(requireContext());
-                            for (Child song : allSongs) {
-                                if (!manager.isDownloaded(song.getId())) {
-                                    manager.download(MappingUtil.mapDownload(song), new Download(song));
-                                    songsToDownload++;
-                                }
-                            }
-                        } else {
-                            for (Child song : allSongs) {
-                                if (ExternalAudioReader.getUri(song) == null) {
-                                    ExternalAudioWriter.downloadToUserDirectory(requireContext(), song);
-                                    songsToDownload++;
-                                }
-                            }
-                        }
-
-                        if (songsToDownload > 0) {
-                            Toast.makeText(requireContext(),
-                                getResources().getQuantityString(R.plurals.songs_download_started, songsToDownload, songsToDownload),
-                                Toast.LENGTH_SHORT).show();
+                if (Preferences.getDownloadDirectoryUri() == null) {
+                    DownloaderManager manager = DownloadUtil.getDownloadTracker(requireContext());
+                    for (Child song : allSongs) {
+                        if (!manager.isDownloaded(song.getId())) {
+                            manager.download(MappingUtil.mapDownload(song), new Download(song));
+                            songsToDownload++;
                         }
                     }
-
-                    bind.homeSyncStarredArtistsCard.setVisibility(View.GONE);
-                    if (getActivity() != null) {
-                        getActivity().runOnUiThread(() -> reorder());
+                } else {
+                    for (Child song : allSongs) {
+                        if (ExternalAudioReader.getUri(song) == null) {
+                            ExternalAudioWriter.downloadToUserDirectory(requireContext(), song);
+                            songsToDownload++;
+                        }
                     }
                 }
-            });
+
+                if (songsToDownload > 0) {
+                    Toast.makeText(requireContext(),
+                        getResources().getQuantityString(R.plurals.songs_download_started, songsToDownload, songsToDownload),
+                        Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            bind.homeSyncStarredArtistsCard.setVisibility(View.GONE);
+            debouncedReorder();
         });
     }
 
     private void checkIfArtistsNeedSync(List<ArtistID3> artists) {
-        homeViewModel.getAllStarredArtistSongs().observe(getViewLifecycleOwner(), new Observer<List<Child>>() {
-            @Override
-            public void onChanged(List<Child> allSongs) {
-                if (allSongs != null) {
-                    int songsToDownload = 0;
-                    List<String> artistsNeedingSync = new ArrayList<>();
+        if (artistSyncObserverRegistered) return;
+        artistSyncObserverRegistered = true;
 
-                    if (Preferences.getDownloadDirectoryUri() == null) {
-                        DownloaderManager manager = DownloadUtil.getDownloadTracker(requireContext());
-                        
-                        for (ArtistID3 artist : artists) {
-                            boolean artistNeedsSync = false;
-                            for (Child song : allSongs) {
-                                if (song.getArtistId() != null && song.getArtistId().equals(artist.getId()) &&
-                                        !manager.isDownloaded(song.getId())) {
-                                    songsToDownload++;
-                                    artistNeedsSync = true;
-                                }
-                            }
-                            if (artistNeedsSync) {
-                                artistsNeedingSync.add(artist.getName());
-                            }
-                        }
-                    } else {
-                        for (ArtistID3 artist : artists) {
-                            boolean artistNeedsSync = false;
-                            for (Child song : allSongs) {
-                                if (song.getArtistId() != null && song.getArtistId().equals(artist.getId()) &&
-                                        ExternalAudioReader.getUri(song) == null) {
-                                    songsToDownload++;
-                                    artistNeedsSync = true;
-                                }
-                            }
-                            if (artistNeedsSync) {
-                                artistsNeedingSync.add(artist.getName());
-                            }
+        homeViewModel.getAllStarredArtistSongs().observe(getViewLifecycleOwner(), allSongs -> {
+            if (bind == null || allSongs == null) return;
+
+            int songsToDownload = 0;
+            List<String> artistsNeedingSync = new ArrayList<>();
+
+            if (Preferences.getDownloadDirectoryUri() == null) {
+                DownloaderManager manager = DownloadUtil.getDownloadTracker(requireContext());
+
+                for (ArtistID3 artist : artists) {
+                    boolean artistNeedsSync = false;
+                    for (Child song : allSongs) {
+                        if (song.getArtistId() != null && song.getArtistId().equals(artist.getId()) &&
+                                !manager.isDownloaded(song.getId())) {
+                            songsToDownload++;
+                            artistNeedsSync = true;
                         }
                     }
-
-                    if (songsToDownload > 0) {
-                        bind.homeSyncStarredArtistsCard.setVisibility(View.VISIBLE);
-                        
-                        StringBuilder displayText = new StringBuilder();
-                        List<String> sampleArtists = new ArrayList<>();
-                        
-                        for (int i = 0; i < Math.min(artistsNeedingSync.size(), 3); i++) {
-                            sampleArtists.add(artistsNeedingSync.get(i));
-                        }
-                        
-                        if (!sampleArtists.isEmpty()) {
-                            displayText.append(String.join(", ", sampleArtists));
-                            if (artistsNeedingSync.size() > 3) {
-                                displayText.append("...");
-                            }
-                        }
-                        
-                        String countText = getResources().getQuantityString(
-                            R.plurals.home_sync_starred_artists_count,
-                            artistsNeedingSync.size(),
-                            artistsNeedingSync.size()
-                        );
-                        
-                        if (displayText.length() > 0) {
-                            bind.homeSyncStarredArtistsToSync.setText(displayText.toString() + "\n" + countText);
-                        } else {
-                            bind.homeSyncStarredArtistsToSync.setText(countText);
-                        }
-                        
-                        if (getActivity() != null) {
-                            getActivity().runOnUiThread(() -> reorder());
-                        }
-                    } else {
-                        bind.homeSyncStarredArtistsCard.setVisibility(View.GONE);
+                    if (artistNeedsSync) {
+                        artistsNeedingSync.add(artist.getName());
                     }
                 }
+            } else {
+                for (ArtistID3 artist : artists) {
+                    boolean artistNeedsSync = false;
+                    for (Child song : allSongs) {
+                        if (song.getArtistId() != null && song.getArtistId().equals(artist.getId()) &&
+                                ExternalAudioReader.getUri(song) == null) {
+                            songsToDownload++;
+                            artistNeedsSync = true;
+                        }
+                    }
+                    if (artistNeedsSync) {
+                        artistsNeedingSync.add(artist.getName());
+                    }
+                }
+            }
+
+            if (songsToDownload > 0) {
+                bind.homeSyncStarredArtistsCard.setVisibility(View.VISIBLE);
+
+                StringBuilder displayText = new StringBuilder();
+                List<String> sampleArtists = new ArrayList<>();
+
+                for (int i = 0; i < Math.min(artistsNeedingSync.size(), 3); i++) {
+                    sampleArtists.add(artistsNeedingSync.get(i));
+                }
+
+                if (!sampleArtists.isEmpty()) {
+                    displayText.append(String.join(", ", sampleArtists));
+                    if (artistsNeedingSync.size() > 3) {
+                        displayText.append("...");
+                    }
+                }
+
+                String countText = getResources().getQuantityString(
+                    R.plurals.home_sync_starred_artists_count,
+                    artistsNeedingSync.size(),
+                    artistsNeedingSync.size()
+                );
+
+                if (displayText.length() > 0) {
+                    bind.homeSyncStarredArtistsToSync.setText(displayText.toString() + "\n" + countText);
+                } else {
+                    bind.homeSyncStarredArtistsToSync.setText(countText);
+                }
+
+                debouncedReorder();
+            } else {
+                bind.homeSyncStarredArtistsCard.setVisibility(View.GONE);
             }
         });
     }
@@ -1334,13 +1298,11 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
     }
 
     private void refreshSharesView() {
-        final Handler handler = new Handler();
-        final Runnable runnable = () -> {
+        reorderHandler.postDelayed(() -> {
             if (getView() != null && bind != null && Preferences.isSharingEnabled()) {
                 homeViewModel.refreshShares(getViewLifecycleOwner());
             }
-        };
-        handler.postDelayed(runnable, 100);
+        }, 100);
     }
 
     private void setSlideViewOffset(ViewPager2 viewPager, float pageOffset, float pageMargin) {
@@ -1356,6 +1318,15 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
                 page.setTranslationY(myOffset);
             }
         });
+    }
+
+    private void debouncedReorder() {
+        if (pendingReorder != null) reorderHandler.removeCallbacks(pendingReorder);
+        pendingReorder = () -> {
+            pendingReorder = null;
+            reorder();
+        };
+        reorderHandler.postDelayed(pendingReorder, 100);
     }
 
     public void reorder() {
@@ -1510,14 +1481,10 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
     }
 
     private void refreshPlaylistView() {
-        final Handler handler = new Handler();
-
-        final Runnable runnable = () -> {
+        reorderHandler.postDelayed(() -> {
             if (getView() != null && bind != null && homeViewModel != null)
                 homeViewModel.getPinnedPlaylists(getViewLifecycleOwner());
-        };
-
-        handler.postDelayed(runnable, 100);
+        }, 100);
     }
 
     private void initializeMediaBrowser() {

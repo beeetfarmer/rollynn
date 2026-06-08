@@ -266,6 +266,19 @@ public class PlayerControllerFragment extends Fragment {
         if (playerMetadataContainer == null) return;
         playerMetadataContainer.removeAllViews();
 
+        String alignment = Preferences.getMetadataAlignment();
+        switch (alignment) {
+            case Preferences.METADATA_ALIGNMENT_LEFT:
+                playerMetadataContainer.setGravity(android.view.Gravity.START);
+                break;
+            case Preferences.METADATA_ALIGNMENT_RIGHT:
+                playerMetadataContainer.setGravity(android.view.Gravity.END);
+                break;
+            default:
+                playerMetadataContainer.setGravity(android.view.Gravity.CENTER);
+                break;
+        }
+
         List<String> enabledFields = Preferences.getNowPlayingMetadata();
         String type = mediaMetadata.extras != null ? mediaMetadata.extras.getString("type") : null;
 
@@ -436,7 +449,18 @@ public class PlayerControllerFragment extends Fragment {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
         ));
-        textView.setGravity(android.view.Gravity.CENTER);
+        String alignment = Preferences.getMetadataAlignment();
+        switch (alignment) {
+            case Preferences.METADATA_ALIGNMENT_LEFT:
+                textView.setGravity(android.view.Gravity.START);
+                break;
+            case Preferences.METADATA_ALIGNMENT_RIGHT:
+                textView.setGravity(android.view.Gravity.END);
+                break;
+            default:
+                textView.setGravity(android.view.Gravity.CENTER);
+                break;
+        }
         textView.setSingleLine(true);
         textView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
         textView.setSelected(true);

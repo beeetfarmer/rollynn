@@ -343,4 +343,16 @@
         <item>th</item>
         <item>id</item>
     </string-array>
+
+    <string-array name="metadata_alignment_titles">
+        <item>Left</item>
+        <item>Center</item>
+        <item>Right</item>
+    </string-array>
+    <string-array name="metadata_alignment_values">
+        <item>left</item>
+        <item>center</item>
+        <item>right</item>
+    </string-array>
+
 </resources>

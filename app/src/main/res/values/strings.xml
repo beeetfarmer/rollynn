@@ -424,7 +424,9 @@
     <string name="settings_auto_download_lyrics_summary">Automatically save lyrics when they are available so they can be shown while offline.</string>
     <string name="settings_lyrics_romanization">Lyrics romanization</string>
     <string name="settings_lyrics_romanization_summary">Show romanized text below lyrics in Japanese, Korean, Chinese, Hindi, and Cyrillic scripts.</string>
-    <string name="settings_translation_category">Lyrics Translation</string>
+    <string name="settings_metadata_alignment">Metadata alignment</string>
+    <string name="settings_metadata_alignment_summary">Text alignment for song info in the player</string>
+<string name="settings_translation_category">Lyrics Translation</string>
     <string name="settings_translation_provider">Translation provider</string>
     <string name="settings_translation_api_key">API key</string>
     <string name="settings_translation_api_key_summary">Your API key for the selected provider</string>

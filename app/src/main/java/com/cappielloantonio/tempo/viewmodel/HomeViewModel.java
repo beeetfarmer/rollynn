@@ -76,6 +76,8 @@ public class HomeViewModel extends AndroidViewModel {
     private final MutableLiveData<List<Child>> topPlayedSongs = new MutableLiveData<>(null);
     private final MutableLiveData<List<Playlist>> pinnedPlaylists = new MutableLiveData<>(null);
     private final MutableLiveData<List<Share>> shares = new MutableLiveData<>(null);
+    private final MutableLiveData<List<Child>> allStarredTracks = new MutableLiveData<>(null);
+    private boolean fetchingAllStarred = false;
 
     private List<HomeSector> sectors;
 
@@ -117,21 +119,25 @@ public class HomeViewModel extends AndroidViewModel {
     }
 
     public LiveData<List<Chronology>> getChronologySample(LifecycleOwner owner) {
-        Calendar cal = Calendar.getInstance();
-        String server = Preferences.getServerId();
+        if (thisGridTopSong.getValue() == null) {
+            Calendar cal = Calendar.getInstance();
+            String server = Preferences.getServerId();
 
-        int currentWeek = cal.get(Calendar.WEEK_OF_YEAR);
-        long start = cal.getTimeInMillis();
+            int currentWeek = cal.get(Calendar.WEEK_OF_YEAR);
+            long start = cal.getTimeInMillis();
 
-        cal.set(Calendar.WEEK_OF_YEAR, currentWeek - 1);
-        long end = cal.getTimeInMillis();
+            cal.set(Calendar.WEEK_OF_YEAR, currentWeek - 1);
+            long end = cal.getTimeInMillis();
 
-        chronologyRepository.getChronology(server, start, end).observe(owner, thisGridTopSong::postValue);
+            chronologyRepository.getChronology(server, start, end).observe(owner, thisGridTopSong::postValue);
+        }
         return thisGridTopSong;
     }
 
     public LiveData<List<Child>> getHistory(LifecycleOwner owner) {
-        songRepository.getRecentlyPlayedSongs(20).observe(owner, history::postValue);
+        if (history.getValue() == null) {
+            songRepository.getRecentlyPlayedSongs(20).observe(owner, history::postValue);
+        }
         return history;
     }
 
@@ -305,7 +311,24 @@ public class HomeViewModel extends AndroidViewModel {
     }
 
     public LiveData<List<Child>> getAllStarredTracks() {
-        return songRepository.getStarredSongs(false, -1);
+        if (!fetchingAllStarred && allStarredTracks.getValue() == null) {
+            fetchingAllStarred = true;
+            songRepository.getStarredSongs(false, -1).observeForever(new androidx.lifecycle.Observer<List<Child>>() {
+                @Override
+                public void onChanged(List<Child> songs) {
+                    songRepository.getStarredSongs(false, -1).removeObserver(this);
+                    allStarredTracks.postValue(songs);
+                    fetchingAllStarred = false;
+                }
+            });
+        }
+        return allStarredTracks;
+    }
+
+    public void refreshAllStarredTracks() {
+        fetchingAllStarred = false;
+        allStarredTracks.setValue(null);
+        getAllStarredTracks();
     }
 
     public void changeChronologyPeriod(LifecycleOwner owner, int period) {
