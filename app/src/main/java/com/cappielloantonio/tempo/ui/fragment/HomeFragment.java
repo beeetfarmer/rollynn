@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -55,6 +56,8 @@ public class HomeFragment extends Fragment {
 
         activity.setBottomNavigationBarVisibility(true);
         activity.setBottomSheetVisibility(true);
+
+        applyHomeTitle();
     }
 
     @Override
@@ -64,12 +67,18 @@ public class HomeFragment extends Fragment {
     }
 
     private void initAppBar() {
-        materialToolbar = bind.getRoot().findViewById(R.id.toolbar);
-
-        activity.setSupportActionBar(materialToolbar);
-        // Objects.requireNonNull(materialToolbar.getOverflowIcon()).setTint(requireContext().getResources().getColor(R.color.titleTextColor, null));
+        applyHomeTitle();
 
         tabLayout = bind.homeTabLayout;
+    }
+
+    private void applyHomeTitle() {
+        if (bind == null) return;
+        TextView toolbarTitle = bind.getRoot().findViewById(R.id.toolbar_title);
+        if (toolbarTitle != null) {
+            toolbarTitle.setText(Preferences.getHomeScreenTitle());
+            toolbarTitle.setTextSize(32);
+        }
     }
 
     private void initHomePager() {

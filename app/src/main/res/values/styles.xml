@@ -72,4 +72,14 @@
     <style name="CircleShapeAppearance" parent="ShapeAppearance.MaterialComponents.SmallComponent">
         <item name="cornerSize">50%</item>
     </style>
+
+    <style name="TabScreenTitle">
+        <item name="android:textSize">40sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:paddingEnd">24dp</item>
+        <item name="android:paddingTop">32dp</item>
+        <item name="android:paddingBottom">8dp</item>
+    </style>
 </resources>

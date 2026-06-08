@@ -3,21 +3,18 @@ package com.cappielloantonio.tempo.ui.fragment;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.PopupMenu;
-import android.widget.SearchView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.util.UnstableApi;
@@ -66,6 +63,8 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
     private List<String> lastPinnedIds = new ArrayList<>();
     private List<String> folderPlaylistIds = null;
     private Set<String> allAssignedIds = new HashSet<>();
+    private List<PlaylistFolder> currentFolders = new ArrayList<>();
+    private String filterQuery = "";
 
     private boolean selectionMode = false;
     private OnBackPressedCallback backCallback;
@@ -73,7 +72,6 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
     }
 
     @Override
@@ -116,41 +114,9 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
     }
 
     private void initAppBar() {
-        activity.setSupportActionBar(bind.toolbar);
-
-        if (activity.getSupportActionBar() != null) {
-            activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            activity.getSupportActionBar().setDisplayShowHomeEnabled(true);
-        }
-
-        bind.toolbar.setNavigationOnClickListener(v -> {
-            hideKeyboard(v);
-            if (selectionMode) {
-                exitSelectionMode();
-            } else if (!folderViewModel.isAtRoot()) {
-                folderViewModel.navigateUp();
-            } else {
-                activity.navController.navigateUp();
-            }
-        });
-
-        bind.appBarLayout.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
-            if (selectionMode) return;
-            if ((bind.albumInfoSector.getHeight() + verticalOffset) < (2 * ViewCompat.getMinimumHeight(bind.toolbar))) {
-                PlaylistFolder current = folderViewModel.getCurrentFolder().getValue();
-                bind.toolbar.setTitle(current != null ? current.getName() : getString(R.string.playlist_catalogue_title));
-            } else {
-                bind.toolbar.setTitle(R.string.empty_string);
-            }
-        });
-
         folderViewModel.getCurrentFolder().observe(getViewLifecycleOwner(), folder -> {
             if (bind == null || selectionMode) return;
-            if (folder != null) {
-                bind.toolbar.setTitle(folder.getName());
-            } else {
-                bind.toolbar.setTitle(R.string.playlist_catalogue_title);
-            }
+            bind.playlistCatalogueTitleText.setText(folder != null ? folder.getName() : getString(R.string.tab_title_playlists));
         });
     }
 
@@ -185,7 +151,8 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
                     if (NetworkUtil.isServerUnreachable()) {
                         filterAndShowFoldersOffline(folders);
                     } else {
-                        folderAdapter.setItems(folders);
+                        currentFolders = folders;
+                        applyFolderFilter();
                         updateFolderSubtitles(folders);
                     }
                 }
@@ -209,7 +176,31 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
 
         bind.playlistListSortImageView.setOnClickListener(view -> showSortMenu(view));
 
-        bind.createFolderFab.setOnClickListener(v -> showCreateFolderDialog());
+        bind.playlistFilterEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterQuery = s != null ? s.toString() : "";
+                pinnedPlaylistAdapter.getFilter().filter(filterQuery);
+                unpinnedPlaylistAdapter.getFilter().filter(filterQuery);
+                applyFolderFilter();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        bind.createFolderFab.setOnClickListener(v -> {
+            if (selectionMode) {
+                moveSelectedToFolder();
+            } else {
+                showCreateFolderDialog();
+            }
+        });
     }
 
     private void filterPlaylistsForCurrentFolder() {
@@ -298,11 +289,28 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
 
             if (getActivity() != null) {
                 getActivity().runOnUiThread(() -> {
-                    folderAdapter.setItems(visible);
+                    currentFolders = visible;
+                    applyFolderFilter();
                     folderAdapter.notifyDataSetChanged();
                 });
             }
         }).start();
+    }
+
+    private void applyFolderFilter() {
+        if (currentFolders == null) return;
+
+        if (filterQuery.isEmpty()) {
+            folderAdapter.setItems(currentFolders);
+            return;
+        }
+
+        String query = filterQuery.toLowerCase();
+        List<PlaylistFolder> visible = currentFolders.stream()
+                .filter(folder -> folder.getName() != null && folder.getName().toLowerCase().contains(query))
+                .collect(Collectors.toList());
+
+        folderAdapter.setItems(visible);
     }
 
     private int countDownloadedInFolder(PlaylistFolderRepository repo, long folderId, Set<String> availableIds) {
@@ -341,49 +349,6 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), backCallback);
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.playlist_catalogue_toolbar_menu, menu);
-
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-        SearchView searchView = (SearchView) searchItem.getActionView();
-        searchView.setImeOptions(EditorInfo.IME_ACTION_DONE);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                searchView.clearFocus();
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                pinnedPlaylistAdapter.getFilter().filter(newText);
-                unpinnedPlaylistAdapter.getFilter().filter(newText);
-                return false;
-            }
-        });
-
-        searchView.setPadding(-32, 0, 0, 0);
-    }
-
-    @Override
-    public void onPrepareOptionsMenu(@NonNull Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-        MenuItem moveItem = menu.findItem(R.id.action_move_to_folder);
-        if (searchItem != null) searchItem.setVisible(!selectionMode);
-        if (moveItem != null) moveItem.setVisible(selectionMode);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_move_to_folder) {
-            moveSelectedToFolder();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     private void hideKeyboard(View view) {
         InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
@@ -416,8 +381,7 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
         pinnedPlaylistAdapter.toggleSelection(initialPlaylistId);
         unpinnedPlaylistAdapter.toggleSelection(initialPlaylistId);
         updateSelectionTitle();
-        if (bind != null) bind.createFolderFab.setVisibility(View.GONE);
-        requireActivity().invalidateOptionsMenu();
+        if (bind != null) bind.createFolderFab.setImageResource(R.drawable.ic_folder);
     }
 
     private void exitSelectionMode() {
@@ -426,16 +390,15 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
         unpinnedPlaylistAdapter.setSelectionMode(false);
         PlaylistFolder current = folderViewModel.getCurrentFolder().getValue();
         if (bind != null) {
-            bind.toolbar.setTitle(current != null ? current.getName() : getString(R.string.playlist_catalogue_title));
-            bind.createFolderFab.setVisibility(View.VISIBLE);
+            bind.playlistCatalogueTitleText.setText(current != null ? current.getName() : getString(R.string.tab_title_playlists));
+            bind.createFolderFab.setImageResource(R.drawable.ic_add);
         }
-        requireActivity().invalidateOptionsMenu();
     }
 
     private void updateSelectionTitle() {
         int count = pinnedPlaylistAdapter.getSelectedIds().size() + unpinnedPlaylistAdapter.getSelectedIds().size();
         if (bind != null) {
-            bind.toolbar.setTitle(getString(R.string.playlist_move_selected, count));
+            bind.playlistCatalogueTitleText.setText(getString(R.string.playlist_move_selected, count));
         }
     }
 

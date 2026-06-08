@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
+import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -100,11 +101,8 @@ public class DownloadFragment extends Fragment implements ClickCallback {
     }
 
     private void initAppBar() {
-        materialToolbar = bind.getRoot().findViewById(R.id.toolbar);
-
-        activity.setSupportActionBar(materialToolbar);
-        materialToolbar.post(() -> materialToolbar.getMenu().clear());
-        materialToolbar.setOverflowIcon(null);
+        TextView toolbarTitle = bind.getRoot().findViewById(R.id.toolbar_title);
+        if (toolbarTitle != null) toolbarTitle.setText(R.string.tab_title_downloads);
     }
 
     private void initDownloadedView() {

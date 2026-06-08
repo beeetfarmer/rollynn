@@ -103,6 +103,7 @@ object Preferences {
     const val METADATA_ALIGNMENT_LEFT = "left"
     const val METADATA_ALIGNMENT_CENTER = "center"
     const val METADATA_ALIGNMENT_RIGHT = "right"
+    private const val HOME_SCREEN_TITLE = "home_screen_title"
 
 
     @JvmStatic
@@ -946,6 +947,11 @@ object Preferences {
     @JvmStatic
     fun setMetadataAlignment(alignment: String) {
         App.getInstance().preferences.edit().putString(METADATA_ALIGNMENT, alignment).apply()
+    }
+
+    @JvmStatic
+    fun getHomeScreenTitle(): String {
+        return App.getInstance().preferences.getString(HOME_SCREEN_TITLE, "Welcome back") ?: "Welcome back"
     }
 
 }

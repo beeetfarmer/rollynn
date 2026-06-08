@@ -86,6 +86,13 @@
                 app:useSimpleSummaryProvider="true"
                 app:icon="@drawable/ic_sort_list" />
 
+            <EditTextPreference
+                android:key="home_screen_title"
+                android:title="@string/settings_home_title"
+                android:defaultValue="@string/settings_home_title_default"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_home" />
+
         </PreferenceCategory>
 
     </PreferenceScreen>
