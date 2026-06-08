@@ -104,6 +104,8 @@ object Preferences {
     const val METADATA_ALIGNMENT_CENTER = "center"
     const val METADATA_ALIGNMENT_RIGHT = "right"
     private const val HOME_SCREEN_TITLE = "home_screen_title"
+    private const val ALBUM_CATALOGUE_LIST_MODE = "album_catalogue_list_mode"
+    private const val ARTIST_CATALOGUE_LIST_MODE = "artist_catalogue_list_mode"
 
 
     @JvmStatic
@@ -952,6 +954,26 @@ object Preferences {
     @JvmStatic
     fun getHomeScreenTitle(): String {
         return App.getInstance().preferences.getString(HOME_SCREEN_TITLE, "Welcome back") ?: "Welcome back"
+    }
+
+    @JvmStatic
+    fun isAlbumCatalogueListMode(): Boolean {
+        return App.getInstance().preferences.getBoolean(ALBUM_CATALOGUE_LIST_MODE, true)
+    }
+
+    @JvmStatic
+    fun setAlbumCatalogueListMode(listMode: Boolean) {
+        App.getInstance().preferences.edit().putBoolean(ALBUM_CATALOGUE_LIST_MODE, listMode).apply()
+    }
+
+    @JvmStatic
+    fun isArtistCatalogueListMode(): Boolean {
+        return App.getInstance().preferences.getBoolean(ARTIST_CATALOGUE_LIST_MODE, true)
+    }
+
+    @JvmStatic
+    fun setArtistCatalogueListMode(listMode: Boolean) {
+        App.getInstance().preferences.edit().putBoolean(ARTIST_CATALOGUE_LIST_MODE, listMode).apply()
     }
 
 }

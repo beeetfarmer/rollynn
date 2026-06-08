@@ -6,11 +6,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cappielloantonio.tempo.databinding.ItemLibraryCatalogueAlbumBinding;
+import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.glide.CustomGlideRequest;
 import com.cappielloantonio.tempo.interfaces.ClickCallback;
 import com.cappielloantonio.tempo.subsonic.models.AlbumID3;
@@ -24,9 +26,13 @@ import java.util.Date;
 import java.util.List;
 
 public class AlbumCatalogueAdapter extends RecyclerView.Adapter<AlbumCatalogueAdapter.ViewHolder> implements Filterable {
+    private static final int TYPE_GRID = 0;
+    private static final int TYPE_LIST = 1;
+
     private final ClickCallback click;
     private String currentFilter;
     private boolean showArtist;
+    private boolean listMode;
 
     private final Filter filtering = new Filter() {
         @Override
@@ -73,7 +79,8 @@ public class AlbumCatalogueAdapter extends RecyclerView.Adapter<AlbumCatalogueAd
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemLibraryCatalogueAlbumBinding view = ItemLibraryCatalogueAlbumBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        int layout = viewType == TYPE_LIST ? R.layout.item_library_catalogue_album_list : R.layout.item_library_catalogue_album;
+        View view = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
         return new ViewHolder(view);
     }
 
@@ -81,14 +88,14 @@ public class AlbumCatalogueAdapter extends RecyclerView.Adapter<AlbumCatalogueAd
     public void onBindViewHolder(ViewHolder holder, int position) {
         AlbumID3 album = albums.get(position);
 
-        holder.item.albumNameLabel.setText(album.getName());
-        holder.item.artistNameLabel.setText(album.getArtist());
-        holder.item.artistNameLabel.setVisibility(showArtist ? View.VISIBLE : View.GONE);
+        holder.albumNameLabel.setText(album.getName());
+        holder.artistNameLabel.setText(album.getArtist());
+        holder.artistNameLabel.setVisibility(showArtist ? View.VISIBLE : View.GONE);
 
         CustomGlideRequest.Builder
                 .from(holder.itemView.getContext(), album.getCoverArtId(), CustomGlideRequest.ResourceType.Album)
                 .build()
-                .into(holder.item.albumCatalogueCoverImageView);
+                .into(holder.albumCatalogueCoverImageView);
     }
 
     @Override
@@ -107,12 +114,24 @@ public class AlbumCatalogueAdapter extends RecyclerView.Adapter<AlbumCatalogueAd
 
     @Override
     public int getItemViewType(int position) {
-        return position;
+        return listMode ? TYPE_LIST : TYPE_GRID;
     }
 
-    @Override
-    public long getItemId(int position) {
-        return position;
+    public void setListMode(boolean listMode) {
+        if (this.listMode != listMode) {
+            this.listMode = listMode;
+            notifyDataSetChanged();
+        }
+    }
+
+    public void appendItems(List<AlbumID3> newItems) {
+        if (newItems == null || newItems.isEmpty()) return;
+        if (!(albums instanceof ArrayList)) albums = new ArrayList<>(albums);
+        if (!(albumsFull instanceof ArrayList)) albumsFull = new ArrayList<>(albumsFull);
+        int start = albums.size();
+        albums.addAll(newItems);
+        albumsFull.addAll(newItems);
+        notifyItemRangeInserted(start, newItems.size());
     }
 
     @Override
@@ -121,15 +140,19 @@ public class AlbumCatalogueAdapter extends RecyclerView.Adapter<AlbumCatalogueAd
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        ItemLibraryCatalogueAlbumBinding item;
+        ImageView albumCatalogueCoverImageView;
+        TextView albumNameLabel;
+        TextView artistNameLabel;
 
-        ViewHolder(ItemLibraryCatalogueAlbumBinding item) {
-            super(item.getRoot());
+        ViewHolder(View itemView) {
+            super(itemView);
 
-            this.item = item;
+            albumCatalogueCoverImageView = itemView.findViewById(R.id.album_catalogue_cover_image_view);
+            albumNameLabel = itemView.findViewById(R.id.album_name_label);
+            artistNameLabel = itemView.findViewById(R.id.artist_name_label);
 
-            item.albumNameLabel.setSelected(true);
-            item.artistNameLabel.setSelected(true);
+            albumNameLabel.setSelected(true);
+            artistNameLabel.setSelected(true);
 
             itemView.setOnClickListener(v -> onClick());
             itemView.setOnLongClickListener(v -> onLongClick());
