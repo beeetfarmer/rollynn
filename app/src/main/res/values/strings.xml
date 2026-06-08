@@ -259,11 +259,13 @@
     <string name="playlist_catalogue_title">Playlist Catalogue</string>
     <string name="playlist_catalogue_title_expanded">Browse Playlists</string>
     <string name="playlist_filter_hint">Filter playlists</string>
+    <string name="download_filter_hint">Filter downloads</string>
     <string name="tab_title_library">Library</string>
     <string name="tab_title_downloads">Downloads</string>
     <string name="tab_title_playlists">Playlists</string>
-    <string name="settings_home_title">Home screen title</string>
-    <string name="settings_home_title_default">Welcome back</string>
+    <string name="settings_home_title">Welcome text</string>
+    <string name="settings_home_title_default">Welcome Back, Sailor!</string>
+    <string name="settings_home_title_enabled">Show welcome text</string>
     <string name="playlist_chooser_dialog_empty">No playlists created</string>
     <string name="playlist_chooser_dialog_cancel_button">Cancel</string>
     <string name="playlist_chooser_dialog_create_button">Create</string>

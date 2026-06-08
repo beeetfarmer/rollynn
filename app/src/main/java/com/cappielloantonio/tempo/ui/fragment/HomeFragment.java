@@ -75,9 +75,14 @@ public class HomeFragment extends Fragment {
     private void applyHomeTitle() {
         if (bind == null) return;
         TextView toolbarTitle = bind.getRoot().findViewById(R.id.toolbar_title);
-        if (toolbarTitle != null) {
+        if (toolbarTitle == null) return;
+
+        if (Preferences.isHomeScreenTitleEnabled()) {
+            toolbarTitle.setVisibility(View.VISIBLE);
             toolbarTitle.setText(Preferences.getHomeScreenTitle());
             toolbarTitle.setTextSize(32);
+        } else {
+            toolbarTitle.setVisibility(View.GONE);
         }
     }
 

@@ -2,6 +2,8 @@ package com.cappielloantonio.tempo.ui.fragment;
 
 import android.content.ComponentName;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -154,6 +156,23 @@ public class DownloadFragment extends Fragment implements ClickCallback {
         bind.downloadedGroupByImageView.setOnClickListener(view -> showPopupMenu(view, R.menu.download_popup_menu));
         bind.downloadedGoBackImageView.setOnClickListener(view -> downloadViewModel.popViewStack());
         bind.downloadedRefreshImageView.setOnClickListener(view -> downloadViewModel.refreshExternalDownloads());
+
+        bind.downloadFilterEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (downloadHorizontalAdapter != null) {
+                    downloadHorizontalAdapter.setSearchQuery(s != null ? s.toString() : "");
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
     }
 
     private void finishDownloadView(List<Child> songs) {
@@ -188,7 +207,7 @@ public class DownloadFragment extends Fragment implements ClickCallback {
     }
 
     private void setupShuffleButton() {
-        bind.shuffleDownloadedTextViewClickable.setOnClickListener(view -> {
+        bind.shuffleDownloadedButton.setOnClickListener(view -> {
             List<Child> songs = downloadHorizontalAdapter.getShuffling();
 
             if (songs != null && !songs.isEmpty()) {

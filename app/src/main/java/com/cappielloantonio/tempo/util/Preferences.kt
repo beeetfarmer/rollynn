@@ -104,6 +104,7 @@ object Preferences {
     const val METADATA_ALIGNMENT_CENTER = "center"
     const val METADATA_ALIGNMENT_RIGHT = "right"
     private const val HOME_SCREEN_TITLE = "home_screen_title"
+    private const val HOME_SCREEN_TITLE_ENABLED = "home_screen_title_enabled"
     private const val ALBUM_CATALOGUE_LIST_MODE = "album_catalogue_list_mode"
     private const val ARTIST_CATALOGUE_LIST_MODE = "artist_catalogue_list_mode"
 
@@ -953,7 +954,12 @@ object Preferences {
 
     @JvmStatic
     fun getHomeScreenTitle(): String {
-        return App.getInstance().preferences.getString(HOME_SCREEN_TITLE, "Welcome back") ?: "Welcome back"
+        return App.getInstance().preferences.getString(HOME_SCREEN_TITLE, "Welcome Back, Sailor!") ?: "Welcome Back, Sailor!"
+    }
+
+    @JvmStatic
+    fun isHomeScreenTitleEnabled(): Boolean {
+        return App.getInstance().preferences.getBoolean(HOME_SCREEN_TITLE_ENABLED, true)
     }
 
     @JvmStatic

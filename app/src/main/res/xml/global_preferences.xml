@@ -86,10 +86,17 @@
                 app:useSimpleSummaryProvider="true"
                 app:icon="@drawable/ic_sort_list" />
 
+            <SwitchPreference
+                android:key="home_screen_title_enabled"
+                android:title="@string/settings_home_title_enabled"
+                android:defaultValue="true"
+                app:icon="@drawable/ic_home" />
+
             <EditTextPreference
                 android:key="home_screen_title"
                 android:title="@string/settings_home_title"
                 android:defaultValue="@string/settings_home_title_default"
+                android:dependency="home_screen_title_enabled"
                 app:useSimpleSummaryProvider="true"
                 app:icon="@drawable/ic_home" />
 

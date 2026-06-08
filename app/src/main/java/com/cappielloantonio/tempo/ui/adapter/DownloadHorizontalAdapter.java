@@ -35,12 +35,15 @@ public class DownloadHorizontalAdapter extends RecyclerView.Adapter<DownloadHori
     private List<Child> songs;
     private List<Child> shuffling;
     private List<Child> grouped;
+    private List<Child> groupedFull;
+    private String searchQuery = "";
 
     public DownloadHorizontalAdapter(ClickCallback click) {
         this.click = click;
         this.view = Constants.DOWNLOAD_TYPE_TRACK;
         this.songs = Collections.emptyList();
         this.grouped = Collections.emptyList();
+        this.groupedFull = Collections.emptyList();
     }
 
     @NonNull
@@ -82,10 +85,36 @@ public class DownloadHorizontalAdapter extends RecyclerView.Adapter<DownloadHori
         this.filterValue = filterValue;
 
         this.songs = songs;
-        this.grouped = groupSong(songs);
+        this.groupedFull = groupSong(songs);
         this.shuffling = shufflingSong(new ArrayList<>(songs));
 
+        applySearch();
+    }
+
+    public void setSearchQuery(String query) {
+        this.searchQuery = query != null ? query.toLowerCase().trim() : "";
+        applySearch();
+    }
+
+    private void applySearch() {
+        if (searchQuery.isEmpty()) {
+            grouped = new ArrayList<>(groupedFull);
+        } else {
+            grouped = groupedFull.stream().filter(child -> matchesSearch(child, searchQuery)).collect(Collectors.toList());
+        }
         notifyDataSetChanged();
+    }
+
+    private boolean matchesSearch(Child child, String query) {
+        return containsIgnoreCase(child.getTitle(), query)
+                || containsIgnoreCase(child.getArtist(), query)
+                || containsIgnoreCase(child.getAlbum(), query)
+                || containsIgnoreCase(child.getGenre(), query)
+                || (child.getYear() != null && String.valueOf(child.getYear()).contains(query));
+    }
+
+    private boolean containsIgnoreCase(String value, String query) {
+        return value != null && value.toLowerCase().contains(query);
     }
 
     public Child getItem(int id) {
