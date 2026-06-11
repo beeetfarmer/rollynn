@@ -194,17 +194,21 @@ public class PlayerLyricsFragment extends Fragment {
         });
 
         bind.lyricsSourceToggleButton.setOnClickListener(view -> {
-            boolean switched = playerBottomSheetViewModel.switchLyricsSource();
-            if (!switched) {
+            int switchResult = playerBottomSheetViewModel.switchLyricsSource();
+            if (switchResult == PlayerBottomSheetViewModel.SWITCH_RESULT_LOADING) {
+                Toast.makeText(requireContext(), R.string.player_lyrics_source_loading, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (switchResult != PlayerBottomSheetViewModel.SWITCH_RESULT_SWITCHED) {
                 Toast.makeText(requireContext(), R.string.player_lyrics_source_switch_unavailable, Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            Integer sourceAfter = playerBottomSheetViewModel.getLyricsSource().getValue();
+            int sourceAfter = playerBottomSheetViewModel.getActiveLyricsSource();
             int labelRes;
-            if (sourceAfter != null && sourceAfter == PlayerBottomSheetViewModel.LYRICS_SOURCE_LRCLIB) {
+            if (sourceAfter == PlayerBottomSheetViewModel.LYRICS_SOURCE_LRCLIB) {
                 labelRes = R.string.player_lyrics_source_lrclib_label;
-            } else if (sourceAfter != null && sourceAfter == PlayerBottomSheetViewModel.LYRICS_SOURCE_BETTERLYRICS) {
+            } else if (sourceAfter == PlayerBottomSheetViewModel.LYRICS_SOURCE_BETTERLYRICS) {
                 labelRes = R.string.player_lyrics_source_betterlyrics_label;
             } else {
                 labelRes = R.string.player_lyrics_source_server_label;

@@ -252,6 +252,7 @@
     <string name="player_lyrics_source_betterlyrics_content_description">Using word-synced lyrics. Tap to switch source.</string>
     <string name="player_lyrics_source_active">Lyrics source: %1$s</string>
     <string name="player_lyrics_source_switch_unavailable">Only one lyrics source is available for this track.</string>
+    <string name="player_lyrics_source_loading">Looking for more lyrics sources…</string>
     <string name="player_server_priority">Server Priority</string>
     <string name="player_unknown_format">Unknown format</string>
     <string name="player_transcoding">Transcoding</string>

@@ -59,6 +59,10 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
     public static final int LYRICS_SOURCE_LRCLIB = 1;
     public static final int LYRICS_SOURCE_BETTERLYRICS = 2;
 
+    public static final int SWITCH_RESULT_SWITCHED = 0;
+    public static final int SWITCH_RESULT_NO_OTHER_SOURCE = 1;
+    public static final int SWITCH_RESULT_LOADING = 2;
+
     private final SongRepository songRepository;
     private final AlbumRepository albumRepository;
     private final ArtistRepository artistRepository;
@@ -90,6 +94,10 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
     private String lrcGetLyrics;
     private LyricsList lrcGetLyricsList;
     private LyricsList betterLyricsList;
+    private boolean pendingServer;
+    private boolean pendingLrcGet;
+    private boolean pendingBetter;
+    private boolean autoSwitchPending;
 
 
     public PlayerBottomSheetViewModel(@NonNull Application application) {
@@ -190,13 +198,31 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
         return lyricsSourceLiveData;
     }
 
+    public int getActiveLyricsSource() {
+        boolean hasServer = hasAnyServerLyrics();
+        boolean hasLrcGet = hasAnyLrcGetLyrics();
+        boolean hasBetter = hasAnyBetterLyrics();
+
+        if (sourceAvailable(preferredLyricsSource, hasServer, hasLrcGet, hasBetter)) {
+            return preferredLyricsSource;
+        }
+        if (hasBetter) return LYRICS_SOURCE_BETTERLYRICS;
+        if (hasLrcGet) return LYRICS_SOURCE_LRCLIB;
+        if (hasServer) return LYRICS_SOURCE_SERVER;
+        return preferredLyricsSource;
+    }
+
     public LiveData<Boolean> getLyricsSourceSwitchAvailable() {
         return lyricsSourceSwitchAvailableLiveData;
     }
 
-    public boolean switchLyricsSource() {
+    public int switchLyricsSource() {
         if (!canSwitchLyricsSource()) {
-            return false;
+            if (isAnyLyricsSourceLoading()) {
+                autoSwitchPending = true;
+                return SWITCH_RESULT_LOADING;
+            }
+            return SWITCH_RESULT_NO_OTHER_SOURCE;
         }
 
         boolean hasServer = hasAnyServerLyrics();
@@ -208,10 +234,15 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
             next = (next + 1) % 3;
         } while (next != preferredLyricsSource && !sourceAvailable(next, hasServer, hasLrcGet, hasBetter));
 
-        if (next == preferredLyricsSource) return false;
+        if (next == preferredLyricsSource) return SWITCH_RESULT_NO_OTHER_SOURCE;
         preferredLyricsSource = next;
+        autoSwitchPending = false;
         publishLyricsByPreferredSource();
-        return true;
+        return SWITCH_RESULT_SWITCHED;
+    }
+
+    private boolean isAnyLyricsSourceLoading() {
+        return pendingServer || pendingLrcGet || pendingBetter;
     }
 
     private boolean sourceAvailable(int source, boolean hasServer, boolean hasLrcGet, boolean hasBetter) {
@@ -248,8 +279,15 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
             return;
         }
 
+        final String requestSongId = media.getId();
+        pendingServer = true;
+        pendingLrcGet = true;
+        pendingBetter = true;
+
         if (OpenSubsonicExtensionsUtil.isSongLyricsExtensionAvailable()) {
             openRepository.getLyricsBySongId(media.getId()).observe(owner, lyricsList -> {
+                if (!TextUtils.equals(currentSongId, requestSongId)) return;
+                pendingServer = false;
                 serverLyricsList = hasStructuredLyrics(lyricsList) ? lyricsList : null;
                 serverLyrics = null;
                 publishLyricsByPreferredSource();
@@ -260,6 +298,8 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
             });
         } else {
             songRepository.getSongLyrics(media).observe(owner, lyrics -> {
+                if (!TextUtils.equals(currentSongId, requestSongId)) return;
+                pendingServer = false;
                 serverLyrics = lyrics;
                 serverLyricsList = null;
                 publishLyricsByPreferredSource();
@@ -271,20 +311,22 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
         }
 
         lrcGetRepository.getLyrics(media).observe(owner, result -> {
-            if (result == null) {
-                return;
+            if (!TextUtils.equals(currentSongId, requestSongId)) return;
+            pendingLrcGet = false;
+            if (result != null) {
+                lrcGetLyrics = result.getPlainLyrics();
+                lrcGetLyricsList = hasStructuredLyrics(result.getSyncedLyrics()) ? result.getSyncedLyrics() : null;
             }
-
-            lrcGetLyrics = result.getPlainLyrics();
-            lrcGetLyricsList = hasStructuredLyrics(result.getSyncedLyrics()) ? result.getSyncedLyrics() : null;
             publishLyricsByPreferredSource();
 
-            if (shouldAutoDownloadLyrics() && !hasAnyServerLyrics()) {
+            if (result != null && shouldAutoDownloadLyrics() && !hasAnyServerLyrics()) {
                 saveLyricsToCache(media, lrcGetLyrics, lrcGetLyricsList);
             }
         });
 
         betterLyricsRepository.getLyrics(media).observe(owner, lyricsList -> {
+            if (!TextUtils.equals(currentSongId, requestSongId)) return;
+            pendingBetter = false;
             betterLyricsList = hasStructuredLyrics(lyricsList) ? lyricsList : null;
             publishLyricsByPreferredSource();
         });
@@ -438,6 +480,10 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
         lrcGetLyrics = null;
         lrcGetLyricsList = null;
         betterLyricsList = null;
+        pendingServer = false;
+        pendingLrcGet = false;
+        pendingBetter = false;
+        autoSwitchPending = false;
 
         lyricsSourceLiveData.postValue(LYRICS_SOURCE_BETTERLYRICS);
         lyricsSourceSwitchAvailableLiveData.postValue(false);
@@ -452,6 +498,19 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
 
         int availableCount = (hasServer ? 1 : 0) + (hasLrcGet ? 1 : 0) + (hasBetter ? 1 : 0);
         lyricsSourceSwitchAvailableLiveData.postValue(availableCount >= 2);
+
+        if (autoSwitchPending) {
+            if (availableCount >= 2) {
+                int next = preferredLyricsSource;
+                do {
+                    next = (next + 1) % 3;
+                } while (next != preferredLyricsSource && !sourceAvailable(next, hasServer, hasLrcGet, hasBetter));
+                if (next != preferredLyricsSource) preferredLyricsSource = next;
+                autoSwitchPending = false;
+            } else if (!isAnyLyricsSourceLoading()) {
+                autoSwitchPending = false;
+            }
+        }
 
         int effectiveSource = preferredLyricsSource;
         if (!sourceAvailable(effectiveSource, hasServer, hasLrcGet, hasBetter)) {
