@@ -16,7 +16,6 @@ import com.cappielloantonio.tempo.subsonic.models.Child;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class StarredArtistsSyncViewModel extends AndroidViewModel {
@@ -24,6 +23,7 @@ public class StarredArtistsSyncViewModel extends AndroidViewModel {
 
     private final MutableLiveData<List<ArtistID3>> starredArtists = new MutableLiveData<>(null);
     private final MutableLiveData<List<Child>> starredArtistSongs = new MutableLiveData<>(null);
+    private boolean fetchingArtistSongs = false;
 
     public StarredArtistsSyncViewModel(@NonNull Application application) {
         super(application);
@@ -36,19 +36,32 @@ public class StarredArtistsSyncViewModel extends AndroidViewModel {
     }
 
     public LiveData<List<Child>> getAllStarredArtistSongs() {
-        artistRepository.getStarredArtists(false, -1).observeForever(new Observer<List<ArtistID3>>() {
+        if (fetchingArtistSongs) return starredArtistSongs;
+        fetchingArtistSongs = true;
+
+        LiveData<List<ArtistID3>> source = artistRepository.getStarredArtists(false, -1);
+        source.observeForever(new Observer<List<ArtistID3>>() {
             @Override
             public void onChanged(List<ArtistID3> artists) {
+                source.removeObserver(this);
                 if (artists != null && !artists.isEmpty()) {
-                    collectAllArtistSongs(artists, starredArtistSongs::postValue);
+                    collectAllArtistSongs(artists, songs -> {
+                        starredArtistSongs.postValue(songs);
+                        fetchingArtistSongs = false;
+                    });
                 } else {
                     starredArtistSongs.postValue(new ArrayList<>());
+                    fetchingArtistSongs = false;
                 }
-                artistRepository.getStarredArtists(false, -1).removeObserver(this);
             }
         });
-        
+
         return starredArtistSongs;
+    }
+
+    public void refreshStarredArtistSongs() {
+        fetchingArtistSongs = false;
+        getAllStarredArtistSongs();
     }
 
     public LiveData<List<Child>> getStarredArtistSongs(Activity activity) {
@@ -70,17 +83,18 @@ public class StarredArtistsSyncViewModel extends AndroidViewModel {
 
         List<Child> allSongs = new ArrayList<>();
         AtomicInteger remainingArtists = new AtomicInteger(artists.size());
-        
+
         for (ArtistID3 artist : artists) {
             artistRepository.getArtistAllSongs(artist.getId(), new ArtistRepository.ArtistSongsCallback() {
                 @Override
                 public void onSongsCollected(List<Child> songs) {
                     if (songs != null) {
-                        allSongs.addAll(songs);
+                        synchronized (allSongs) {
+                            allSongs.addAll(songs);
+                        }
                     }
-                    
-                    int remaining = remainingArtists.decrementAndGet();
-                    if (remaining == 0) {
+
+                    if (remainingArtists.decrementAndGet() == 0) {
                         callback.onSongsCollected(allSongs);
                     }
                 }

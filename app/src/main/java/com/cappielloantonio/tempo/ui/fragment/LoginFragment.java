@@ -25,6 +25,7 @@ import com.cappielloantonio.tempo.interfaces.ClickCallback;
 import com.cappielloantonio.tempo.interfaces.SystemCallback;
 import com.cappielloantonio.tempo.model.Server;
 import com.cappielloantonio.tempo.repository.SystemRepository;
+import com.cappielloantonio.tempo.subsonic.api.navidrome.NavidromeClient;
 import com.cappielloantonio.tempo.ui.activity.MainActivity;
 import com.cappielloantonio.tempo.ui.dialog.ServerSignupDialog;
 import com.cappielloantonio.tempo.util.Preferences;
@@ -117,7 +118,8 @@ public class LoginFragment extends Fragment implements ClickCallback {
     @Override
     public void onServerClick(Bundle bundle) {
         Server server = bundle.getParcelable("server_object");
-        saveServerPreference(server.getServerId(), server.getAddress(), server.getLocalAddress(), server.getUsername(), server.getPassword(), server.isLowSecurity());
+        String password = Preferences.getPasswordForServer(server.getServerId());
+        saveServerPreference(server.getServerId(), server.getAddress(), server.getLocalAddress(), server.getUsername(), password, server.isLowSecurity());
 
         SystemRepository systemRepository = new SystemRepository();
         systemRepository.checkUserCredential(new SystemCallback() {
@@ -162,6 +164,7 @@ public class LoginFragment extends Fragment implements ClickCallback {
         Preferences.setSalt(null);
         Preferences.setLowSecurity(false);
 
+        NavidromeClient.clearCredentials();
         App.getSubsonicClientInstance(true);
     }
 }

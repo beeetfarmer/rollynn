@@ -103,6 +103,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"
         android:paddingEnd="12dp"
         android:singleLine="true"
         android:text="@string/label_placeholder"
@@ -118,6 +119,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"
         android:paddingEnd="12dp"
         android:singleLine="true"
         android:text="@string/label_placeholder"
@@ -208,6 +210,18 @@
             android:background="@drawable/ic_download"
             android:foreground="?android:attr/selectableItemBackgroundBorderless" />
     </FrameLayout>
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/download_progress_indicator"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:visibility="gone"
+        app:indicatorSize="22dp"
+        app:trackThickness="3dp"
+        app:layout_constraintBottom_toBottomOf="@+id/song_cover_image_view"
+        app:layout_constraintEnd_toStartOf="@+id/search_result_song_more_button"
+        app:layout_constraintStart_toEndOf="@+id/rating_indicator_image_view"
+        app:layout_constraintTop_toTopOf="@+id/song_cover_image_view" />
 
     <FrameLayout
         android:id="@+id/search_result_song_more_button"

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_title_library">ലൈബ്രറി</string>
+    <string name="tab_title_downloads">ഡൗൺലോഡുകൾ</string>
+    <string name="tab_title_playlists">പ്ലേലിസ്റ്റുകൾ</string>
+    <string name="playlist_filter_hint">പ്ലേലിസ്റ്റുകൾ ഫിൽട്ടർ ചെയ്യുക</string>
+    <string name="download_filter_hint">ഡൗൺലോഡുകൾ ഫിൽട്ടർ ചെയ്യുക</string>
+    <string name="settings_home_title">സ്വാഗത സന്ദേശം</string>
+    <string name="settings_home_title_enabled">സ്വാഗത സന്ദേശം കാണിക്കുക</string>
+    <string name="settings_home_title_default">തിരികെ സ്വാഗതം, നാവികാ!</string>
+    <string name="settings_title_scrobbling">സ്ക്രോബ്ലിംഗ്</string>
+    <string name="settings_title_account_session">അക്കൗണ്ടും സെഷനും</string>
+    <string name="settings_title">ക്രമീകരണങ്ങൾ</string>
+    <string name="settings_configure_dock">ഡോക്ക് കോൺഫിഗർ ചെയ്യുക</string>
+    <string name="settings_configure_dock_summary">നാവിഗേഷൻ ഇനങ്ങൾ തിരഞ്ഞെടുത്ത് ക്രമം മാറ്റുക</string>
+    <string name="settings_configure_metadata">ഇപ്പോൾ പ്ലേ ചെയ്യുന്ന മെറ്റാഡാറ്റ</string>
+    <string name="settings_configure_metadata_summary">മെറ്റാഡാറ്റ ഫീൽഡുകൾ പുനഃക്രമീകരിച്ച് പ്രവർത്തനക്ഷമമാക്കുക/പ്രവർത്തനരഹിതമാക്കുക</string>
+    <string name="home_title_history">ചരിത്രം</string>
+    <string name="home_title_recently_played_artists">അടുത്തിടെ പ്ലേ ചെയ്ത കലാകാരന്മാർ</string>
+    <string name="home_title_top_played_artists">ഏറ്റവും കൂടുതൽ പ്ലേ ചെയ്ത കലാകാരന്മാർ</string>
+    <string name="home_title_top_played_songs">ഏറ്റവും കൂടുതൽ പ്ലേ ചെയ്ത പാട്ടുകൾ</string>
+    <string name="home_title_history_see_all_button">എല്ലാം കാണുക</string>
+    <string name="home_title_recently_played_artists_see_all_button">എല്ലാം കാണുക</string>
+    <string name="home_title_top_played_artists_see_all_button">എല്ലാം കാണുക</string>
+    <string name="home_title_top_played_songs_see_all_button">എല്ലാം കാണുക</string>
+    <string name="settings_title_ui_landscape_items_per_row">ലാൻഡ്‌സ്കേപ്പിൽ വരിയിലെ ഇനങ്ങൾ</string>
+    <string name="settings_metadata_alignment">മെറ്റാഡാറ്റ വിന്യാസം</string>
+    <string name="settings_playlist_sort">പ്ലേലിസ്റ്റ് ക്രമീകരണം</string>
+    <string name="settings_lyrics_romanization">വരികളുടെ റോമനൈസേഷൻ</string>
+    <string name="settings_play_next_behavior_title">അടുത്തത് പ്ലേ ചെയ്യൽ രീതി</string>
+    <string name="settings_scrobble_threshold_title">സ്ക്രോബിൾ പരിധി ശതമാനം</string>
+    <string name="settings_translation_provider">വിവർത്തന ദാതാവ്</string>
+    <string name="settings_translation_api_key">API കീ</string>
+    <string name="settings_translation_target_language">ലക്ഷ്യ ഭാഷ</string>
+    <string name="settings_translation_model">AI മോഡൽ</string>
+    <string name="settings_translation_api_url">API URL</string>
+    <string name="settings_ping_timeout_title">സെർവർ പിംഗ് ടൈംഔട്ട്</string>
+    <string name="settings_tab_appearance">രൂപഭാവം</string>
+    <string name="settings_tab_library">ലൈബ്രറി</string>
+    <string name="settings_tab_playback">പ്ലേബാക്ക്</string>
+    <string name="settings_tab_general">പൊതുവായത്</string>
+</resources>

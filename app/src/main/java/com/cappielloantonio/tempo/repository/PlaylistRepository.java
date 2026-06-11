@@ -10,10 +10,14 @@ import androidx.lifecycle.MutableLiveData;
 import com.cappielloantonio.tempo.App;
 import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.database.AppDatabase;
+import com.cappielloantonio.tempo.database.dao.DownloadDao;
+import com.cappielloantonio.tempo.database.dao.DownloadedPlaylistInfo;
 import com.cappielloantonio.tempo.database.dao.PlaylistDao;
 import com.cappielloantonio.tempo.subsonic.base.ApiResponse;
 import com.cappielloantonio.tempo.subsonic.models.Child;
 import com.cappielloantonio.tempo.subsonic.models.Playlist;
+import com.cappielloantonio.tempo.util.NetworkUtil;
+import com.cappielloantonio.tempo.util.PlaylistCoverCache;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,22 +49,61 @@ public class PlaylistRepository {
     }
 
     public void refreshAllPlaylists() {
+        if (NetworkUtil.isServerUnreachable()) {
+            loadPlaylistsFromDownloads();
+            return;
+        }
+
         App.getSubsonicClientInstance(false)
                 .getPlaylistClient()
                 .getPlaylists()
                 .enqueue(new Callback<ApiResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
-                        if (response.isSuccessful() && response.body() != null && response.body().getSubsonicResponse().getPlaylists() != null) {
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().getSubsonicResponse().getPlaylists() != null) {
                             List<Playlist> playlists = response.body().getSubsonicResponse().getPlaylists().getPlaylists();
+                            for (Playlist p : playlists) {
+                                PlaylistCoverCache.save(p.getId(), p.getCoverArtId());
+                            }
                             allPlaylistsLiveData.postValue(playlists);
+                        } else {
+                            loadPlaylistsFromDownloads();
                         }
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
+                        loadPlaylistsFromDownloads();
                     }
                 });
+    }
+
+    @androidx.media3.common.util.UnstableApi
+    private void loadPlaylistsFromDownloads() {
+        new Thread(() -> {
+            DownloadDao downloadDao = AppDatabase.getInstance().downloadDao();
+            List<DownloadedPlaylistInfo> infos = downloadDao.getDownloadedPlaylistsSync();
+            List<Playlist> pinned = playlistDao.getAllSync();
+            List<Playlist> playlists = new ArrayList<>();
+            for (DownloadedPlaylistInfo info : infos) {
+                String coverArtId = null;
+                if (pinned != null) {
+                    for (Playlist pp : pinned) {
+                        if (pp.getId().equals(info.playlistId)) {
+                            coverArtId = pp.getCoverArtId();
+                            break;
+                        }
+                    }
+                }
+                if (coverArtId == null) {
+                    coverArtId = PlaylistCoverCache.get(info.playlistId);
+                }
+                Playlist p = new Playlist(info.playlistId, info.playlistName, info.totalDuration, info.songCount, coverArtId);
+                playlists.add(p);
+            }
+            allPlaylistsLiveData.postValue(playlists);
+        }).start();
     }
 
     public MutableLiveData<List<Playlist>> getPlaylists(boolean random, int size) {
@@ -95,24 +138,42 @@ public class PlaylistRepository {
     public MutableLiveData<List<Child>> getPlaylistSongs(String id) {
         MutableLiveData<List<Child>> listLivePlaylistSongs = new MutableLiveData<>();
 
+        if (NetworkUtil.isServerUnreachable()) {
+            loadPlaylistFromDownloads(id, listLivePlaylistSongs);
+            return listLivePlaylistSongs;
+        }
+
         App.getSubsonicClientInstance(false)
                 .getPlaylistClient()
                 .getPlaylist(id)
                 .enqueue(new Callback<ApiResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
-                        if (response.isSuccessful() && response.body() != null && response.body().getSubsonicResponse().getPlaylist() != null) {
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().getSubsonicResponse().getPlaylist() != null) {
                             List<Child> songs = response.body().getSubsonicResponse().getPlaylist().getEntries();
-                            listLivePlaylistSongs.setValue(songs);
+                            listLivePlaylistSongs.postValue(songs);
+                        } else {
+                            loadPlaylistFromDownloads(id, listLivePlaylistSongs);
                         }
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
+                        loadPlaylistFromDownloads(id, listLivePlaylistSongs);
                     }
                 });
 
         return listLivePlaylistSongs;
+    }
+
+    @androidx.media3.common.util.UnstableApi
+    private void loadPlaylistFromDownloads(String playlistId, MutableLiveData<List<Child>> target) {
+        new Thread(() -> {
+            DownloadDao downloadDao = AppDatabase.getInstance().downloadDao();
+            List<Child> songs = new ArrayList<>(downloadDao.getByPlaylistIdSync(playlistId));
+            target.postValue(songs);
+        }).start();
     }
 
     public MutableLiveData<Playlist> getPlaylist(String id) {

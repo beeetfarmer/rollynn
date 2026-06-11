@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -131,11 +132,8 @@ public class LibraryFragment extends Fragment implements ClickCallback {
     }
 
     private void initAppBar() {
-        materialToolbar = bind.getRoot().findViewById(R.id.toolbar);
-
-        activity.setSupportActionBar(materialToolbar);
-        materialToolbar.post(() -> materialToolbar.getMenu().clear());
-        materialToolbar.setOverflowIcon(null);
+        TextView toolbarTitle = bind.getRoot().findViewById(R.id.toolbar_title);
+        if (toolbarTitle != null) toolbarTitle.setText(R.string.tab_title_library);
     }
 
     private void initMusicFolderView() {

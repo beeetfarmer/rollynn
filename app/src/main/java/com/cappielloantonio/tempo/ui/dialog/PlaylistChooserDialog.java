@@ -52,6 +52,9 @@ public class PlaylistChooserDialog extends DialogFragment {
             }
         });
 
+        initPlaylistView();
+        setSongInfo();
+
         return new MaterialAlertDialogBuilder(requireContext())
                 .setView(bind.getRoot())
                 .setTitle(R.string.playlist_chooser_dialog_title)
@@ -62,14 +65,6 @@ public class PlaylistChooserDialog extends DialogFragment {
     public void onDestroyView() {
         super.onDestroyView();
         bind = null;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        initPlaylistView();
-        setSongInfo();
     }
 
     private void setSongInfo() {

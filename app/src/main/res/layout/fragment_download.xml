@@ -64,28 +64,47 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
         android:visibility="gone"
         tools:visibility="visible">
 
-        <TextView
-            android:id="@+id/downloaded_text_view_refreshable"
-            style="@style/TitleLarge"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/download_filter_input_layout"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/download_title_section"
-            app:layout_constraintEnd_toStartOf="@+id/downloaded_refresh_image_view"
+            android:hint="@string/download_filter_hint"
+            app:startIconDrawable="@drawable/ic_search"
+            app:boxCornerRadiusTopStart="28dp"
+            app:boxCornerRadiusTopEnd="28dp"
+            app:boxCornerRadiusBottomStart="28dp"
+            app:boxCornerRadiusBottomEnd="28dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/shuffle_downloaded_button"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/shuffle_downloaded_text_view_clickable"
-            style="@style/TitleMedium"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/download_shuffle_all_subtitle"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/downloaded_text_view_refreshable" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/download_filter_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionDone"
+                android:inputType="text"
+                android:maxLines="1"
+                android:singleLine="true" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageView
+            android:id="@+id/shuffle_downloaded_button"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/ic_shuffle"
+            android:contentDescription="@string/download_shuffle_all_subtitle"
+            app:layout_constraintBottom_toBottomOf="@+id/download_filter_input_layout"
+            app:layout_constraintEnd_toStartOf="@+id/downloaded_refresh_image_view"
+            app:layout_constraintTop_toTopOf="@+id/download_filter_input_layout" />
 
         <ImageView
             android:id="@+id/downloaded_refresh_image_view"
@@ -95,10 +114,9 @@
             android:layout_marginEnd="12dp"
             android:background="@drawable/ic_refresh"
             android:contentDescription="@string/download_refresh_button_content_description"
-            app:layout_constraintBottom_toBottomOf="@+id/downloaded_text_view_refreshable"
+            app:layout_constraintBottom_toBottomOf="@+id/download_filter_input_layout"
             app:layout_constraintEnd_toStartOf="@id/downloaded_go_back_image_view"
-            app:layout_constraintStart_toEndOf="@id/downloaded_text_view_refreshable"
-            app:layout_constraintTop_toTopOf="@+id/downloaded_text_view_refreshable" />
+            app:layout_constraintTop_toTopOf="@+id/download_filter_input_layout" />
 
         <ImageView
             android:id="@+id/downloaded_go_back_image_view"
@@ -107,10 +125,9 @@
             android:layout_gravity="center"
             android:layout_marginHorizontal="12dp"
             android:background="@drawable/ic_arrow_back"
-            app:layout_constraintBottom_toBottomOf="@+id/downloaded_text_view_refreshable"
+            app:layout_constraintBottom_toBottomOf="@+id/download_filter_input_layout"
             app:layout_constraintEnd_toStartOf="@id/downloaded_group_by_image_view"
-            app:layout_constraintStart_toEndOf="@id/downloaded_refresh_image_view"
-            app:layout_constraintTop_toTopOf="@+id/downloaded_text_view_refreshable" />
+            app:layout_constraintTop_toTopOf="@+id/download_filter_input_layout" />
 
         <ImageView
             android:id="@+id/downloaded_group_by_image_view"
@@ -118,9 +135,9 @@
             android:layout_height="24dp"
             android:layout_gravity="center"
             android:background="@drawable/ic_filter_list"
-            app:layout_constraintBottom_toBottomOf="@+id/downloaded_text_view_refreshable"
+            app:layout_constraintBottom_toBottomOf="@+id/download_filter_input_layout"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/downloaded_text_view_refreshable" />
+            app:layout_constraintTop_toTopOf="@+id/download_filter_input_layout" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.recyclerview.widget.RecyclerView

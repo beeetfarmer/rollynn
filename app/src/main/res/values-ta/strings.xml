@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_title_library">நூலகம்</string>
+    <string name="tab_title_downloads">பதிவிறக்கங்கள்</string>
+    <string name="tab_title_playlists">இயக்கப்பட்டியல்கள்</string>
+    <string name="playlist_filter_hint">இயக்கப்பட்டியல்களை வடிகட்டு</string>
+    <string name="download_filter_hint">பதிவிறக்கங்களை வடிகட்டு</string>
+    <string name="settings_home_title">வரவேற்பு உரை</string>
+    <string name="settings_home_title_enabled">வரவேற்பு உரையைக் காட்டு</string>
+    <string name="settings_home_title_default">மீண்டும் வரவேற்கிறோம், மாலுமி!</string>
+    <string name="settings_title_scrobbling">ஸ்க்ரோப்லிங்</string>
+    <string name="settings_title_account_session">கணக்கு மற்றும் அமர்வு</string>
+    <string name="settings_title">அமைப்புகள்</string>
+    <string name="settings_configure_dock">டாக்கை அமைக்கவும்</string>
+    <string name="settings_configure_dock_summary">வழிசெலுத்தல் உருப்படிகளைத் தேர்ந்தெடுத்து வரிசைப்படுத்தவும்</string>
+    <string name="settings_configure_metadata">இப்போது இயங்கும் மீத்தரவு</string>
+    <string name="settings_configure_metadata_summary">மீத்தரவு புலங்களை மறுசீரமைத்து இயக்கு/முடக்கு</string>
+    <string name="home_title_history">வரலாறு</string>
+    <string name="home_title_recently_played_artists">சமீபத்தில் இயக்கிய கலைஞர்கள்</string>
+    <string name="home_title_top_played_artists">அதிகம் இயக்கிய கலைஞர்கள்</string>
+    <string name="home_title_top_played_songs">அதிகம் இயக்கிய பாடல்கள்</string>
+    <string name="home_title_history_see_all_button">அனைத்தையும் காண்க</string>
+    <string name="home_title_recently_played_artists_see_all_button">அனைத்தையும் காண்க</string>
+    <string name="home_title_top_played_artists_see_all_button">அனைத்தையும் காண்க</string>
+    <string name="home_title_top_played_songs_see_all_button">அனைத்தையும் காண்க</string>
+    <string name="settings_title_ui_landscape_items_per_row">அகலவாக்கில் வரிசைக்கு உருப்படிகள்</string>
+    <string name="settings_metadata_alignment">மீத்தரவு சீரமைப்பு</string>
+    <string name="settings_playlist_sort">இயக்கப்பட்டியல் வரிசையாக்கம்</string>
+    <string name="settings_lyrics_romanization">பாடல் வரிகள் ரோமன் எழுத்தாக்கம்</string>
+    <string name="settings_play_next_behavior_title">அடுத்து இயக்கு செயல்பாடு</string>
+    <string name="settings_scrobble_threshold_title">ஸ்க்ரோபிள் வரம்பு சதவீதம்</string>
+    <string name="settings_translation_provider">மொழிபெயர்ப்பு வழங்குநர்</string>
+    <string name="settings_translation_api_key">API விசை</string>
+    <string name="settings_translation_target_language">இலக்கு மொழி</string>
+    <string name="settings_translation_model">AI மாதிரி</string>
+    <string name="settings_translation_api_url">API URL</string>
+    <string name="settings_ping_timeout_title">சேவையக பிங் காலக்கெடு</string>
+    <string name="settings_tab_appearance">தோற்றம்</string>
+    <string name="settings_tab_library">நூலகம்</string>
+    <string name="settings_tab_playback">இயக்கம்</string>
+    <string name="settings_tab_general">பொது</string>
+</resources>

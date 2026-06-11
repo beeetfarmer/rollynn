@@ -21,6 +21,9 @@ public interface DownloadDao {
     @Query("SELECT * FROM download WHERE id = :id")
     Download getOne(String id);
 
+    @Query("SELECT * FROM download WHERE cover_art_id = :coverArtId AND download_state = 1 LIMIT 1")
+    Download getByCoverArtId(String coverArtId);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(Download download);
 
@@ -38,4 +41,19 @@ public interface DownloadDao {
 
     @Query("DELETE FROM download")
     void deleteAll();
+
+    @Query("SELECT * FROM download WHERE playlist_id = :playlistId AND download_state = 1 ORDER BY disc_number, track ASC")
+    List<Download> getByPlaylistIdSync(String playlistId);
+
+    @Query("SELECT playlist_id, playlist_name, COUNT(*) as song_count, MIN(cover_art_id) as cover_art_id, COALESCE(SUM(duration), 0) as total_duration FROM download WHERE playlist_id IS NOT NULL AND download_state = 1 GROUP BY playlist_id, playlist_name")
+    List<DownloadedPlaylistInfo> getDownloadedPlaylistsSync();
+
+    @Query("SELECT * FROM download WHERE download_state = 1 AND (title LIKE '%' || :query || '%' OR artist LIKE '%' || :query || '%' OR album LIKE '%' || :query || '%') ORDER BY artist, album, disc_number, track ASC")
+    List<Download> searchSync(String query);
+
+    @Query("SELECT COUNT(*) FROM download WHERE playlist_id = :playlistId AND download_state = 1")
+    int getDownloadCountForPlaylist(String playlistId);
+
+    @Query("SELECT DISTINCT playlist_id FROM download WHERE playlist_id IS NOT NULL AND download_state = 1")
+    List<String> getDownloadedPlaylistIds();
 }

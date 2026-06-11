@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_playlist_move_selected"
+        android:title="@string/playlist_move_to_folder" />
+    <item
+        android:id="@+id/menu_playlist_cancel_selection"
+        android:title="@string/playlist_cancel_selection" />
+</menu>

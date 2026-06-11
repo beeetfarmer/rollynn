@@ -25,6 +25,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.util.UnstableApi;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cappielloantonio.tempo.R;
@@ -53,6 +54,8 @@ public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
     private int spanCount = 2;
     private String currentSortOrder;
     private List<com.cappielloantonio.tempo.subsonic.models.AlbumID3> originalAlbums;
+    private int shownCount = 0;
+    private GridItemDecoration gridDecoration;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -139,17 +142,21 @@ public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
 
     @SuppressLint("ClickableViewAccessibility")
     private void initAlbumCatalogueView() {
-        bind.albumCatalogueRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), spanCount));
-        bind.albumCatalogueRecyclerView.addItemDecoration(new GridItemDecoration(spanCount, 20, false));
         bind.albumCatalogueRecyclerView.setHasFixedSize(true);
 
         albumAdapter = new AlbumCatalogueAdapter(this, true);
         albumAdapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
         bind.albumCatalogueRecyclerView.setAdapter(albumAdapter);
+
+        applyViewMode();
+
         albumCatalogueViewModel.getAlbumList().observe(getViewLifecycleOwner(), albums -> {
             originalAlbums = albums;
-            currentSortOrder = Preferences.getAlbumSortOrder();
-            applySortToAlbums(currentSortOrder);
+            Boolean loading = albumCatalogueViewModel.getLoadingStatus().getValue();
+            if (loading != null && loading && albums.size() > shownCount) {
+                albumAdapter.appendItems(new ArrayList<>(albums.subList(shownCount, albums.size())));
+                shownCount = albums.size();
+            }
             updateSortIndicator();
         });
 
@@ -159,6 +166,38 @@ public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
         });
 
         bind.albumListSortImageView.setOnClickListener(view -> showPopupMenu(view, R.menu.sort_album_popup_menu));
+        bind.albumViewModeImageView.setOnClickListener(view -> toggleViewMode());
+    }
+
+    private void applyViewMode() {
+        boolean listMode = Preferences.isAlbumCatalogueListMode();
+
+        if (gridDecoration != null) {
+            bind.albumCatalogueRecyclerView.removeItemDecoration(gridDecoration);
+            gridDecoration = null;
+        }
+
+        if (listMode) {
+            bind.albumCatalogueRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        } else {
+            bind.albumCatalogueRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), spanCount));
+            gridDecoration = new GridItemDecoration(spanCount, 20, false);
+            bind.albumCatalogueRecyclerView.addItemDecoration(gridDecoration);
+        }
+
+        albumAdapter.setListMode(listMode);
+        updateViewModeIcon(listMode);
+    }
+
+    private void toggleViewMode() {
+        Preferences.setAlbumCatalogueListMode(!Preferences.isAlbumCatalogueListMode());
+        applyViewMode();
+    }
+
+    private void updateViewModeIcon(boolean listMode) {
+        if (bind == null) return;
+        ((com.google.android.material.button.MaterialButton) bind.albumViewModeImageView)
+                .setIconResource(listMode ? R.drawable.ic_view_grid : R.drawable.ic_view_list);
     }
 
     private void applySortToAlbums(String sortOrder) {
@@ -179,6 +218,9 @@ public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
             } else {
                 bind.albumListSortImageView.setEnabled(true);
                 bind.albumListProgressLoader.setVisibility(View.GONE);
+                currentSortOrder = Preferences.getAlbumSortOrder();
+                applySortToAlbums(currentSortOrder);
+                updateSortIndicator();
             }
         });
     }

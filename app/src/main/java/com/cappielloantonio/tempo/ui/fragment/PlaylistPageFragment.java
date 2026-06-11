@@ -3,6 +3,8 @@ package com.cappielloantonio.tempo.ui.fragment;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.util.UnstableApi;
+import androidx.media3.exoplayer.offline.DownloadManager;
 import androidx.media3.session.MediaBrowser;
 import androidx.media3.session.SessionToken;
 import androidx.navigation.Navigation;
@@ -25,6 +28,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
 import com.cappielloantonio.tempo.R;
+import com.cappielloantonio.tempo.database.AppDatabase;
+import com.cappielloantonio.tempo.database.dao.DownloadDao;
 import com.cappielloantonio.tempo.databinding.FragmentPlaylistPageBinding;
 import com.cappielloantonio.tempo.glide.CustomGlideRequest;
 import com.cappielloantonio.tempo.interfaces.ClickCallback;
@@ -38,14 +43,21 @@ import com.cappielloantonio.tempo.util.DownloadUtil;
 import com.cappielloantonio.tempo.util.MappingUtil;
 import com.cappielloantonio.tempo.util.MusicUtil;
 import com.cappielloantonio.tempo.util.ExternalAudioWriter;
+import com.cappielloantonio.tempo.util.PlaylistCoverCache;
 import com.cappielloantonio.tempo.util.Preferences;
+import com.cappielloantonio.tempo.subsonic.models.Playlist;
 import com.cappielloantonio.tempo.viewmodel.PlaybackViewModel;
 import com.cappielloantonio.tempo.viewmodel.PlaylistPageViewModel;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import android.widget.PopupMenu;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -59,6 +71,10 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
     private SongHorizontalAdapter songHorizontalAdapter;
 
     private ListenableFuture<MediaBrowser> mediaBrowserListenableFuture;
+    private Menu optionsMenu;
+    private int downloadTotalCount = 0;
+    private final Handler progressHandler = new Handler(Looper.getMainLooper());
+    private boolean trackingDownloads = false;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -90,7 +106,9 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
 
         searchView.setPadding(-32, 0, 0, 0);
 
+        optionsMenu = menu;
         initMenuOption(menu);
+        updateRemoveDownloadsVisibility();
     }
 
     @Override
@@ -125,6 +143,7 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
     public void onResume() {
         super.onResume();
         if (songHorizontalAdapter != null) setMediaBrowserListenableFuture();
+        resumeDownloadTrackingIfNeeded();
     }
 
     @Override
@@ -136,6 +155,8 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        progressHandler.removeCallbacksAndMessages(null);
+        trackingDownloads = false;
         bind = null;
     }
 
@@ -149,21 +170,35 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
         } else if (item.getItemId() == R.id.action_download_playlist) {
             playlistPageViewModel.getPlaylistSongLiveList().observe(getViewLifecycleOwner(), songs -> {
                 if (isVisible() && getActivity() != null) {
+                    Playlist downloadPlaylist = playlistPageViewModel.getPlaylist();
+                    PlaylistCoverCache.save(downloadPlaylist.getId(), downloadPlaylist.getCoverArtId());
                     if (Preferences.getDownloadDirectoryUri() == null) {
+                        downloadTotalCount = songs.size();
+                        playlistPageViewModel.setDownloadInProgress(downloadPlaylist.getId(), downloadTotalCount);
+                        showDownloadProgress(0, downloadTotalCount);
                         DownloadUtil.getDownloadTracker(requireContext()).download(
                             MappingUtil.mapDownloads(songs),
                             songs.stream().map(child -> {
                                 Download toDownload = new Download(child);
-                                toDownload.setPlaylistId(playlistPageViewModel.getPlaylist().getId());
-                                toDownload.setPlaylistName(playlistPageViewModel.getPlaylist().getName());
+                                toDownload.setPlaylistId(downloadPlaylist.getId());
+                                toDownload.setPlaylistName(downloadPlaylist.getName());
                                 return toDownload;
                             }).collect(Collectors.toList())
                         );
+                        startTrackingDownloadProgress();
                     } else {
                         songs.forEach(child -> ExternalAudioWriter.downloadToUserDirectory(requireContext(), child));
                     }
                 }
             });
+            return true;
+        } else if (item.getItemId() == R.id.action_remove_downloads) {
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.playlist_remove_downloads)
+                    .setMessage(R.string.playlist_remove_downloads_confirm)
+                    .setPositiveButton(R.string.playlist_editor_dialog_neutral_button, (dialog, which) -> removePlaylistDownloads())
+                    .setNegativeButton(R.string.playlist_editor_dialog_negative_button, null)
+                    .show();
             return true;
         } else if (item.getItemId() == R.id.action_pin_playlist) {
             playlistPageViewModel.setPinned(true);
@@ -355,5 +390,122 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
 
     private void setMediaBrowserListenableFuture() {
         songHorizontalAdapter.setMediaBrowserListenableFuture(mediaBrowserListenableFuture);
+    }
+
+    private void updateRemoveDownloadsVisibility() {
+        if (optionsMenu == null) return;
+        String playlistId = playlistPageViewModel.getPlaylist().getId();
+        new Thread(() -> {
+            DownloadDao downloadDao = AppDatabase.getInstance().downloadDao();
+            int count = downloadDao.getDownloadCountForPlaylist(playlistId);
+            if (getActivity() != null) {
+                requireActivity().runOnUiThread(() -> {
+                    if (optionsMenu != null) {
+                        MenuItem removeItem = optionsMenu.findItem(R.id.action_remove_downloads);
+                        if (removeItem != null) removeItem.setVisible(count > 0);
+                    }
+                });
+            }
+        }).start();
+    }
+
+    private void removePlaylistDownloads() {
+        String playlistId = playlistPageViewModel.getPlaylist().getId();
+        new Thread(() -> {
+            DownloadDao downloadDao = AppDatabase.getInstance().downloadDao();
+            List<Download> downloads = new ArrayList<>(downloadDao.getByPlaylistIdSync(playlistId));
+            if (!downloads.isEmpty()) {
+                List<androidx.media3.common.MediaItem> mediaItems = downloads.stream()
+                        .map(MappingUtil::mapDownload)
+                        .collect(Collectors.toList());
+                if (getActivity() != null) {
+                    requireActivity().runOnUiThread(() -> {
+                        DownloadUtil.getDownloadTracker(requireContext()).remove(mediaItems, downloads);
+                        PlaylistCoverCache.remove(playlistId);
+                        updateRemoveDownloadsVisibility();
+                    });
+                }
+            }
+        }).start();
+    }
+
+    private void showDownloadProgress(int completed, int total) {
+        if (bind == null) return;
+        bind.downloadProgressLayout.setVisibility(View.VISIBLE);
+        bind.downloadProgressBar.setMax(total);
+        bind.downloadProgressBar.setProgress(completed);
+        if (completed >= total) {
+            bind.downloadProgressText.setText(R.string.playlist_download_complete);
+            progressHandler.postDelayed(() -> {
+                if (bind != null) bind.downloadProgressLayout.setVisibility(View.GONE);
+                updateRemoveDownloadsVisibility();
+            }, 2000);
+        } else {
+            bind.downloadProgressText.setText(getString(R.string.playlist_downloading_progress, completed, total));
+        }
+    }
+
+    private void resumeDownloadTrackingIfNeeded() {
+        if (trackingDownloads) return;
+        String activeId = playlistPageViewModel.getDownloadingPlaylistId();
+        if (activeId == null) return;
+        Playlist playlist = playlistPageViewModel.getPlaylist();
+        if (playlist == null || !activeId.equals(playlist.getId())) return;
+        downloadTotalCount = playlistPageViewModel.getDownloadTotalCount();
+        startTrackingDownloadProgress();
+    }
+
+    private void startTrackingDownloadProgress() {
+        if (trackingDownloads) return;
+        trackingDownloads = true;
+        String playlistId = playlistPageViewModel.getPlaylist().getId();
+        pollDownloadProgress(playlistId);
+    }
+
+    private void pollDownloadProgress(String playlistId) {
+        if (!trackingDownloads || bind == null) return;
+        new Thread(() -> {
+            DownloadDao downloadDao = AppDatabase.getInstance().downloadDao();
+            int completed = downloadDao.getDownloadCountForPlaylist(playlistId);
+            Map<String, Float> perTrackProgress = getPerTrackProgress();
+            if (getActivity() != null) {
+                requireActivity().runOnUiThread(() -> {
+                    if (bind == null) return;
+                    showDownloadProgress(completed, downloadTotalCount);
+                    if (songHorizontalAdapter != null) {
+                        songHorizontalAdapter.updateDownloadProgress(perTrackProgress);
+                    }
+                    if (completed < downloadTotalCount) {
+                        progressHandler.postDelayed(() -> pollDownloadProgress(playlistId), 500);
+                    } else {
+                        trackingDownloads = false;
+                        playlistPageViewModel.clearDownloadInProgress();
+                        if (songHorizontalAdapter != null) {
+                            songHorizontalAdapter.updateDownloadProgress(null);
+                        }
+                    }
+                });
+            }
+        }).start();
+    }
+
+    private Map<String, Float> getPerTrackProgress() {
+        Map<String, Float> progressMap = new HashMap<>();
+        try {
+            DownloadManager downloadManager = DownloadUtil.getDownloadManager(requireContext());
+            androidx.media3.exoplayer.offline.DownloadIndex downloadIndex = downloadManager.getDownloadIndex();
+            try (androidx.media3.exoplayer.offline.DownloadCursor cursor = downloadIndex.getDownloads()) {
+                while (cursor.moveToNext()) {
+                    androidx.media3.exoplayer.offline.Download download = cursor.getDownload();
+                    if (download.state == androidx.media3.exoplayer.offline.Download.STATE_DOWNLOADING) {
+                        progressMap.put(download.request.id, download.getPercentDownloaded() / 100f);
+                    } else if (download.state == androidx.media3.exoplayer.offline.Download.STATE_QUEUED) {
+                        progressMap.put(download.request.id, 0f);
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return progressMap;
     }
 }

@@ -29,6 +29,14 @@ class NavidromeClient {
         fun refresh() {
             instance = null
         }
+
+        @JvmStatic
+        fun clearCredentials() {
+            synchronized(this) {
+                instance?.jwtToken = null
+                instance = null
+            }
+        }
     }
 
     private val service: NavidromeService
@@ -60,7 +68,7 @@ class NavidromeClient {
     }
 
     private fun getBaseUrl(): String {
-        val server = Preferences.getServer() ?: ""
+        val server = Preferences.getServer() ?: "http://localhost"
         return if (server.endsWith("/")) server else "$server/"
     }
 

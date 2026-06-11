@@ -2,14 +2,17 @@ package com.cappielloantonio.tempo.ui.adapter;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cappielloantonio.tempo.databinding.ItemLibraryCatalogueArtistBinding;
+import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.glide.CustomGlideRequest;
 import com.cappielloantonio.tempo.interfaces.ClickCallback;
 import com.cappielloantonio.tempo.subsonic.models.ArtistID3;
@@ -22,7 +25,11 @@ import java.util.Comparator;
 import java.util.List;
 
 public class ArtistCatalogueAdapter extends RecyclerView.Adapter<ArtistCatalogueAdapter.ViewHolder> implements Filterable {
+    private static final int TYPE_GRID = 0;
+    private static final int TYPE_LIST = 1;
+
     private final ClickCallback click;
+    private boolean listMode;
 
     private final Filter filtering = new Filter() {
         @Override
@@ -66,7 +73,8 @@ public class ArtistCatalogueAdapter extends RecyclerView.Adapter<ArtistCatalogue
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemLibraryCatalogueArtistBinding view = ItemLibraryCatalogueArtistBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        int layout = viewType == TYPE_LIST ? R.layout.item_library_catalogue_artist_list : R.layout.item_library_catalogue_artist;
+        View view = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
         return new ViewHolder(view);
     }
 
@@ -74,12 +82,12 @@ public class ArtistCatalogueAdapter extends RecyclerView.Adapter<ArtistCatalogue
     public void onBindViewHolder(ViewHolder holder, int position) {
         ArtistID3 artist = artists.get(position);
 
-        holder.item.artistNameLabel.setText(artist.getName());
+        holder.artistNameLabel.setText(artist.getName());
 
         CustomGlideRequest.Builder
                 .from(holder.itemView.getContext(), artist.getCoverArtId(), CustomGlideRequest.ResourceType.Artist)
                 .build()
-                .into(holder.item.artistCatalogueCoverImageView);
+                .into(holder.artistCatalogueCoverImageView);
     }
 
     @Override
@@ -99,12 +107,14 @@ public class ArtistCatalogueAdapter extends RecyclerView.Adapter<ArtistCatalogue
 
     @Override
     public int getItemViewType(int position) {
-        return position;
+        return listMode ? TYPE_LIST : TYPE_GRID;
     }
 
-    @Override
-    public long getItemId(int position) {
-        return position;
+    public void setListMode(boolean listMode) {
+        if (this.listMode != listMode) {
+            this.listMode = listMode;
+            notifyDataSetChanged();
+        }
     }
 
     @Override
@@ -113,14 +123,16 @@ public class ArtistCatalogueAdapter extends RecyclerView.Adapter<ArtistCatalogue
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        ItemLibraryCatalogueArtistBinding item;
+        ImageView artistCatalogueCoverImageView;
+        TextView artistNameLabel;
 
-        ViewHolder(ItemLibraryCatalogueArtistBinding item) {
-            super(item.getRoot());
+        ViewHolder(View itemView) {
+            super(itemView);
 
-            this.item = item;
+            artistCatalogueCoverImageView = itemView.findViewById(R.id.artist_catalogue_cover_image_view);
+            artistNameLabel = itemView.findViewById(R.id.artist_name_label);
 
-            item.artistNameLabel.setSelected(true);
+            artistNameLabel.setSelected(true);
 
             itemView.setOnClickListener(v -> onClick());
             itemView.setOnLongClickListener(v -> onLongClick());

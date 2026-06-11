@@ -71,6 +71,10 @@ public class MediaManager {
         return playCountIncrements.getOrDefault(songId, 0);
     }
 
+    public static void resetPlayCountIncrement(String songId) {
+        if (songId != null) playCountIncrements.remove(songId);
+    }
+
     public static void postScrobbleEvent(String songId) {
         scrobbleVersion.incrementAndGet();
         playCountIncrements.merge(songId, 1, Integer::sum);

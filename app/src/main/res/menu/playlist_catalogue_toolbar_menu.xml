@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_move_to_folder"
+        android:icon="@drawable/ic_folder"
+        android:title="@string/playlist_move_to_folder"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+</menu>

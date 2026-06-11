@@ -65,15 +65,41 @@
 
             <Preference
                 android:key="configure_dock"
-                android:title="Configure Dock"
-                android:summary="Choose and reorder navigation items"
+                android:title="@string/settings_configure_dock"
+                android:summary="@string/settings_configure_dock_summary"
                 app:icon="@drawable/ic_playlist_add" />
 
             <Preference
                 android:key="configure_metadata"
-                android:title="Now Playing Metadata"
-                android:summary="Reorganize and enable/disable metadata fields"
+                android:title="@string/settings_configure_metadata"
+                android:summary="@string/settings_configure_metadata_summary"
                 app:icon="@drawable/ic_info_stream" />
+
+            <ListPreference
+                app:defaultValue="center"
+                app:dialogTitle="@string/settings_metadata_alignment"
+                app:entries="@array/metadata_alignment_titles"
+                app:entryValues="@array/metadata_alignment_values"
+                app:key="metadata_alignment"
+                app:title="@string/settings_metadata_alignment"
+                app:summary="@string/settings_metadata_alignment_summary"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_sort_list" />
+
+            <SwitchPreference
+                android:key="home_screen_title_enabled"
+                android:title="@string/settings_home_title_enabled"
+                android:defaultValue="true"
+                app:icon="@drawable/ic_home" />
+
+            <EditTextPreference
+                android:key="home_screen_title"
+                android:title="@string/settings_home_title"
+                android:defaultValue="@string/settings_home_title_default"
+                android:dependency="home_screen_title_enabled"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_home" />
+
         </PreferenceCategory>
 
     </PreferenceScreen>
@@ -254,17 +280,17 @@
 
         <PreferenceCategory app:title="Behavior">
             <SwitchPreference
-                android:title="@string/settings_show_mini_shuffle_button"
-                android:defaultValue="false"
-                android:summary="@string/settings_show_mini_shuffle_button_summary"
-                android:key="mini_shuffle_button_visibility"
-                app:icon="@drawable/ic_shuffle" />
-
-            <SwitchPreference
                 android:title="@string/settings_auto_download_lyrics"
                 android:defaultValue="false"
                 android:summary="@string/settings_auto_download_lyrics_summary"
                 android:key="auto_download_lyrics"
+                app:icon="@drawable/ic_lyrics" />
+
+            <SwitchPreference
+                android:title="@string/settings_lyrics_romanization"
+                android:defaultValue="false"
+                android:summary="@string/settings_lyrics_romanization_summary"
+                android:key="lyrics_romanization"
                 app:icon="@drawable/ic_lyrics" />
 
             <ListPreference
@@ -277,6 +303,10 @@
                 app:summary="@string/settings_play_next_behavior_summary"
                 app:useSimpleSummaryProvider="true"
                 app:icon="@drawable/ic_navigate_next" />
+
+        </PreferenceCategory>
+
+        <PreferenceCategory app:title="@string/settings_title_scrobbling">
 
             <SwitchPreference
                 android:title="@string/settings_scrobble_title"
@@ -294,6 +324,52 @@
                 android:max="100"
                 app:seekBarIncrement="5"
                 app:icon="@drawable/ic_done" />
+
+        </PreferenceCategory>
+
+        <PreferenceCategory app:title="@string/settings_translation_category">
+
+            <ListPreference
+                app:defaultValue="openrouter"
+                app:dialogTitle="@string/settings_translation_provider"
+                app:entries="@array/translation_provider_titles"
+                app:entryValues="@array/translation_provider_values"
+                app:key="translation_provider"
+                app:title="@string/settings_translation_provider"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_translate" />
+
+            <EditTextPreference
+                android:key="translation_api_key"
+                android:title="@string/settings_translation_api_key"
+                android:summary="@string/settings_translation_api_key_summary"
+                android:inputType="textPassword"
+                app:icon="@drawable/ic_link" />
+
+            <ListPreference
+                app:defaultValue="en"
+                app:dialogTitle="@string/settings_translation_target_language"
+                app:entries="@array/translation_language_titles"
+                app:entryValues="@array/translation_language_values"
+                app:key="translation_target_language"
+                app:title="@string/settings_translation_target_language"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_translate" />
+
+            <EditTextPreference
+                android:key="translation_model"
+                android:title="@string/settings_translation_model"
+                android:summary="@string/settings_translation_model_summary"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_settings" />
+
+            <EditTextPreference
+                android:key="translation_api_url"
+                android:title="@string/settings_translation_api_url"
+                android:summary="@string/settings_translation_api_url_summary"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_link" />
+
         </PreferenceCategory>
 
     </PreferenceScreen>
@@ -451,7 +527,7 @@
                 app:icon="@drawable/ic_favorites_outlined" />
         </PreferenceCategory>
 
-        <PreferenceCategory app:title="Account &amp; Session">
+        <PreferenceCategory app:title="@string/settings_title_account_session">
             <PreferenceScreen
                 android:key="screen_lastfm"
                 android:title="Last.fm Account"
@@ -465,7 +541,7 @@
                     <EditTextPreference
                         android:key="last_fm_api_key"
                         android:title="API Key"
-                        app:useSimpleSummaryProvider="true"
+                        android:inputType="textPassword"
                         app:icon="@drawable/ic_link" />
                 </PreferenceCategory>
             </PreferenceScreen>

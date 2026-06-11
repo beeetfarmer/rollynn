@@ -25,6 +25,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.media3.common.MediaItem;
 import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
@@ -265,6 +266,19 @@ public class PlayerControllerFragment extends Fragment {
         if (playerMetadataContainer == null) return;
         playerMetadataContainer.removeAllViews();
 
+        String alignment = Preferences.getMetadataAlignment();
+        switch (alignment) {
+            case Preferences.METADATA_ALIGNMENT_LEFT:
+                playerMetadataContainer.setGravity(android.view.Gravity.START);
+                break;
+            case Preferences.METADATA_ALIGNMENT_RIGHT:
+                playerMetadataContainer.setGravity(android.view.Gravity.END);
+                break;
+            default:
+                playerMetadataContainer.setGravity(android.view.Gravity.CENTER);
+                break;
+        }
+
         List<String> enabledFields = Preferences.getNowPlayingMetadata();
         String type = mediaMetadata.extras != null ? mediaMetadata.extras.getString("type") : null;
 
@@ -435,7 +449,18 @@ public class PlayerControllerFragment extends Fragment {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
         ));
-        textView.setGravity(android.view.Gravity.CENTER);
+        String alignment = Preferences.getMetadataAlignment();
+        switch (alignment) {
+            case Preferences.METADATA_ALIGNMENT_LEFT:
+                textView.setGravity(android.view.Gravity.START);
+                break;
+            case Preferences.METADATA_ALIGNMENT_RIGHT:
+                textView.setGravity(android.view.Gravity.END);
+                break;
+            default:
+                textView.setGravity(android.view.Gravity.CENTER);
+                break;
+        }
         textView.setSingleLine(true);
         textView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
         textView.setSelected(true);
@@ -753,6 +778,19 @@ public class PlayerControllerFragment extends Fragment {
                     }
                 });
 
+
+                if (media.getPlayCount() != null && mediaBrowserListenableFuture != null && mediaBrowserListenableFuture.isDone()) {
+                    MediaManager.resetPlayCountIncrement(media.getId());
+                    try {
+                        MediaBrowser browser = mediaBrowserListenableFuture.get();
+                        MediaItem currentItem = browser.getCurrentMediaItem();
+                        if (currentItem != null && currentItem.mediaMetadata.extras != null
+                                && media.getId().equals(currentItem.mediaMetadata.extras.getString("id"))) {
+                            currentItem.mediaMetadata.extras.putLong("playCount", media.getPlayCount());
+                            setMetadata(browser.getMediaMetadata());
+                        }
+                    } catch (Exception ignored) {}
+                }
 
                 if (getActivity() != null) {
                     playerBottomSheetViewModel.refreshMediaInfo(requireActivity(), media);

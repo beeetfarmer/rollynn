@@ -10,8 +10,8 @@ android {
         minSdkVersion 24
         targetSdk 35
 
-        versionCode 25
-        versionName 'v0.2.1'
+        versionCode 26
+        versionName 'v0.3.0'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
         javaCompileOptions {
@@ -57,8 +57,21 @@ android {
 
     }
 
+    signingConfigs {
+        release {
+            def props = new Properties()
+            def propsFile = rootProject.file('local.properties')
+            if (propsFile.exists()) props.load(new FileInputStream(propsFile))
+            storeFile file("${rootProject.projectDir}/${props['RELEASE_STORE_FILE']}")
+            storePassword props['RELEASE_STORE_PASSWORD']
+            keyAlias props['RELEASE_KEY_ALIAS']
+            keyPassword props['RELEASE_KEY_PASSWORD']
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             shrinkResources true
             minifyEnabled true
             debuggable false
@@ -85,6 +98,12 @@ android {
         buildConfig true
     }
 
+    packaging {
+        resources {
+            excludes += ['META-INF/CONTRIBUTORS.md', 'META-INF/LICENSE.md']
+        }
+    }
+
     namespace 'com.cappielloantonio.tempo'
 }
 
@@ -92,6 +111,7 @@ dependencies {
     implementation files('../libs/lib-decoder-ffmpeg-release.aar')
 
     // AndroidX
+    implementation 'androidx.work:work-runtime:2.9.1'
     implementation 'androidx.security:security-crypto:1.1.0-alpha06'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
     implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
@@ -126,6 +146,9 @@ dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.11.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
+
+    // Lyrics romanization
+    implementation 'com.atilika.kuromoji:kuromoji-ipadic:0.9.0'
 }
 java {
     toolchain {

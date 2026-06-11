@@ -14,6 +14,7 @@ import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.databinding.DialogServerSignupBinding;
 import com.cappielloantonio.tempo.model.Server;
 import com.cappielloantonio.tempo.util.MusicUtil;
+import com.cappielloantonio.tempo.util.Preferences;
 import com.cappielloantonio.tempo.viewmodel.LoginViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -137,6 +138,8 @@ public class ServerSignupDialog extends DialogFragment {
 
     private void saveServerPreference() {
         String serverID = loginViewModel.getServerToEdit() != null ? loginViewModel.getServerToEdit().getServerId() : UUID.randomUUID().toString();
-        loginViewModel.addServer(new Server(serverID, this.serverName, this.username, this.password, this.server, this.localAddress, System.currentTimeMillis(), this.lowSecurity));
+        Preferences.setServerId(serverID);
+        Preferences.setPassword(this.password);
+        loginViewModel.addServer(new Server(serverID, this.serverName, this.username, this.server, this.localAddress, System.currentTimeMillis(), this.lowSecurity));
     }
 }

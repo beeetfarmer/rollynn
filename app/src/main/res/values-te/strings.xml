@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_title_library">లైబ్రరీ</string>
+    <string name="tab_title_downloads">డౌన్‌లోడ్‌లు</string>
+    <string name="tab_title_playlists">ప్లేజాబితాలు</string>
+    <string name="playlist_filter_hint">ప్లేజాబితాలను ఫిల్టర్ చేయండి</string>
+    <string name="download_filter_hint">డౌన్‌లోడ్‌లను ఫిల్టర్ చేయండి</string>
+    <string name="settings_home_title">స్వాగత సందేశం</string>
+    <string name="settings_home_title_enabled">స్వాగత సందేశాన్ని చూపించు</string>
+    <string name="settings_home_title_default">తిరిగి స్వాగతం, నావికుడా!</string>
+    <string name="settings_title_scrobbling">స్క్రోబ్లింగ్</string>
+    <string name="settings_title_account_session">ఖాతా మరియు సెషన్</string>
+    <string name="settings_title">సెట్టింగ్‌లు</string>
+    <string name="settings_configure_dock">డాక్‌ను కాన్ఫిగర్ చేయండి</string>
+    <string name="settings_configure_dock_summary">నావిగేషన్ అంశాలను ఎంచుకుని క్రమం మార్చండి</string>
+    <string name="settings_configure_metadata">ఇప్పుడు ప్లే అవుతున్న మెటాడేటా</string>
+    <string name="settings_configure_metadata_summary">మెటాడేటా ఫీల్డ్‌లను పునర్వ్యవస్థీకరించి ప్రారంభించండి/నిలిపివేయండి</string>
+    <string name="home_title_history">చరిత్ర</string>
+    <string name="home_title_recently_played_artists">ఇటీవల ప్లే చేసిన కళాకారులు</string>
+    <string name="home_title_top_played_artists">ఎక్కువగా ప్లే చేసిన కళాకారులు</string>
+    <string name="home_title_top_played_songs">ఎక్కువగా ప్లే చేసిన పాటలు</string>
+    <string name="home_title_history_see_all_button">అన్నీ చూడండి</string>
+    <string name="home_title_recently_played_artists_see_all_button">అన్నీ చూడండి</string>
+    <string name="home_title_top_played_artists_see_all_button">అన్నీ చూడండి</string>
+    <string name="home_title_top_played_songs_see_all_button">అన్నీ చూడండి</string>
+    <string name="settings_title_ui_landscape_items_per_row">ల్యాండ్‌స్కేప్‌లో వరుసకు అంశాలు</string>
+    <string name="settings_metadata_alignment">మెటాడేటా అమరిక</string>
+    <string name="settings_playlist_sort">ప్లేజాబితా క్రమబద్ధీకరణ</string>
+    <string name="settings_lyrics_romanization">సాహిత్యం రోమనైజేషన్</string>
+    <string name="settings_play_next_behavior_title">తదుపరి ప్లే ప్రవర్తన</string>
+    <string name="settings_scrobble_threshold_title">స్క్రోబుల్ థ్రెషోల్డ్ శాతం</string>
+    <string name="settings_translation_provider">అనువాద ప్రదాత</string>
+    <string name="settings_translation_api_key">API కీ</string>
+    <string name="settings_translation_target_language">లక్ష్య భాష</string>
+    <string name="settings_translation_model">AI మోడల్</string>
+    <string name="settings_translation_api_url">API URL</string>
+    <string name="settings_ping_timeout_title">సర్వర్ పింగ్ టైమ్‌అవుట్</string>
+    <string name="settings_tab_appearance">రూపం</string>
+    <string name="settings_tab_library">లైబ్రరీ</string>
+    <string name="settings_tab_playback">ప్లేబ్యాక్</string>
+    <string name="settings_tab_general">సాధారణ</string>
+</resources>

@@ -47,6 +47,12 @@ object Preferences {
     private const val PODCAST_SECTION_VISIBILITY = "podcast_section_visibility"
     private const val RADIO_SECTION_VISIBILITY = "radio_section_visibility"
     private const val AUTO_DOWNLOAD_LYRICS = "auto_download_lyrics"
+    private const val LYRICS_ROMANIZATION = "lyrics_romanization"
+    private const val TRANSLATION_PROVIDER = "translation_provider"
+    private const val TRANSLATION_API_KEY = "translation_api_key"
+    private const val TRANSLATION_TARGET_LANGUAGE = "translation_target_language"
+    private const val TRANSLATION_MODEL = "translation_model"
+    private const val TRANSLATION_API_URL = "translation_api_url"
     private const val MUSIC_DIRECTORY_SECTION_VISIBILITY = "music_directory_section_visibility"
     private const val REPLAY_GAIN_MODE = "replay_gain_mode"
     private const val AUDIO_TRANSCODE_PRIORITY = "audio_transcode_priority"
@@ -79,7 +85,6 @@ object Preferences {
     private const val DEFAULT_HOME_SORT_PLAYLISTS_SORT_ORDER = Constants.PLAYLIST_ORDER_BY_RANDOM
     private const val EQUALIZER_ENABLED = "equalizer_enabled"
     private const val EQUALIZER_BAND_LEVELS = "equalizer_band_levels"
-    private const val MINI_SHUFFLE_BUTTON_VISIBILITY = "mini_shuffle_button_visibility"
     private const val ALBUM_DETAIL = "album_detail"
     private const val ALBUM_SORT_ORDER = "album_sort_order"
     private const val DEFAULT_ALBUM_SORT_ORDER = Constants.ALBUM_ORDER_BY_NAME
@@ -93,7 +98,15 @@ object Preferences {
     private const val PLAY_NEXT_BEHAVIOR = "play_next_behavior"
     const val PLAY_NEXT_BEHAVIOR_TOP = "top"
     const val PLAY_NEXT_BEHAVIOR_SEQUENTIAL = "sequential"
-    
+    private const val METADATA_ALIGNMENT = "metadata_alignment"
+    const val METADATA_ALIGNMENT_LEFT = "left"
+    const val METADATA_ALIGNMENT_CENTER = "center"
+    const val METADATA_ALIGNMENT_RIGHT = "right"
+    private const val HOME_SCREEN_TITLE = "home_screen_title"
+    private const val HOME_SCREEN_TITLE_ENABLED = "home_screen_title_enabled"
+    private const val ALBUM_CATALOGUE_LIST_MODE = "album_catalogue_list_mode"
+    private const val ARTIST_CATALOGUE_LIST_MODE = "artist_catalogue_list_mode"
+
 
     @JvmStatic
     fun getServer(): String? {
@@ -136,6 +149,21 @@ object Preferences {
     @JvmStatic
     fun setPassword(password: String?) {
         App.getInstance().encryptedPreferences.edit().putString(PASSWORD, password).apply()
+        val serverId = getServerId()
+        if (serverId != null && password != null) {
+            App.getInstance().encryptedPreferences.edit()
+                .putString("password_$serverId", password).apply()
+        }
+    }
+
+    @JvmStatic
+    fun getPasswordForServer(serverId: String): String? {
+        return App.getInstance().encryptedPreferences.getString("password_$serverId", null)
+    }
+
+    @JvmStatic
+    fun removePasswordForServer(serverId: String) {
+        App.getInstance().encryptedPreferences.edit().remove("password_$serverId").apply()
     }
 
     @JvmStatic
@@ -214,6 +242,80 @@ object Preferences {
         App.getInstance().preferences.edit()
             .putBoolean(AUTO_DOWNLOAD_LYRICS, isEnabled)
             .apply()
+    }
+
+    @JvmStatic
+    fun isLyricsRomanizationEnabled(): Boolean {
+        return App.getInstance().preferences.getBoolean(LYRICS_ROMANIZATION, false)
+    }
+
+    @JvmStatic
+    fun setLyricsRomanizationEnabled(isEnabled: Boolean) {
+        App.getInstance().preferences.edit()
+            .putBoolean(LYRICS_ROMANIZATION, isEnabled)
+            .apply()
+    }
+
+    @JvmStatic
+    fun getTranslationProvider(): String {
+        return App.getInstance().preferences.getString(TRANSLATION_PROVIDER, "openrouter") ?: "openrouter"
+    }
+
+    @JvmStatic
+    fun setTranslationProvider(provider: String) {
+        App.getInstance().preferences.edit().putString(TRANSLATION_PROVIDER, provider).apply()
+    }
+
+    @JvmStatic
+    fun getTranslationApiKey(): String? {
+        val app = App.getInstance()
+        val encrypted = app.encryptedPreferences.getString(TRANSLATION_API_KEY, null)
+        if (!encrypted.isNullOrEmpty()) return encrypted
+        val plain = app.preferences.getString(TRANSLATION_API_KEY, null)
+        if (!plain.isNullOrEmpty() && app.encryptedPreferences !== app.preferences) {
+            app.encryptedPreferences.edit().putString(TRANSLATION_API_KEY, plain).apply()
+            app.preferences.edit().remove(TRANSLATION_API_KEY).apply()
+        }
+        return plain
+    }
+
+    @JvmStatic
+    fun setTranslationApiKey(apiKey: String?) {
+        val app = App.getInstance()
+        app.encryptedPreferences.edit().putString(TRANSLATION_API_KEY, apiKey).apply()
+        if (app.encryptedPreferences !== app.preferences) {
+            app.preferences.edit().remove(TRANSLATION_API_KEY).apply()
+        }
+    }
+
+    @JvmStatic
+    fun getTranslationTargetLanguage(): String? {
+        return App.getInstance().preferences.getString(TRANSLATION_TARGET_LANGUAGE, "en")
+    }
+
+    @JvmStatic
+    fun setTranslationTargetLanguage(language: String) {
+        App.getInstance().preferences.edit().putString(TRANSLATION_TARGET_LANGUAGE, language).apply()
+    }
+
+    @JvmStatic
+    fun getTranslationModel(): String? {
+        return App.getInstance().preferences.getString(TRANSLATION_MODEL, null)
+    }
+
+    @JvmStatic
+    fun setTranslationModel(model: String?) {
+        App.getInstance().preferences.edit().putString(TRANSLATION_MODEL, model).apply()
+    }
+
+    @JvmStatic
+    fun getTranslationApiUrl(): String? {
+        return App.getInstance().preferences.getString(TRANSLATION_API_URL, null)
+    }
+
+    @JvmStatic
+    fun setTranslationApiUrl(url: String?) {
+        App.getInstance().preferences.edit().putString(TRANSLATION_API_URL, url).apply()
     }
 
     @JvmStatic
@@ -396,16 +498,6 @@ object Preferences {
         App.getInstance().preferences.edit().putBoolean(
                 SYNC_STARRED_TRACKS_FOR_OFFLINE_USE, isStarredSyncEnabled
         ).apply()
-    }
-
-    @JvmStatic
-    fun showShuffleInsteadOfHeart(): Boolean {
-        return App.getInstance().preferences.getBoolean(MINI_SHUFFLE_BUTTON_VISIBILITY, false)
-    }
-
-    @JvmStatic
-    fun setShuffleInsteadOfHeart(enabled: Boolean) {
-        App.getInstance().preferences.edit().putBoolean(MINI_SHUFFLE_BUTTON_VISIBILITY, enabled).apply()
     }
 
     @JvmStatic
@@ -838,4 +930,45 @@ object Preferences {
             plainPrefs.edit().remove(Constants.LAST_FM_API_KEY).apply()
         }
     }
+
+    @JvmStatic
+    fun getMetadataAlignment(): String {
+        return App.getInstance().preferences.getString(METADATA_ALIGNMENT, METADATA_ALIGNMENT_CENTER) ?: METADATA_ALIGNMENT_CENTER
+    }
+
+    @JvmStatic
+    fun setMetadataAlignment(alignment: String) {
+        App.getInstance().preferences.edit().putString(METADATA_ALIGNMENT, alignment).apply()
+    }
+
+    @JvmStatic
+    fun getHomeScreenTitle(): String {
+        return App.getInstance().preferences.getString(HOME_SCREEN_TITLE, "Welcome Back, Sailor!") ?: "Welcome Back, Sailor!"
+    }
+
+    @JvmStatic
+    fun isHomeScreenTitleEnabled(): Boolean {
+        return App.getInstance().preferences.getBoolean(HOME_SCREEN_TITLE_ENABLED, true)
+    }
+
+    @JvmStatic
+    fun isAlbumCatalogueListMode(): Boolean {
+        return App.getInstance().preferences.getBoolean(ALBUM_CATALOGUE_LIST_MODE, true)
+    }
+
+    @JvmStatic
+    fun setAlbumCatalogueListMode(listMode: Boolean) {
+        App.getInstance().preferences.edit().putBoolean(ALBUM_CATALOGUE_LIST_MODE, listMode).apply()
+    }
+
+    @JvmStatic
+    fun isArtistCatalogueListMode(): Boolean {
+        return App.getInstance().preferences.getBoolean(ARTIST_CATALOGUE_LIST_MODE, true)
+    }
+
+    @JvmStatic
+    fun setArtistCatalogueListMode(listMode: Boolean) {
+        App.getInstance().preferences.edit().putBoolean(ARTIST_CATALOGUE_LIST_MODE, listMode).apply()
+    }
+
 }

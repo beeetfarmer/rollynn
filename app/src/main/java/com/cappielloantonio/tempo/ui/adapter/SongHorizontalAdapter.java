@@ -38,7 +38,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -62,6 +64,7 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
     private Drawable starDrawable;
     private Drawable starOutlinedDrawable;
     private DownloaderManager downloadTracker;
+    private Map<String, Float> downloadProgressMap = new HashMap<>();
 
     private final Filter filtering = new Filter() {
         @Override
@@ -199,17 +202,26 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
 
         holder.item.trackNumberTextView.setText(MusicUtil.getReadableTrackNumber(holder.itemView.getContext(), song.getTrack()));
 
-        if (Preferences.getDownloadDirectoryUri() == null) {
-            if (downloadTracker != null && downloadTracker.isDownloaded(song.getId())) {
-                holder.item.searchResultDownloadIndicatorImageView.setVisibility(View.VISIBLE);
-            } else {
-                holder.item.searchResultDownloadIndicatorImageView.setVisibility(View.GONE);
-            }
+        Float progress = downloadProgressMap.get(song.getId());
+        if (progress != null && progress < 1.0f) {
+            holder.item.downloadProgressIndicator.setVisibility(View.VISIBLE);
+            holder.item.downloadProgressIndicator.setMax(100);
+            holder.item.downloadProgressIndicator.setProgress((int) (progress * 100));
+            holder.item.searchResultDownloadIndicatorImageView.setVisibility(View.GONE);
         } else {
-            if (ExternalAudioReader.getUri(song) != null) {
-                holder.item.searchResultDownloadIndicatorImageView.setVisibility(View.VISIBLE);
+            holder.item.downloadProgressIndicator.setVisibility(View.GONE);
+            if (Preferences.getDownloadDirectoryUri() == null) {
+                if (downloadTracker != null && downloadTracker.isDownloaded(song.getId())) {
+                    holder.item.searchResultDownloadIndicatorImageView.setVisibility(View.VISIBLE);
+                } else {
+                    holder.item.searchResultDownloadIndicatorImageView.setVisibility(View.GONE);
+                }
             } else {
-                holder.item.searchResultDownloadIndicatorImageView.setVisibility(View.GONE);
+                if (ExternalAudioReader.getUri(song) != null) {
+                    holder.item.searchResultDownloadIndicatorImageView.setVisibility(View.VISIBLE);
+                } else {
+                    holder.item.searchResultDownloadIndicatorImageView.setVisibility(View.GONE);
+                }
             }
         }
 
@@ -444,6 +456,11 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
 
     public void setMediaBrowserListenableFuture(ListenableFuture<MediaBrowser> mediaBrowserListenableFuture) {
         this.mediaBrowserListenableFuture = mediaBrowserListenableFuture;
+    }
+
+    public void updateDownloadProgress(Map<String, Float> progressMap) {
+        this.downloadProgressMap = progressMap != null ? progressMap : new HashMap<>();
+        notifyDataSetChanged();
     }
 
     private static class SongDiffCallback extends DiffUtil.Callback {

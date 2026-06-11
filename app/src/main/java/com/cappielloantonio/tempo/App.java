@@ -3,6 +3,7 @@ package com.cappielloantonio.tempo;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
@@ -39,20 +40,32 @@ public class App extends Application {
         initEncryptedPreferences();
     }
 
+    private static boolean encryptedPreferencesAvailable = false;
+
     private void initEncryptedPreferences() {
-        try {
-            String masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
-            encryptedPreferences = EncryptedSharedPreferences.create(
-                    "secure_prefs",
-                    masterKeyAlias,
-                    context,
-                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-            );
-            migrateSensitivePreferences();
-        } catch (Exception e) {
-            encryptedPreferences = null;
+        for (int attempt = 0; attempt < 2; attempt++) {
+            try {
+                String masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
+                encryptedPreferences = EncryptedSharedPreferences.create(
+                        "secure_prefs",
+                        masterKeyAlias,
+                        context,
+                        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                );
+                encryptedPreferencesAvailable = true;
+                migrateSensitivePreferences();
+                return;
+            } catch (Exception e) {
+                Log.e("App", "Encrypted preferences init failed (attempt " + (attempt + 1) + ")", e);
+            }
         }
+        encryptedPreferences = null;
+        encryptedPreferencesAvailable = false;
+    }
+
+    public static boolean isEncryptedPreferencesAvailable() {
+        return encryptedPreferencesAvailable;
     }
 
     private void migrateSensitivePreferences() {
@@ -161,6 +174,7 @@ public class App extends Application {
 
     public SharedPreferences getEncryptedPreferences() {
         if (encryptedPreferences != null) return encryptedPreferences;
+        Log.w("App", "Encrypted preferences unavailable, credentials will not be persisted securely");
         return preferences;
     }
 

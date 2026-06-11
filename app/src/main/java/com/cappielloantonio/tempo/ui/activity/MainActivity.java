@@ -21,6 +21,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.core.splashscreen.SplashScreen;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MediaMetadata;
@@ -37,6 +38,7 @@ import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.broadcast.receiver.ConnectivityStatusBroadcastReceiver;
 import com.cappielloantonio.tempo.databinding.ActivityMainBinding;
 import com.cappielloantonio.tempo.github.utils.UpdateUtil;
+import com.cappielloantonio.tempo.subsonic.api.navidrome.NavidromeClient;
 import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.ui.activity.base.BaseActivity;
 import com.cappielloantonio.tempo.ui.dialog.ConnectionAlertDialog;
@@ -46,6 +48,7 @@ import com.cappielloantonio.tempo.ui.fragment.PlayerBottomSheetFragment;
 import com.cappielloantonio.tempo.util.AssetLinkNavigator;
 import com.cappielloantonio.tempo.util.AssetLinkUtil;
 import com.cappielloantonio.tempo.util.Constants;
+import com.cappielloantonio.tempo.util.NetworkUtil;
 import com.cappielloantonio.tempo.util.Preferences;
 import com.cappielloantonio.tempo.util.UIUtil;
 import com.cappielloantonio.tempo.viewmodel.MainViewModel;
@@ -54,8 +57,17 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.color.DynamicColors;
 import com.google.common.util.concurrent.MoreExecutors;
 
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+
+import com.cappielloantonio.tempo.service.PlaylistSyncWorker;
+
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ExecutionException;
 
 @UnstableApi
@@ -70,26 +82,29 @@ public class MainActivity extends BaseActivity {
     public NavController navController;
     private BottomSheetBehavior bottomSheetBehavior;
     private boolean isLandscape = false;
+    private boolean playerBarsExpanded = false;
     private AssetLinkNavigator assetLinkNavigator;
     private AssetLinkUtil.AssetLink pendingAssetLink;
 
     private ViewGroup dockContainer;
     ConnectivityStatusBroadcastReceiver connectivityStatusBroadcastReceiver;
     private Intent pendingDownloadPlaybackIntent;
+    private final MutableLiveData<Boolean> serverReachable = new MutableLiveData<>(true);
+
+    public MutableLiveData<Boolean> getServerReachable() {
+        return serverReachable;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SplashScreen.installSplashScreen(this);
         
         int accentColor = Preferences.getAccentColor();
-        if (accentColor != -1) {
-            com.google.android.material.color.DynamicColors.applyToActivityIfAvailable(this, 
-                new com.google.android.material.color.DynamicColorsOptions.Builder()
-                    .setContentBasedSource(android.graphics.Bitmap.createBitmap(new int[]{accentColor}, 1, 1, android.graphics.Bitmap.Config.ARGB_8888))
-                    .build());
-        } else {
-            DynamicColors.applyToActivityIfAvailable(this);
-        }
+        if (accentColor == -1) accentColor = 0xFF6750A4;
+        com.google.android.material.color.DynamicColors.applyToActivityIfAvailable(this,
+            new com.google.android.material.color.DynamicColorsOptions.Builder()
+                .setContentBasedSource(android.graphics.Bitmap.createBitmap(new int[]{accentColor}, 1, 1, android.graphics.Bitmap.Config.ARGB_8888))
+                .build());
 
         super.onCreate(savedInstanceState);
 
@@ -124,7 +139,9 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        pingServer();
+        if (bottomSheetBehavior != null && bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+            applyPlayerSystemBarColors(true);
+        }
     }
 
     @Override
@@ -226,11 +243,18 @@ public class MainActivity extends BaseActivity {
                                 playerBottomSheetFragment.goBackToFirstPage();
                                 playerBottomSheetFragment.setBodyVisibility(false);
                             }
+                            if (bind.offlineModeTextView.getTag() != null) {
+                                bind.offlineModeTextView.setVisibility(View.VISIBLE);
+                            }
                             applyPlayerSystemBarColors(false);
                             break;
                         case BottomSheetBehavior.STATE_EXPANDED:
                             if (playerBottomSheetFragment != null) {
                                 playerBottomSheetFragment.setBodyVisibility(true);
+                            }
+                            if (bind.offlineModeTextView.getVisibility() == View.VISIBLE) {
+                                bind.offlineModeTextView.setTag(true);
+                                bind.offlineModeTextView.setVisibility(View.GONE);
                             }
                             applyPlayerSystemBarColors(true);
                             break;
@@ -247,10 +271,16 @@ public class MainActivity extends BaseActivity {
                     if (!isLandscape) {
                          animateBottomNavigation(slideOffset, navigationHeight);
                     }
+
+                    boolean usePlayerColor = slideOffset >= 0.99f;
+                    if (usePlayerColor != playerBarsExpanded) {
+                        applyPlayerSystemBarColors(usePlayerColor);
+                    }
             }
     };
 
     private void applyPlayerSystemBarColors(boolean playerExpanded) {
+        playerBarsExpanded = playerExpanded;
         if (playerExpanded) {
             applySystemBarColors(UIUtil.getPlayerBackgroundColor(this));
         } else {
@@ -507,7 +537,8 @@ public class MainActivity extends BaseActivity {
         Preferences.setLocalAddress(null);
         Preferences.setUser(null);
 
-        // TODO Enter all settings to be reset
+        NavidromeClient.clearCredentials();
+
         Preferences.setOpenSubsonic(false);
         Preferences.setPlaybackSpeed(1.0f);
         Preferences.setSkipSilenceMode(false);
@@ -539,22 +570,31 @@ public class MainActivity extends BaseActivity {
     }
 
     private void pingServer() {
+        if (Preferences.getServer() == null) return;
         if (Preferences.getToken() == null && Preferences.getPassword() == null) return;
 
         if (Preferences.isInUseServerAddressLocal()) {
             mainViewModel.ping().observe(this, subsonicResponse -> {
                 if (subsonicResponse == null) {
+                    NetworkUtil.setServerReachable(false);
+                    serverReachable.setValue(false);
                     Preferences.setServerSwitchableTimer();
                     Preferences.switchInUseServerAddress();
                     App.refreshSubsonicClient();
                     pingServer();
                     resetView();
                 } else {
+                    NetworkUtil.setServerReachable(true);
+                    serverReachable.setValue(true);
                     Preferences.setOpenSubsonic(subsonicResponse.getOpenSubsonic() != null && subsonicResponse.getOpenSubsonic());
+                    com.cappielloantonio.tempo.glide.CoverArtCache.cacheAllDownloads();
+                    schedulePlaylistSync();
                 }
             });
         } else {
             if (Preferences.isServerSwitchable()) {
+                NetworkUtil.setServerReachable(false);
+                serverReachable.setValue(false);
                 Preferences.setServerSwitchableTimer();
                 Preferences.switchInUseServerAddress();
                 App.refreshSubsonicClient();
@@ -563,16 +603,38 @@ public class MainActivity extends BaseActivity {
             } else {
                 mainViewModel.ping().observe(this, subsonicResponse -> {
                     if (subsonicResponse == null) {
-                        if (Preferences.showServerUnreachableDialog()) {
+                        NetworkUtil.setServerReachable(false);
+                        serverReachable.setValue(false);
+                        if (Preferences.showServerUnreachableDialog() && getSupportFragmentManager().findFragmentByTag("ServerUnreachableDialog") == null) {
                             ServerUnreachableDialog dialog = new ServerUnreachableDialog();
-                            dialog.show(getSupportFragmentManager(), null);
+                            dialog.show(getSupportFragmentManager(), "ServerUnreachableDialog");
                         }
                     } else {
+                        NetworkUtil.setServerReachable(true);
+                        serverReachable.setValue(true);
                         Preferences.setOpenSubsonic(subsonicResponse.getOpenSubsonic() != null && subsonicResponse.getOpenSubsonic());
+                        com.cappielloantonio.tempo.glide.CoverArtCache.cacheAllDownloads();
+                        schedulePlaylistSync();
                     }
                 });
             }
         }
+    }
+
+    private void schedulePlaylistSync() {
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        PeriodicWorkRequest syncRequest = new PeriodicWorkRequest.Builder(
+                PlaylistSyncWorker.class, 1, TimeUnit.HOURS)
+                .setConstraints(constraints)
+                .build();
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "playlist_sync",
+                ExistingPeriodicWorkPolicy.KEEP,
+                syncRequest);
     }
 
     private void resetView() {
@@ -583,7 +645,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void getOpenSubsonicExtensions() {
-        if (Preferences.getToken() != null || Preferences.getPassword() != null) {
+        if (Preferences.getServer() != null && (Preferences.getToken() != null || Preferences.getPassword() != null)) {
             mainViewModel.getOpenSubsonicExtensions().observe(this, openSubsonicExtensions -> {
                 if (openSubsonicExtensions != null) {
                     Preferences.setOpenSubsonicExtensions(openSubsonicExtensions);

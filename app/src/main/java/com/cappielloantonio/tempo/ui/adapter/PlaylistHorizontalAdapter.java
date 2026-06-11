@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cappielloantonio.tempo.R;
+import com.cappielloantonio.tempo.database.AppDatabase;
+import com.cappielloantonio.tempo.database.dao.DownloadDao;
 import com.cappielloantonio.tempo.databinding.ItemHorizontalPlaylistBinding;
 import com.cappielloantonio.tempo.glide.CustomGlideRequest;
 import com.cappielloantonio.tempo.interfaces.ClickCallback;
@@ -20,13 +22,18 @@ import com.cappielloantonio.tempo.util.MusicUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PlaylistHorizontalAdapter extends RecyclerView.Adapter<PlaylistHorizontalAdapter.ViewHolder> implements Filterable {
     private final ClickCallback click;
 
     private List<Playlist> playlists;
     private List<Playlist> playlistsFull;
+    private Set<String> downloadedPlaylistIds = new HashSet<>();
+    private boolean selectionMode;
+    private final Set<String> selectedIds = new HashSet<>();
 
     private final Filter filtering = new Filter() {
         @Override
@@ -81,11 +88,21 @@ public class PlaylistHorizontalAdapter extends RecyclerView.Adapter<PlaylistHori
     public void onBindViewHolder(ViewHolder holder, int position) {
         Playlist playlist = playlists.get(position);
 
-        holder.itemView.setTag(playlist.getId());
+        holder.item.playlistMoreButton.setTag(playlist.getId());
         holder.item.playlistTitleTextView.setText(playlist.getName());
         holder.item.playlistSubtitleTextView.setText(holder.itemView.getContext().getString(R.string.playlist_counted_tracks, playlist.getSongCount(), MusicUtil.getReadableDurationString(playlist.getDuration(), false)));
 
         holder.item.playlistPinnedIcon.setVisibility(playlist.isPinned() ? android.view.View.VISIBLE : android.view.View.GONE);
+        holder.item.playlistDownloadIcon.setVisibility(downloadedPlaylistIds.contains(playlist.getId()) ? android.view.View.VISIBLE : android.view.View.GONE);
+
+        if (selectionMode && selectedIds.contains(playlist.getId())) {
+            holder.itemView.setBackgroundColor(0x3000BFA5);
+        } else {
+            android.content.res.TypedArray ta = holder.itemView.getContext().obtainStyledAttributes(
+                    new int[]{android.R.attr.selectableItemBackground});
+            holder.itemView.setBackgroundResource(ta.getResourceId(0, 0));
+            ta.recycle();
+        }
 
         CustomGlideRequest.Builder
                 .from(holder.itemView.getContext(), playlist.getCoverArtId(), CustomGlideRequest.ResourceType.Playlist)
@@ -102,6 +119,7 @@ public class PlaylistHorizontalAdapter extends RecyclerView.Adapter<PlaylistHori
         return playlists.get(id);
     }
 
+    @androidx.media3.common.util.UnstableApi
     public void setItems(List<Playlist> playlists) {
         if (playlists == null) return;
         synchronized (playlistsFull) {
@@ -110,8 +128,17 @@ public class PlaylistHorizontalAdapter extends RecyclerView.Adapter<PlaylistHori
         }
         this.playlists.clear();
         this.playlists.addAll(this.playlistsFull);
-        sort(null);
+        refreshDownloadedIds();
         notifyDataSetChanged();
+    }
+
+    @androidx.media3.common.util.UnstableApi
+    private void refreshDownloadedIds() {
+        new Thread(() -> {
+            DownloadDao downloadDao = AppDatabase.getInstance().downloadDao();
+            List<String> ids = downloadDao.getDownloadedPlaylistIds();
+            downloadedPlaylistIds = new HashSet<>(ids);
+        }).start();
     }
 
     public void setPinnedIds(List<String> pinnedIds) {
@@ -121,9 +148,46 @@ public class PlaylistHorizontalAdapter extends RecyclerView.Adapter<PlaylistHori
                 playlist.setPinned(pinnedIds.contains(playlist.getId()));
             }
         }
-        this.playlists.clear();
-        this.playlists.addAll(this.playlistsFull);
-        sort(null);
+        for (Playlist playlist : playlists) {
+            playlist.setPinned(pinnedIds.contains(playlist.getId()));
+        }
+        notifyDataSetChanged();
+    }
+
+    public void setSelectionMode(boolean enabled) {
+        this.selectionMode = enabled;
+        if (!enabled) selectedIds.clear();
+        notifyDataSetChanged();
+    }
+
+    public boolean isSelectionMode() {
+        return selectionMode;
+    }
+
+    public void toggleSelection(String playlistId) {
+        boolean owns = false;
+        for (Playlist p : playlists) {
+            if (p.getId().equals(playlistId)) {
+                owns = true;
+                break;
+            }
+        }
+        if (!owns) return;
+
+        if (selectedIds.contains(playlistId)) {
+            selectedIds.remove(playlistId);
+        } else {
+            selectedIds.add(playlistId);
+        }
+        notifyDataSetChanged();
+    }
+
+    public Set<String> getSelectedIds() {
+        return new HashSet<>(selectedIds);
+    }
+
+    public void clearSelection() {
+        selectedIds.clear();
         notifyDataSetChanged();
     }
 
@@ -151,6 +215,10 @@ public class PlaylistHorizontalAdapter extends RecyclerView.Adapter<PlaylistHori
             Bundle bundle = new Bundle();
             bundle.putParcelable(Constants.PLAYLIST_OBJECT, playlists.get(getBindingAdapterPosition()));
 
+            if (selectionMode) {
+                bundle.putBoolean("SELECTION_TOGGLE", true);
+            }
+
             click.onPlaylistClick(bundle);
         }
 
@@ -165,22 +233,18 @@ public class PlaylistHorizontalAdapter extends RecyclerView.Adapter<PlaylistHori
     }
 
     public void sort(String order) {
-        Comparator<Playlist> comparator = (p1, p2) -> Boolean.compare(p2.isPinned(), p1.isPinned());
-
         if (order != null) {
             switch (order) {
                 case Constants.PLAYLIST_ORDER_BY_NAME:
-                    comparator = comparator.thenComparing(Playlist::getName);
+                    playlists.sort(Comparator.comparing(Playlist::getName));
                     break;
                 case Constants.PLAYLIST_ORDER_BY_RANDOM:
                     Collections.shuffle(playlists);
-                    return;
+                    break;
             }
         } else {
-            comparator = comparator.thenComparing(Playlist::getName);
+            playlists.sort(Comparator.comparing(Playlist::getName));
         }
-
-        playlists.sort(comparator);
         notifyDataSetChanged();
     }
 }

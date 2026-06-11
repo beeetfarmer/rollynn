@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.util.UnstableApi;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
@@ -52,6 +53,7 @@ public class ArtistCatalogueFragment extends Fragment implements ClickCallback {
 
     private ArtistCatalogueAdapter artistAdapter;
     private int spanCount = 2;
+    private GridItemDecoration gridDecoration;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -114,13 +116,14 @@ public class ArtistCatalogueFragment extends Fragment implements ClickCallback {
 
     @SuppressLint("ClickableViewAccessibility")
     private void initArtistCatalogueView() {
-        bind.artistCatalogueRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), spanCount));
-        bind.artistCatalogueRecyclerView.addItemDecoration(new GridItemDecoration(spanCount, 20, false));
         bind.artistCatalogueRecyclerView.setHasFixedSize(true);
 
         artistAdapter = new ArtistCatalogueAdapter(this);
         artistAdapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
         bind.artistCatalogueRecyclerView.setAdapter(artistAdapter);
+
+        applyViewMode();
+
         artistCatalogueViewModel.getArtistList().observe(getViewLifecycleOwner(), artistList -> {
             artistAdapter.setItems(artistList);
             artistAdapter.sort(Preferences.getArtistSortOrder());
@@ -132,6 +135,38 @@ public class ArtistCatalogueFragment extends Fragment implements ClickCallback {
         });
 
         bind.artistListSortImageView.setOnClickListener(view -> showPopupMenu(view, R.menu.sort_artist_popup_menu));
+        bind.artistViewModeImageView.setOnClickListener(view -> toggleViewMode());
+    }
+
+    private void applyViewMode() {
+        boolean listMode = Preferences.isArtistCatalogueListMode();
+
+        if (gridDecoration != null) {
+            bind.artistCatalogueRecyclerView.removeItemDecoration(gridDecoration);
+            gridDecoration = null;
+        }
+
+        if (listMode) {
+            bind.artistCatalogueRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        } else {
+            bind.artistCatalogueRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), spanCount));
+            gridDecoration = new GridItemDecoration(spanCount, 20, false);
+            bind.artistCatalogueRecyclerView.addItemDecoration(gridDecoration);
+        }
+
+        artistAdapter.setListMode(listMode);
+        updateViewModeIcon(listMode);
+    }
+
+    private void toggleViewMode() {
+        Preferences.setArtistCatalogueListMode(!Preferences.isArtistCatalogueListMode());
+        applyViewMode();
+    }
+
+    private void updateViewModeIcon(boolean listMode) {
+        if (bind == null) return;
+        ((com.google.android.material.button.MaterialButton) bind.artistViewModeImageView)
+                .setIconResource(listMode ? R.drawable.ic_view_grid : R.drawable.ic_view_list);
     }
 
     @Override
