@@ -3,12 +3,10 @@ name: "CodeQL"
 on:
   push:
     branches:
-      - main
       - ng-changes
-      - v0.2.0
   pull_request:
     branches:
-      - main
+      - ng-changes
   schedule:
     - cron: "22 4 * * 1"
 
