@@ -20,6 +20,9 @@ public class PlaylistPageViewModel extends AndroidViewModel {
     private Playlist playlist;
     private boolean isOffline;
 
+    private String downloadingPlaylistId;
+    private int downloadTotalCount;
+
     private final MutableLiveData<List<Child>> songLiveList = new MutableLiveData<>();
 
     public PlaylistPageViewModel(@NonNull Application application) {
@@ -61,6 +64,24 @@ public class PlaylistPageViewModel extends AndroidViewModel {
             this.playlist = playlist;
             this.songLiveList.setValue(null); // Clear old data immediately
         }
+    }
+
+    public void setDownloadInProgress(String playlistId, int total) {
+        this.downloadingPlaylistId = playlistId;
+        this.downloadTotalCount = total;
+    }
+
+    public void clearDownloadInProgress() {
+        this.downloadingPlaylistId = null;
+        this.downloadTotalCount = 0;
+    }
+
+    public String getDownloadingPlaylistId() {
+        return downloadingPlaylistId;
+    }
+
+    public int getDownloadTotalCount() {
+        return downloadTotalCount;
     }
 
     public LiveData<Boolean> isPinned(LifecycleOwner owner) {

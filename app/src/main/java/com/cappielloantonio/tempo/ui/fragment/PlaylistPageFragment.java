@@ -143,6 +143,7 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
     public void onResume() {
         super.onResume();
         if (songHorizontalAdapter != null) setMediaBrowserListenableFuture();
+        resumeDownloadTrackingIfNeeded();
     }
 
     @Override
@@ -154,6 +155,8 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        progressHandler.removeCallbacksAndMessages(null);
+        trackingDownloads = false;
         bind = null;
     }
 
@@ -171,6 +174,7 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
                     PlaylistCoverCache.save(downloadPlaylist.getId(), downloadPlaylist.getCoverArtId());
                     if (Preferences.getDownloadDirectoryUri() == null) {
                         downloadTotalCount = songs.size();
+                        playlistPageViewModel.setDownloadInProgress(downloadPlaylist.getId(), downloadTotalCount);
                         showDownloadProgress(0, downloadTotalCount);
                         DownloadUtil.getDownloadTracker(requireContext()).download(
                             MappingUtil.mapDownloads(songs),
@@ -441,6 +445,16 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
         }
     }
 
+    private void resumeDownloadTrackingIfNeeded() {
+        if (trackingDownloads) return;
+        String activeId = playlistPageViewModel.getDownloadingPlaylistId();
+        if (activeId == null) return;
+        Playlist playlist = playlistPageViewModel.getPlaylist();
+        if (playlist == null || !activeId.equals(playlist.getId())) return;
+        downloadTotalCount = playlistPageViewModel.getDownloadTotalCount();
+        startTrackingDownloadProgress();
+    }
+
     private void startTrackingDownloadProgress() {
         if (trackingDownloads) return;
         trackingDownloads = true;
@@ -465,6 +479,7 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
                         progressHandler.postDelayed(() -> pollDownloadProgress(playlistId), 500);
                     } else {
                         trackingDownloads = false;
+                        playlistPageViewModel.clearDownloadInProgress();
                         if (songHorizontalAdapter != null) {
                             songHorizontalAdapter.updateDownloadProgress(null);
                         }
