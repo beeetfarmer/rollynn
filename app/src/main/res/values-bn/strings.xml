@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_title_library">লাইব্রেরি</string>
+    <string name="tab_title_downloads">ডাউনলোড</string>
+    <string name="tab_title_playlists">প্লেলিস্ট</string>
+    <string name="playlist_filter_hint">প্লেলিস্ট ফিল্টার করুন</string>
+    <string name="download_filter_hint">ডাউনলোড ফিল্টার করুন</string>
+    <string name="settings_home_title">স্বাগত বার্তা</string>
+    <string name="settings_home_title_enabled">স্বাগত বার্তা দেখান</string>
+    <string name="settings_home_title_default">ফিরে আসায় স্বাগতম, নাবিক!</string>
+    <string name="settings_title_scrobbling">স্ক্রবলিং</string>
+    <string name="settings_title_account_session">অ্যাকাউন্ট ও সেশন</string>
+    <string name="settings_title">সেটিংস</string>
+    <string name="settings_configure_dock">ডক কনফিগার করুন</string>
+    <string name="settings_configure_dock_summary">নেভিগেশন আইটেম বেছে নিন ও পুনর্বিন্যাস করুন</string>
+    <string name="settings_configure_metadata">এখন বাজছে মেটাডেটা</string>
+    <string name="settings_configure_metadata_summary">মেটাডেটা ফিল্ড পুনর্বিন্যাস ও সক্রিয়/নিষ্ক্রিয় করুন</string>
+    <string name="home_title_history">ইতিহাস</string>
+    <string name="home_title_recently_played_artists">সম্প্রতি বাজানো শিল্পী</string>
+    <string name="home_title_top_played_artists">সর্বাধিক বাজানো শিল্পী</string>
+    <string name="home_title_top_played_songs">সর্বাধিক বাজানো গান</string>
+    <string name="home_title_history_see_all_button">সব দেখুন</string>
+    <string name="home_title_recently_played_artists_see_all_button">সব দেখুন</string>
+    <string name="home_title_top_played_artists_see_all_button">সব দেখুন</string>
+    <string name="home_title_top_played_songs_see_all_button">সব দেখুন</string>
+    <string name="settings_title_ui_landscape_items_per_row">ল্যান্ডস্কেপে প্রতি সারিতে আইটেম</string>
+    <string name="settings_metadata_alignment">মেটাডেটা সারিবদ্ধকরণ</string>
+    <string name="settings_playlist_sort">প্লেলিস্ট সাজানো</string>
+    <string name="settings_lyrics_romanization">গানের কথা রোমানীকরণ</string>
+    <string name="settings_play_next_behavior_title">পরবর্তী বাজান আচরণ</string>
+    <string name="settings_scrobble_threshold_title">স্ক্রবল থ্রেশহোল্ড শতাংশ</string>
+    <string name="settings_translation_provider">অনুবাদ প্রদানকারী</string>
+    <string name="settings_translation_api_key">API কী</string>
+    <string name="settings_translation_target_language">লক্ষ্য ভাষা</string>
+    <string name="settings_translation_model">AI মডেল</string>
+    <string name="settings_translation_api_url">API URL</string>
+    <string name="settings_ping_timeout_title">সার্ভার পিং টাইমআউট</string>
+    <string name="settings_tab_appearance">চেহারা</string>
+    <string name="settings_tab_library">লাইব্রেরি</string>
+    <string name="settings_tab_playback">প্লেব্যাক</string>
+    <string name="settings_tab_general">সাধারণ</string>
+</resources>

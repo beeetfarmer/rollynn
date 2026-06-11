@@ -13,4 +13,11 @@
     <locale android:name="tr-TR"/>         <!-- Turkish -->
     <locale android:name="ca"/>            <!-- Catalan -->
     <locale android:name="ro"/>            <!-- Romanian -->
+    <locale android:name="hi"/>            <!-- Hindi -->
+    <locale android:name="bn"/>            <!-- Bengali -->
+    <locale android:name="pa"/>            <!-- Punjabi -->
+    <locale android:name="kn"/>            <!-- Kannada -->
+    <locale android:name="ml"/>            <!-- Malayalam -->
+    <locale android:name="te"/>            <!-- Telugu -->
+    <locale android:name="ta"/>            <!-- Tamil -->
 </locale-config>

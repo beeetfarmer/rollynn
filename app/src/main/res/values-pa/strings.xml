@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_title_library">ਲਾਇਬ੍ਰੇਰੀ</string>
+    <string name="tab_title_downloads">ਡਾਊਨਲੋਡ</string>
+    <string name="tab_title_playlists">ਪਲੇਲਿਸਟਾਂ</string>
+    <string name="playlist_filter_hint">ਪਲੇਲਿਸਟਾਂ ਫਿਲਟਰ ਕਰੋ</string>
+    <string name="download_filter_hint">ਡਾਊਨਲੋਡ ਫਿਲਟਰ ਕਰੋ</string>
+    <string name="settings_home_title">ਸੁਆਗਤ ਸੁਨੇਹਾ</string>
+    <string name="settings_home_title_enabled">ਸੁਆਗਤ ਸੁਨੇਹਾ ਵਿਖਾਓ</string>
+    <string name="settings_home_title_default">ਮੁੜ ਆਉਣ ਤੇ ਜੀ ਆਇਆਂ ਨੂੰ, ਮਲਾਹ!</string>
+    <string name="settings_title_scrobbling">ਸਕ੍ਰੌਬਲਿੰਗ</string>
+    <string name="settings_title_account_session">ਖਾਤਾ ਅਤੇ ਸੈਸ਼ਨ</string>
+    <string name="settings_title">ਸੈਟਿੰਗਾਂ</string>
+    <string name="settings_configure_dock">ਡੌਕ ਕੌਂਫ਼ਿਗਰ ਕਰੋ</string>
+    <string name="settings_configure_dock_summary">ਨੈਵੀਗੇਸ਼ਨ ਆਈਟਮਾਂ ਚੁਣੋ ਅਤੇ ਮੁੜ-ਕ੍ਰਮਬੱਧ ਕਰੋ</string>
+    <string name="settings_configure_metadata">ਹੁਣ ਚੱਲ ਰਿਹਾ ਮੈਟਾਡੇਟਾ</string>
+    <string name="settings_configure_metadata_summary">ਮੈਟਾਡੇਟਾ ਖੇਤਰ ਮੁੜ-ਵਿਵਸਥਿਤ ਕਰੋ ਅਤੇ ਚਾਲੂ/ਬੰਦ ਕਰੋ</string>
+    <string name="home_title_history">ਇਤਿਹਾਸ</string>
+    <string name="home_title_recently_played_artists">ਹਾਲ ਹੀ ਚਲਾਏ ਕਲਾਕਾਰ</string>
+    <string name="home_title_top_played_artists">ਸਭ ਤੋਂ ਵੱਧ ਚਲਾਏ ਕਲਾਕਾਰ</string>
+    <string name="home_title_top_played_songs">ਸਭ ਤੋਂ ਵੱਧ ਚਲਾਏ ਗੀਤ</string>
+    <string name="home_title_history_see_all_button">ਸਭ ਵੇਖੋ</string>
+    <string name="home_title_recently_played_artists_see_all_button">ਸਭ ਵੇਖੋ</string>
+    <string name="home_title_top_played_artists_see_all_button">ਸਭ ਵੇਖੋ</string>
+    <string name="home_title_top_played_songs_see_all_button">ਸਭ ਵੇਖੋ</string>
+    <string name="settings_title_ui_landscape_items_per_row">ਲੈਂਡਸਕੇਪ ਵਿੱਚ ਪ੍ਰਤੀ ਕਤਾਰ ਆਈਟਮ</string>
+    <string name="settings_metadata_alignment">ਮੈਟਾਡੇਟਾ ਇਕਸਾਰਤਾ</string>
+    <string name="settings_playlist_sort">ਪਲੇਲਿਸਟ ਲੜੀਬੱਧ ਕਰਨਾ</string>
+    <string name="settings_lyrics_romanization">ਬੋਲ ਰੋਮਨੀਕਰਨ</string>
+    <string name="settings_play_next_behavior_title">ਅੱਗੇ ਚਲਾਓ ਦਾ ਵਿਹਾਰ</string>
+    <string name="settings_scrobble_threshold_title">ਸਕ੍ਰੌਬਲ ਥ੍ਰੈਸ਼ਹੋਲਡ ਫ਼ੀਸਦੀ</string>
+    <string name="settings_translation_provider">ਅਨੁਵਾਦ ਪ੍ਰਦਾਤਾ</string>
+    <string name="settings_translation_api_key">API ਕੁੰਜੀ</string>
+    <string name="settings_translation_target_language">ਟੀਚਾ ਭਾਸ਼ਾ</string>
+    <string name="settings_translation_model">AI ਮਾਡਲ</string>
+    <string name="settings_translation_api_url">API URL</string>
+    <string name="settings_ping_timeout_title">ਸਰਵਰ ਪਿੰਗ ਟਾਈਮਆਊਟ</string>
+    <string name="settings_tab_appearance">ਦਿੱਖ</string>
+    <string name="settings_tab_library">ਲਾਇਬ੍ਰੇਰੀ</string>
+    <string name="settings_tab_playback">ਪਲੇਬੈਕ</string>
+    <string name="settings_tab_general">ਆਮ</string>
+</resources>

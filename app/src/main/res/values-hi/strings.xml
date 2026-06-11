@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_title_library">लाइब्रेरी</string>
+    <string name="tab_title_downloads">डाउनलोड</string>
+    <string name="tab_title_playlists">प्लेलिस्ट</string>
+    <string name="playlist_filter_hint">प्लेलिस्ट फ़िल्टर करें</string>
+    <string name="download_filter_hint">डाउनलोड फ़िल्टर करें</string>
+    <string name="settings_home_title">स्वागत संदेश</string>
+    <string name="settings_home_title_enabled">स्वागत संदेश दिखाएँ</string>
+    <string name="settings_home_title_default">वापसी पर स्वागत है, नाविक!</string>
+    <string name="settings_title_scrobbling">स्क्रॉब्लिंग</string>
+    <string name="settings_title_account_session">खाता और सत्र</string>
+    <string name="settings_title">सेटिंग्स</string>
+    <string name="settings_configure_dock">डॉक कॉन्फ़िगर करें</string>
+    <string name="settings_configure_dock_summary">नेविगेशन आइटम चुनें और क्रम बदलें</string>
+    <string name="settings_configure_metadata">अभी चल रहे का मेटाडेटा</string>
+    <string name="settings_configure_metadata_summary">मेटाडेटा फ़ील्ड पुनर्व्यवस्थित करें और सक्षम/अक्षम करें</string>
+    <string name="home_title_history">इतिहास</string>
+    <string name="home_title_recently_played_artists">हाल में चलाए गए कलाकार</string>
+    <string name="home_title_top_played_artists">सर्वाधिक चलाए गए कलाकार</string>
+    <string name="home_title_top_played_songs">सर्वाधिक चलाए गए गाने</string>
+    <string name="home_title_history_see_all_button">सभी देखें</string>
+    <string name="home_title_recently_played_artists_see_all_button">सभी देखें</string>
+    <string name="home_title_top_played_artists_see_all_button">सभी देखें</string>
+    <string name="home_title_top_played_songs_see_all_button">सभी देखें</string>
+    <string name="settings_title_ui_landscape_items_per_row">लैंडस्केप में प्रति पंक्ति आइटम</string>
+    <string name="settings_metadata_alignment">मेटाडेटा संरेखण</string>
+    <string name="settings_playlist_sort">प्लेलिस्ट क्रमबद्ध करना</string>
+    <string name="settings_lyrics_romanization">गीत रोमनकरण</string>
+    <string name="settings_play_next_behavior_title">आगे चलाएँ का व्यवहार</string>
+    <string name="settings_scrobble_threshold_title">स्क्रॉबल सीमा प्रतिशत</string>
+    <string name="settings_translation_provider">अनुवाद प्रदाता</string>
+    <string name="settings_translation_api_key">API कुंजी</string>
+    <string name="settings_translation_target_language">लक्ष्य भाषा</string>
+    <string name="settings_translation_model">AI मॉडल</string>
+    <string name="settings_translation_api_url">API URL</string>
+    <string name="settings_ping_timeout_title">सर्वर पिंग टाइमआउट</string>
+    <string name="settings_tab_appearance">दिखावट</string>
+    <string name="settings_tab_library">लाइब्रेरी</string>
+    <string name="settings_tab_playback">प्लेबैक</string>
+    <string name="settings_tab_general">सामान्य</string>
+</resources>
