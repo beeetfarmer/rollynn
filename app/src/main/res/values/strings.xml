@@ -489,6 +489,12 @@
     <string name="settings_title_syncing">Syncing</string>
     <string name="settings_title_transcoding">Transcoding</string>
     <string name="settings_title_scrobbling">Scrobbling</string>
+    <string name="settings_title_account_session">Account &amp; Session</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_configure_dock">Configure Dock</string>
+    <string name="settings_configure_dock_summary">Choose and reorder navigation items</string>
+    <string name="settings_configure_metadata">Now Playing Metadata</string>
+    <string name="settings_configure_metadata_summary">Reorganize and enable/disable metadata fields</string>
     <string name="settings_title_transcoding_download">Transcoding Download</string>
     <string name="settings_title_ui">UI</string>
     <string name="settings_title_ui_landscape_items_per_row">Items per row on landscape</string>

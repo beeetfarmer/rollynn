@@ -65,14 +65,14 @@
 
             <Preference
                 android:key="configure_dock"
-                android:title="Configure Dock"
-                android:summary="Choose and reorder navigation items"
+                android:title="@string/settings_configure_dock"
+                android:summary="@string/settings_configure_dock_summary"
                 app:icon="@drawable/ic_playlist_add" />
 
             <Preference
                 android:key="configure_metadata"
-                android:title="Now Playing Metadata"
-                android:summary="Reorganize and enable/disable metadata fields"
+                android:title="@string/settings_configure_metadata"
+                android:summary="@string/settings_configure_metadata_summary"
                 app:icon="@drawable/ic_info_stream" />
 
             <ListPreference
@@ -527,7 +527,7 @@
                 app:icon="@drawable/ic_favorites_outlined" />
         </PreferenceCategory>
 
-        <PreferenceCategory app:title="Account &amp; Session">
+        <PreferenceCategory app:title="@string/settings_title_account_session">
             <PreferenceScreen
                 android:key="screen_lastfm"
                 android:title="Last.fm Account"

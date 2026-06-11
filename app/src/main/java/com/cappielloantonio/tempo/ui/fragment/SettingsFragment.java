@@ -149,7 +149,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         root.setBackgroundColor(UIUtil.getThemeColor(requireContext(), android.R.attr.colorBackground));
 
         TextView title = new TextView(requireContext());
-        title.setText("Settings");
+        title.setText(getString(R.string.settings_title));
         title.setTextSize(40);
         title.setTypeface(null, android.graphics.Typeface.BOLD);
         title.setPadding(UIUtil.dpToPx(requireContext(), 24),
