@@ -10,6 +10,8 @@ import com.cappielloantonio.tempo.subsonic.models.Line;
 import com.cappielloantonio.tempo.subsonic.models.LyricsList;
 import com.cappielloantonio.tempo.subsonic.models.StructuredLyrics;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.io.IOException;
@@ -31,6 +33,8 @@ import okhttp3.Response;
 
 public class LrcGetRepository {
     private static final String API_BASE_URL = "https://lrclib.net/api/get";
+    private static final String API_SEARCH_URL = "https://lrclib.net/api/search";
+    private static final int DURATION_TOLERANCE_SECONDS = 5;
     private static final Pattern TIMESTAMP_PATTERN = Pattern.compile("\\[(\\d{1,2}):(\\d{2})(?:\\.(\\d{1,3}))?\\]");
 
     private final OkHttpClient client = new OkHttpClient.Builder()
@@ -65,52 +69,159 @@ public class LrcGetRepository {
         }
 
         executor.execute(() -> {
-            HttpUrl baseUrl = HttpUrl.parse(API_BASE_URL);
-            if (baseUrl == null) {
+            LrcGetLyricsResult exact = fetchExact(media);
+            if (exact != null) {
+                result.postValue(exact);
                 return;
             }
 
-            HttpUrl.Builder urlBuilder = baseUrl.newBuilder()
-                    .addQueryParameter("artist_name", media.getArtist())
-                    .addQueryParameter("track_name", media.getTitle());
-
-            if (media.getDuration() != null && media.getDuration() > 0) {
-                urlBuilder.addQueryParameter("duration", String.valueOf(media.getDuration()));
-            }
-
-            Request request = new Request.Builder()
-                    .url(urlBuilder.build())
-                    .header("Accept", "application/json")
-                    .header("User-Agent", "Rollynn")
-                    .build();
-
-            try (Response response = client.newCall(request).execute()) {
-                if (!response.isSuccessful() || response.body() == null) {
-                    return;
-                }
-
-                String jsonBody = response.body().string();
-                JsonObject jsonObject = gson.fromJson(jsonBody, JsonObject.class);
-                if (jsonObject == null || jsonObject.isJsonNull()) {
-                    return;
-                }
-
-                String plainLyrics = getString(jsonObject, "plainLyrics");
-                String syncedLyricsText = getString(jsonObject, "syncedLyrics");
-                String artist = getString(jsonObject, "artistName");
-                String title = getString(jsonObject, "trackName");
-                String lang = getString(jsonObject, "lang");
-
-                LyricsList syncedLyrics = parseSyncedLyrics(syncedLyricsText, artist, title, lang);
-
-                if (!TextUtils.isEmpty(plainLyrics) || syncedLyrics != null) {
-                    result.postValue(new LrcGetLyricsResult(plainLyrics, syncedLyrics));
-                }
-            } catch (IOException ignored) {
+            LrcGetLyricsResult searched = fetchViaSearch(media);
+            if (searched != null) {
+                result.postValue(searched);
             }
         });
 
         return result;
+    }
+
+    private LrcGetLyricsResult fetchExact(@NonNull Child media) {
+        HttpUrl baseUrl = HttpUrl.parse(API_BASE_URL);
+        if (baseUrl == null) {
+            return null;
+        }
+
+        HttpUrl.Builder urlBuilder = baseUrl.newBuilder()
+                .addQueryParameter("artist_name", media.getArtist())
+                .addQueryParameter("track_name", media.getTitle());
+
+        if (media.getDuration() != null && media.getDuration() > 0) {
+            urlBuilder.addQueryParameter("duration", String.valueOf(media.getDuration()));
+        }
+
+        try (Response response = execute(urlBuilder.build())) {
+            if (!response.isSuccessful() || response.body() == null) {
+                return null;
+            }
+
+            JsonObject jsonObject = gson.fromJson(response.body().string(), JsonObject.class);
+            if (jsonObject == null || jsonObject.isJsonNull()) {
+                return null;
+            }
+
+            return parseResult(jsonObject);
+        } catch (IOException ignored) {
+            return null;
+        }
+    }
+
+    private LrcGetLyricsResult fetchViaSearch(@NonNull Child media) {
+        HttpUrl baseUrl = HttpUrl.parse(API_SEARCH_URL);
+        if (baseUrl == null) {
+            return null;
+        }
+
+        HttpUrl.Builder urlBuilder = baseUrl.newBuilder()
+                .addQueryParameter("artist_name", media.getArtist())
+                .addQueryParameter("track_name", media.getTitle());
+
+        try (Response response = execute(urlBuilder.build())) {
+            if (!response.isSuccessful() || response.body() == null) {
+                return null;
+            }
+
+            JsonArray jsonArray = gson.fromJson(response.body().string(), JsonArray.class);
+            if (jsonArray == null || jsonArray.isJsonNull() || jsonArray.size() == 0) {
+                return null;
+            }
+
+            JsonObject best = selectBestMatch(jsonArray, media);
+            return best != null ? parseResult(best) : null;
+        } catch (IOException ignored) {
+            return null;
+        }
+    }
+
+    private JsonObject selectBestMatch(JsonArray candidates, @NonNull Child media) {
+        Integer targetDuration = media.getDuration() != null && media.getDuration() > 0 ? media.getDuration() : null;
+
+        JsonObject bestSynced = null;
+        int bestSyncedDiff = Integer.MAX_VALUE;
+        JsonObject bestPlain = null;
+        int bestPlainDiff = Integer.MAX_VALUE;
+
+        for (JsonElement element : candidates) {
+            if (element == null || !element.isJsonObject()) {
+                continue;
+            }
+
+            JsonObject candidate = element.getAsJsonObject();
+            boolean hasSynced = !TextUtils.isEmpty(getString(candidate, "syncedLyrics"));
+            boolean hasPlain = !TextUtils.isEmpty(getString(candidate, "plainLyrics"));
+            if (!hasSynced && !hasPlain) {
+                continue;
+            }
+
+            int diff = durationDiff(candidate, targetDuration);
+
+            if (hasSynced && diff < bestSyncedDiff) {
+                bestSynced = candidate;
+                bestSyncedDiff = diff;
+            }
+            if (hasPlain && diff < bestPlainDiff) {
+                bestPlain = candidate;
+                bestPlainDiff = diff;
+            }
+        }
+
+        if (bestSynced != null && bestSyncedDiff <= durationTolerance(targetDuration)) {
+            return bestSynced;
+        }
+        if (bestPlain != null && bestPlainDiff <= durationTolerance(targetDuration)) {
+            return bestPlain;
+        }
+        return bestSynced != null ? bestSynced : bestPlain;
+    }
+
+    private int durationDiff(JsonObject candidate, Integer targetDuration) {
+        if (targetDuration == null || !candidate.has("duration") || candidate.get("duration").isJsonNull()) {
+            return 0;
+        }
+
+        try {
+            return Math.abs(candidate.get("duration").getAsInt() - targetDuration);
+        } catch (NumberFormatException ignored) {
+            return Integer.MAX_VALUE;
+        }
+    }
+
+    private int durationTolerance(Integer targetDuration) {
+        return targetDuration == null ? Integer.MAX_VALUE : DURATION_TOLERANCE_SECONDS;
+    }
+
+    private LrcGetLyricsResult parseResult(JsonObject jsonObject) {
+        String plainLyrics = getString(jsonObject, "plainLyrics");
+        String syncedLyricsText = getString(jsonObject, "syncedLyrics");
+        String artist = getString(jsonObject, "artistName");
+        String title = getString(jsonObject, "trackName");
+        String lang = getString(jsonObject, "lang");
+
+        LyricsList syncedLyrics = parseSyncedLyrics(syncedLyricsText, artist, title, lang);
+
+        if (TextUtils.isEmpty(plainLyrics) && syncedLyrics == null) {
+            return null;
+        }
+
+        return new LrcGetLyricsResult(plainLyrics, syncedLyrics);
+    }
+
+    private Response execute(HttpUrl url) throws IOException {
+        Request request = new Request.Builder()
+                .url(url)
+                .header("Accept", "application/json")
+                .header("User-Agent", "Rollynn")
+                .build();
+
+        return client.newCall(request).execute();
     }
 
     private LyricsList parseSyncedLyrics(String lrcText, String artist, String title, String lang) {
