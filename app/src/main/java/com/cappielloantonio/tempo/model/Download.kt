@@ -16,6 +16,8 @@ class Download(
     var playlistId: String? = null,
     @ColumnInfo(name = "playlist_name")
     var playlistName: String? = null,
+    @ColumnInfo(name = "playlist_position", defaultValue = "-1")
+    var playlistPosition: Int = -1,
     @ColumnInfo(name = "download_state", defaultValue = "1")
     var downloadState: Int = 0,
     @ColumnInfo(name = "download_uri", defaultValue = "")

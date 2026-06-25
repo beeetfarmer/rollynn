@@ -42,7 +42,7 @@ public interface DownloadDao {
     @Query("DELETE FROM download")
     void deleteAll();
 
-    @Query("SELECT * FROM download WHERE playlist_id = :playlistId AND download_state = 1 ORDER BY disc_number, track ASC")
+    @Query("SELECT * FROM download WHERE playlist_id = :playlistId AND download_state = 1 ORDER BY CASE WHEN playlist_position < 0 THEN 1 ELSE 0 END, playlist_position ASC, disc_number, track ASC")
     List<Download> getByPlaylistIdSync(String playlistId);
 
     @Query("SELECT playlist_id, playlist_name, COUNT(*) as song_count, MIN(cover_art_id) as cover_art_id, COALESCE(SUM(duration), 0) as total_duration FROM download WHERE playlist_id IS NOT NULL AND download_state = 1 GROUP BY playlist_id, playlist_name")
