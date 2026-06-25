@@ -76,19 +76,23 @@ public class PlaylistSyncWorker extends Worker {
             String playlistName = localDownloads.isEmpty() ? null : localDownloads.get(0).getPlaylistName();
 
             List<Child> newTracks = new ArrayList<>();
-            for (Child song : serverSongs) {
+            List<Integer> newTrackPositions = new ArrayList<>();
+            for (int position = 0; position < serverSongs.size(); position++) {
+                Child song = serverSongs.get(position);
                 if (!localIds.contains(song.getId())) {
                     newTracks.add(song);
+                    newTrackPositions.add(position);
                 }
             }
 
             if (!newTracks.isEmpty()) {
                 DownloaderManager tracker = DownloadUtil.getDownloadTracker(getApplicationContext());
                 List<Download> downloads = new ArrayList<>();
-                for (Child child : newTracks) {
-                    Download d = new Download(child);
+                for (int i = 0; i < newTracks.size(); i++) {
+                    Download d = new Download(newTracks.get(i));
                     d.setPlaylistId(playlistId);
                     d.setPlaylistName(playlistName);
+                    d.setPlaylistPosition(newTrackPositions.get(i));
                     downloads.add(d);
                 }
                 tracker.download(MappingUtil.mapDownloads(newTracks), downloads);

@@ -173,17 +173,20 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
                     Playlist downloadPlaylist = playlistPageViewModel.getPlaylist();
                     PlaylistCoverCache.save(downloadPlaylist.getId(), downloadPlaylist.getCoverArtId());
                     if (Preferences.getDownloadDirectoryUri() == null) {
-                        downloadTotalCount = songs.size();
+                        downloadTotalCount = (int) songs.stream().map(song -> song.getId()).distinct().count();
                         playlistPageViewModel.setDownloadInProgress(downloadPlaylist.getId(), downloadTotalCount);
                         showDownloadProgress(0, downloadTotalCount);
+                        List<Download> toDownloadList = new ArrayList<>();
+                        for (int position = 0; position < songs.size(); position++) {
+                            Download toDownload = new Download(songs.get(position));
+                            toDownload.setPlaylistId(downloadPlaylist.getId());
+                            toDownload.setPlaylistName(downloadPlaylist.getName());
+                            toDownload.setPlaylistPosition(position);
+                            toDownloadList.add(toDownload);
+                        }
                         DownloadUtil.getDownloadTracker(requireContext()).download(
                             MappingUtil.mapDownloads(songs),
-                            songs.stream().map(child -> {
-                                Download toDownload = new Download(child);
-                                toDownload.setPlaylistId(downloadPlaylist.getId());
-                                toDownload.setPlaylistName(downloadPlaylist.getName());
-                                return toDownload;
-                            }).collect(Collectors.toList())
+                            toDownloadList
                         );
                         startTrackingDownloadProgress();
                     } else {
