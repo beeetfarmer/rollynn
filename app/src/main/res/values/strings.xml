@@ -30,6 +30,11 @@
     <string name="album_page_release_dates_label">Released on %1$s, originally %2$s</string>
     <string name="album_page_shuffle_button">Shuffle</string>
     <string name="album_page_tracks_count_and_duration">%1$d songs  •  %2$d minutes</string>
+    <string name="stats_last_played">Last played %1$s</string>
+    <plurals name="stats_play_count">
+        <item quantity="one">Played %1$d time</item>
+        <item quantity="other">Played %1$d times</item>
+    </plurals>
     <string name="app_name">Rollynn</string>
     <string name="artist_adapter_radio_station_starting">Searching…</string>
     <string name="artist_bottom_sheet_instant_mix">Instant mix</string>

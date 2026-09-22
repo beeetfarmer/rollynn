@@ -14,5 +14,7 @@ open class ArtistID3(
     @SerializedName("coverArt")
     var coverArtId: String? = null,
     var albumCount: Int = 0,
+    var playCount: Long? = null,
+    var played: Date? = null,
     var starred: Date? = null,
 ) : Parcelable

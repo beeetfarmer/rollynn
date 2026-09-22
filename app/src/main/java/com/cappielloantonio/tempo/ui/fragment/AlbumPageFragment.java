@@ -43,6 +43,7 @@ import com.cappielloantonio.tempo.util.MappingUtil;
 import com.cappielloantonio.tempo.util.MusicUtil;
 import com.cappielloantonio.tempo.util.ExternalAudioWriter;
 import com.cappielloantonio.tempo.util.Preferences;
+import com.cappielloantonio.tempo.util.UIUtil;
 import com.cappielloantonio.tempo.viewmodel.AlbumPageViewModel;
 import com.cappielloantonio.tempo.viewmodel.PlaybackViewModel;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -225,6 +226,9 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
                     AssetLinkUtil.clearLinkAppearance(bind.albumReleaseYearLabel);
                 }
                 bind.albumSongCountDurationTextview.setText(getString(R.string.album_page_tracks_count_and_duration, album.getSongCount(), album.getDuration() != null ? album.getDuration() / 60 : 0));
+                String albumPlayStats = UIUtil.buildPlayStats(album.getPlayCount(), album.getPlayed());
+                bind.albumPlayStatsTextview.setText(albumPlayStats);
+                bind.albumPlayStatsTextview.setVisibility(albumPlayStats != null ? View.VISIBLE : View.GONE);
                 if (album.getGenre() != null && !album.getGenre().isEmpty()) {
                     bind.albumGenresTextview.setText(album.getGenre());
                     bind.albumGenresTextview.setVisibility(View.VISIBLE);

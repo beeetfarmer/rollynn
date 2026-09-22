@@ -47,6 +47,7 @@ import com.cappielloantonio.tempo.ui.adapter.SongHorizontalAdapter;
 import com.cappielloantonio.tempo.util.Constants;
 import com.cappielloantonio.tempo.util.MusicUtil;
 import com.cappielloantonio.tempo.util.Preferences;
+import com.cappielloantonio.tempo.util.UIUtil;
 import com.cappielloantonio.tempo.viewmodel.ArtistPageViewModel;
 import com.cappielloantonio.tempo.viewmodel.PlaybackViewModel;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -128,6 +129,13 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
     private void init(View view) {
         artistPageViewModel.setArtist(requireArguments().getParcelable(Constants.ARTIST_OBJECT));
         artistPageViewModel.fetchCategorizedAlbums(getViewLifecycleOwner());
+
+        artistPageViewModel.getFullArtist().observe(getViewLifecycleOwner(), fullArtist -> {
+            if (bind == null || fullArtist == null) return;
+            String stats = UIUtil.buildPlayStats(fullArtist.getPlayCount(), fullArtist.getPlayed());
+            bind.artistPlayStatsTextview.setText(stats);
+            bind.artistPlayStatsTextview.setVisibility(stats != null ? View.VISIBLE : View.GONE);
+        });
 
         bind.mostStreamedSongTextViewClickable.setOnClickListener(v -> {
             Bundle bundle = new Bundle();

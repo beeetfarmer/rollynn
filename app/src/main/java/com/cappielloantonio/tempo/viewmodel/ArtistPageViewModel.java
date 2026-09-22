@@ -47,6 +47,7 @@ public class ArtistPageViewModel extends AndroidViewModel {
     private final MutableLiveData<List<AlbumID3>> eps = new MutableLiveData<>();
     private final MutableLiveData<List<AlbumID3>> mainAlbums = new MutableLiveData<>();
     private final MutableLiveData<List<AlbumID3>> appearsOn = new MutableLiveData<>();
+    private final MutableLiveData<ArtistID3> fullArtistDetail = new MutableLiveData<>();
 
     public ArtistPageViewModel(@NonNull Application application) {
         super(application);
@@ -70,8 +71,27 @@ public class ArtistPageViewModel extends AndroidViewModel {
         artistRepository.getArtist(artist.getId()).observe(owner, artistWithAlbums -> {
             if (artistWithAlbums != null && artistWithAlbums instanceof com.cappielloantonio.tempo.subsonic.models.ArtistWithAlbumsID3) {
                 com.cappielloantonio.tempo.subsonic.models.ArtistWithAlbumsID3 fullArtist = (com.cappielloantonio.tempo.subsonic.models.ArtistWithAlbumsID3) artistWithAlbums;
-                
+
                 List<AlbumID3> allAlbums = fullArtist.getAlbums();
+
+                // Navidrome does not report play stats at the artist level, so derive them
+                // from the artist's albums: total plays is the sum of album play counts and
+                // last played is the most recent album played date.
+                long totalPlays = 0;
+                java.util.Date lastPlayed = null;
+                if (allAlbums != null) {
+                    for (AlbumID3 album : allAlbums) {
+                        if (album.getPlayCount() != null) totalPlays += album.getPlayCount();
+                        java.util.Date played = album.getPlayed();
+                        if (played != null && played.getTime() > 0 && (lastPlayed == null || played.after(lastPlayed))) {
+                            lastPlayed = played;
+                        }
+                    }
+                }
+                fullArtist.setPlayCount(totalPlays);
+                fullArtist.setPlayed(lastPlayed);
+                fullArtistDetail.setValue(fullArtist);
+
                 if (allAlbums != null) {
                     allAlbums.sort(Comparator.comparing(AlbumID3::getYear).reversed());
                     
@@ -121,6 +141,8 @@ public class ArtistPageViewModel extends AndroidViewModel {
     public LiveData<List<AlbumID3>> getEPs() { return eps; }
     public LiveData<List<AlbumID3>> getMainAlbums() { return mainAlbums; }
     public LiveData<List<AlbumID3>> getAppearsOn() { return appearsOn; }
+
+    public LiveData<ArtistID3> getFullArtist() { return fullArtistDetail; }
 
     public LiveData<List<AlbumID3>> getAlbumList() {
         return albumRepository.getArtistAlbums(artist.getId());

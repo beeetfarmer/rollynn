@@ -181,6 +181,21 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/album_notes_textview" />
 
+                    <TextView
+                        android:id="@+id/album_play_stats_textview"
+                        style="@style/LabelSmall"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="18dp"
+                        android:layout_marginEnd="18dp"
+                        android:paddingVertical="2dp"
+                        android:textAlignment="center"
+                        android:textStyle="italic"
+                        android:visibility="gone"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/album_release_years_textview" />
+
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View

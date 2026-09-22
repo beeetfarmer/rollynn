@@ -146,6 +146,19 @@
                 android:layout_marginEnd="18dp"
                 android:layout_marginBottom="12dp" />
 
+            <TextView
+                android:id="@+id/artist_play_stats_textview"
+                style="@style/LabelSmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="18dp"
+                android:layout_marginEnd="18dp"
+                android:layout_marginBottom="12dp"
+                android:textAlignment="center"
+                android:textStyle="italic"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
             <LinearLayout
                 android:id="@+id/artist_page_bio_sector"
                 android:layout_width="match_parent"

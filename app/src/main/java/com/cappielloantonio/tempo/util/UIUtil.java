@@ -109,6 +109,23 @@ public class UIUtil {
         return orderedMap;
     }
 
+    /**
+     * Builds the small "Played N times · Last played <date>" stats line shown on
+     * the album and artist pages. Returns null when there are no plays, so callers
+     * can hide the view (servers that don't report play stats send 0/epoch).
+     */
+    public static String buildPlayStats(Long playCount, Date played) {
+        long count = playCount != null ? playCount : 0;
+        if (count <= 0) return null;
+
+        Context context = App.getContext();
+        String stats = context.getResources().getQuantityString(R.plurals.stats_play_count, (int) count, count);
+        if (played != null && played.getTime() > 0) {
+            stats += " · " + context.getString(R.string.stats_last_played, getReadableDate(played));
+        }
+        return stats;
+    }
+
     public static String getReadableDate(Date date) {
         if (date == null) {
             return App.getContext().getString(R.string.share_no_expiration); 
