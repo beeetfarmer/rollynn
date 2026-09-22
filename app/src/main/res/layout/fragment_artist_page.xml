@@ -54,7 +54,7 @@
             android:clipToPadding="false"
             android:orientation="vertical"
             android:paddingTop="18dp"
-            android:paddingBottom="120dp">
+            android:paddingBottom="@dimen/bottom_sheet_behavior_peek_height">
 
             <View
                 android:id="@+id/upper_button_divider"
