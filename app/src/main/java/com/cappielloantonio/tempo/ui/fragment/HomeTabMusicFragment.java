@@ -1234,7 +1234,11 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         if (homeViewModel.checkHomeSectorVisibility(Constants.HOME_SECTOR_RECENTLY_ADDED_VIDEOS)) return;
 
         bind.recentlyAddedVideosRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        bind.recentlyAddedVideosRecyclerView.setHasFixedSize(true);
+        // Popinn videos load asynchronously and often arrive after this wrap_content
+        // RecyclerView has already been measured empty. hasFixedSize(true) would suppress
+        // the relayout when the list finally arrives, leaving the section blank until the
+        // tab is re-entered. Let it request layout so it grows to fit the loaded items.
+        bind.recentlyAddedVideosRecyclerView.setHasFixedSize(false);
 
         recentlyAddedVideoAdapter = new MusicVideoCarouselAdapter(this, true);
         bind.recentlyAddedVideosRecyclerView.setAdapter(recentlyAddedVideoAdapter);
