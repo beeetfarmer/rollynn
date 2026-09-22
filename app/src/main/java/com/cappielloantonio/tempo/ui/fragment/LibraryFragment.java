@@ -216,7 +216,7 @@ public class LibraryFragment extends Fragment implements ClickCallback {
         bind.musicVideoRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         bind.musicVideoRecyclerView.setHasFixedSize(true);
 
-        musicVideoCarouselAdapter = new MusicVideoCarouselAdapter(this);
+        musicVideoCarouselAdapter = new MusicVideoCarouselAdapter(this, true);
         bind.musicVideoRecyclerView.setAdapter(musicVideoCarouselAdapter);
         libraryViewModel.getMusicVideoSample(getViewLifecycleOwner()).observe(getViewLifecycleOwner(), videos -> {
             if (bind == null) return;

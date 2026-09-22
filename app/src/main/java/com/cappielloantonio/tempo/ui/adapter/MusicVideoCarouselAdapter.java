@@ -20,10 +20,12 @@ import java.util.List;
 
 public class MusicVideoCarouselAdapter extends RecyclerView.Adapter<MusicVideoCarouselAdapter.ViewHolder> {
     private final ClickCallback click;
+    private final boolean showArtist;
     private List<PopinnVideo> videos;
 
-    public MusicVideoCarouselAdapter(ClickCallback click) {
+    public MusicVideoCarouselAdapter(ClickCallback click, boolean showArtist) {
         this.click = click;
+        this.showArtist = showArtist;
         this.videos = Collections.emptyList();
     }
 
@@ -39,7 +41,7 @@ public class MusicVideoCarouselAdapter extends RecyclerView.Adapter<MusicVideoCa
         PopinnVideo video = videos.get(position);
 
         holder.item.musicVideoTitleLabel.setText(video.getTitle());
-        MusicVideoUtil.bindSubtitle(holder.item.musicVideoSubtitleLabel, video, false);
+        MusicVideoUtil.bindSubtitle(holder.item.musicVideoSubtitleLabel, video, showArtist);
         bindDuration(holder.item.musicVideoDurationLabel, video);
         MusicVideoUtil.loadThumbnail(holder.item.musicVideoThumbnailImageView, video);
     }

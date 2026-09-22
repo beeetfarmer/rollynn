@@ -40,7 +40,7 @@ public class MusicVideoHorizontalAdapter extends RecyclerView.Adapter<MusicVideo
         PopinnVideo video = videos.get(position);
 
         holder.item.musicVideoTitleLabel.setText(video.getTitle());
-        MusicVideoUtil.bindSubtitle(holder.item.musicVideoSubtitleLabel, video, false);
+        MusicVideoUtil.bindSubtitle(holder.item.musicVideoSubtitleLabel, video, true);
         bindDuration(holder.item.musicVideoDurationLabel, video);
         MusicVideoUtil.loadThumbnail(holder.item.musicVideoThumbnailImageView, video);
     }

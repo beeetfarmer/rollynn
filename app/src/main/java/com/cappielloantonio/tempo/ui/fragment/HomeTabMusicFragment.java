@@ -1236,7 +1236,7 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         bind.recentlyAddedVideosRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         bind.recentlyAddedVideosRecyclerView.setHasFixedSize(true);
 
-        recentlyAddedVideoAdapter = new MusicVideoCarouselAdapter(this);
+        recentlyAddedVideoAdapter = new MusicVideoCarouselAdapter(this, true);
         bind.recentlyAddedVideosRecyclerView.setAdapter(recentlyAddedVideoAdapter);
         homeViewModel.getRecentlyAddedVideos(getViewLifecycleOwner()).observe(getViewLifecycleOwner(), videos -> {
             if (bind == null) return;

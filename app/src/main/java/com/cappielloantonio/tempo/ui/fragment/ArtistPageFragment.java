@@ -299,7 +299,7 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
         bind.musicVideosRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         bind.musicVideosRecyclerView.setHasFixedSize(true);
 
-        musicVideoAdapter = new MusicVideoCarouselAdapter(this);
+        musicVideoAdapter = new MusicVideoCarouselAdapter(this, false);
         bind.musicVideosRecyclerView.setAdapter(musicVideoAdapter);
 
         artistPageViewModel.getMusicVideos().observe(getViewLifecycleOwner(), result -> {
