@@ -316,6 +316,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
     private void reinitializePreferences() {
         checkSystemEqualizer();
+        actionAppEqualizer();
         checkCacheStorage();
         checkStorage();
         checkDownloadDirectory();
@@ -1043,13 +1044,12 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     }
 
     private void checkEqualizerBands() {
-        if (mediaServiceBinder != null) {
-            EqualizerManager eqManager = mediaServiceBinder.getEqualizerManager();
-            short numBands = eqManager.getNumberOfBands();
-            Preference appEqualizer = findPreference("app_equalizer");
-            if (appEqualizer != null) {
-                appEqualizer.setVisible(numBands > 0);
-            }
+        // The equalizer manager is now a preset manager backed by cached capabilities, so it is
+        // reachable from settings even when nothing is playing. The fragment itself shows a
+        // "not supported" state on devices without an equalizer.
+        Preference appEqualizer = findPreference("app_equalizer");
+        if (appEqualizer != null) {
+            appEqualizer.setVisible(true);
         }
     }
 
@@ -1060,7 +1060,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
                 NavController navController = NavHostFragment.findNavController(this);
                 NavOptions navOptions = new NavOptions.Builder()
                         .setLaunchSingleTop(true)
-                        .setPopUpTo(R.id.equalizerFragment, true)
                         .build();
                 activity.setBottomNavigationBarVisibility(true);
                 activity.setBottomSheetVisibility(true);

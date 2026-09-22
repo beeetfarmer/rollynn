@@ -47,6 +47,7 @@ import com.cappielloantonio.tempo.databinding.InnerFragmentPlayerControllerBindi
 import com.cappielloantonio.tempo.service.EqualizerManager;
 import com.cappielloantonio.tempo.service.MediaService;
 import com.cappielloantonio.tempo.ui.activity.MainActivity;
+import com.cappielloantonio.tempo.ui.dialog.EqualizerPresetPickerDialog;
 import com.cappielloantonio.tempo.ui.dialog.PlaybackSpeedDialog;
 import com.cappielloantonio.tempo.ui.dialog.RatingDialog;
 import com.cappielloantonio.tempo.ui.dialog.TrackInfoDialog;
@@ -845,13 +846,16 @@ public class PlayerControllerFragment extends Fragment {
     private void initEqualizerButton() {
         if (equalizerButton == null) return;
         equalizerButton.setOnClickListener(v -> {
-            NavController navController = NavHostFragment.findNavController(this);
-            NavOptions navOptions = new NavOptions.Builder()
-                    .setLaunchSingleTop(true)
-                    .setPopUpTo(R.id.equalizerFragment, true)
-                    .build();
-            navController.navigate(R.id.equalizerFragment, null, navOptions);
-            if (activity != null) activity.collapseBottomSheetDelayed();
+            EqualizerPresetPickerDialog dialog = new EqualizerPresetPickerDialog();
+            dialog.setEditListener(() -> {
+                NavController navController = NavHostFragment.findNavController(this);
+                NavOptions navOptions = new NavOptions.Builder()
+                        .setLaunchSingleTop(true)
+                        .build();
+                navController.navigate(R.id.equalizerFragment, null, navOptions);
+                if (activity != null) activity.collapseBottomSheetDelayed();
+            });
+            dialog.show(requireActivity().getSupportFragmentManager(), null);
         });
     }
 

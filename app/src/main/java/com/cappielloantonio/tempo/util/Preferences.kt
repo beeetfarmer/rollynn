@@ -86,6 +86,11 @@ object Preferences {
     private const val DEFAULT_HOME_SORT_PLAYLISTS_SORT_ORDER = Constants.PLAYLIST_ORDER_BY_RANDOM
     private const val EQUALIZER_ENABLED = "equalizer_enabled"
     private const val EQUALIZER_BAND_LEVELS = "equalizer_band_levels"
+    private const val EQUALIZER_CUSTOM_PRESETS = "equalizer_custom_presets"
+    private const val EQUALIZER_ACTIVE_PRESET = "equalizer_active_preset"
+    private const val EQUALIZER_CAPABILITIES = "equalizer_capabilities"
+    private const val EQUALIZER_AUTO_BY_GENRE = "equalizer_auto_by_genre"
+    private const val EQUALIZER_DEFAULT_PRESET = "equalizer_default_preset"
     private const val ALBUM_DETAIL = "album_detail"
     private const val ALBUM_SORT_ORDER = "album_sort_order"
     private const val DEFAULT_ALBUM_SORT_ORDER = Constants.ALBUM_ORDER_BY_NAME
@@ -846,6 +851,63 @@ object Preferences {
         val parts = str.split(",")
         if (parts.size < bandCount) return ShortArray(bandCount.toInt())
         return ShortArray(bandCount.toInt()) { i -> parts[i].toShortOrNull() ?: 0 }
+    }
+
+    @JvmStatic
+    fun getCustomEqualizerPresets(): MutableList<com.cappielloantonio.tempo.model.EqualizerPreset> {
+        val json = App.getInstance().preferences.getString(EQUALIZER_CUSTOM_PRESETS, null)
+        if (json.isNullOrBlank()) return mutableListOf()
+        return try {
+            val type = object : com.google.gson.reflect.TypeToken<MutableList<com.cappielloantonio.tempo.model.EqualizerPreset>>() {}.type
+            Gson().fromJson(json, type) ?: mutableListOf()
+        } catch (e: Exception) {
+            mutableListOf()
+        }
+    }
+
+    @JvmStatic
+    fun setCustomEqualizerPresets(presets: List<com.cappielloantonio.tempo.model.EqualizerPreset>) {
+        App.getInstance().preferences.edit().putString(EQUALIZER_CUSTOM_PRESETS, Gson().toJson(presets)).apply()
+    }
+
+    @JvmStatic
+    fun getActiveEqualizerPresetId(): String? {
+        return App.getInstance().preferences.getString(EQUALIZER_ACTIVE_PRESET, null)
+    }
+
+    @JvmStatic
+    fun setActiveEqualizerPresetId(id: String?) {
+        App.getInstance().preferences.edit().putString(EQUALIZER_ACTIVE_PRESET, id).apply()
+    }
+
+    @JvmStatic
+    fun setEqualizerCapabilitiesJson(json: String) {
+        App.getInstance().preferences.edit().putString(EQUALIZER_CAPABILITIES, json).apply()
+    }
+
+    @JvmStatic
+    fun getEqualizerCapabilitiesJson(): String? {
+        return App.getInstance().preferences.getString(EQUALIZER_CAPABILITIES, null)
+    }
+
+    @JvmStatic
+    fun isEqualizerAutoByGenre(): Boolean {
+        return App.getInstance().preferences.getBoolean(EQUALIZER_AUTO_BY_GENRE, false)
+    }
+
+    @JvmStatic
+    fun setEqualizerAutoByGenre(enabled: Boolean) {
+        App.getInstance().preferences.edit().putBoolean(EQUALIZER_AUTO_BY_GENRE, enabled).apply()
+    }
+
+    @JvmStatic
+    fun getDefaultEqualizerPresetId(): String? {
+        return App.getInstance().preferences.getString(EQUALIZER_DEFAULT_PRESET, null)
+    }
+
+    @JvmStatic
+    fun setDefaultEqualizerPresetId(id: String?) {
+        App.getInstance().preferences.edit().putString(EQUALIZER_DEFAULT_PRESET, id).apply()
     }
 
     @JvmStatic

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/eq_frame_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -48,27 +49,120 @@
                     android:layout_height="wrap_content"/>
             </LinearLayout>
 
+            <!-- Default preset for the Auto (by genre) selection -->
             <LinearLayout
-                android:id="@+id/eq_bands_container"
+                android:id="@+id/eq_default_preset_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingTop="8dp"
+                android:paddingBottom="16dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    style="@style/LabelMedium"
+                    android:text="@string/equalizer_default_preset_title" />
+
+                <TextView
+                    android:id="@+id/eq_default_preset_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/LabelSmall" />
+            </LinearLayout>
+
+            <!-- Preset list -->
+            <LinearLayout
+                android:id="@+id/eq_preset_section"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TitleMedium"
+                    android:textSize="16sp"
+                    android:paddingBottom="8dp"
+                    android:text="@string/equalizer_presets_title" />
+
+                <LinearLayout
+                    android:id="@+id/eq_preset_list_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <Button
+                    android:id="@+id/eq_create_preset_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    app:icon="@drawable/ic_add"
+                    android:text="@string/equalizer_create_preset" />
             </LinearLayout>
 
-            <Button
-                android:id="@+id/equalizer_reset_button"
-                android:layout_width="wrap_content"
+            <!-- Custom preset editor -->
+            <LinearLayout
+                android:id="@+id/eq_editor_container"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/equalizer_reset"
-                android:layout_gravity="center_horizontal"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_marginTop="24dp"/>
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TitleMedium"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="8dp"
+                    android:text="@string/equalizer_editor_title" />
+
+                <EditText
+                    android:id="@+id/eq_preset_name_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/equalizer_preset_name_hint"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:importantForAutofill="no" />
+
+                <LinearLayout
+                    android:id="@+id/eq_bands_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="end"
+                    android:layout_marginTop="8dp">
+
+                    <Button
+                        android:id="@+id/eq_editor_cancel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:text="@string/equalizer_editor_cancel" />
+
+                    <Button
+                        android:id="@+id/eq_editor_save"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="@string/equalizer_editor_save" />
+                </LinearLayout>
+            </LinearLayout>
 
             <Space
                 android:id="@+id/equalizer_bottom_space"
                 android:layout_width="match_parent"
-                android:layout_height="128dp"
-                android:layout_marginTop="0dp" />
+                android:layout_height="128dp" />
 
         </LinearLayout>
     </ScrollView>

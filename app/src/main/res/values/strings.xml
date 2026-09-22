@@ -684,6 +684,21 @@
     <string name="equalizer_reset">Reset</string>
     <string name="equalizer_enable">Enable</string>
     <string name="equalizer_not_supported">Not supported on this device</string>
+    <string name="equalizer_presets_title">Presets</string>
+    <string name="equalizer_create_preset">Create custom preset</string>
+    <string name="equalizer_editor_title">Custom preset</string>
+    <string name="equalizer_preset_name_hint">Preset name</string>
+    <string name="equalizer_preset_fork_name">%1$s (custom)</string>
+    <string name="equalizer_preset_name_required">Enter a preset name</string>
+    <string name="equalizer_editor_save">Save</string>
+    <string name="equalizer_editor_cancel">Cancel</string>
+    <string name="equalizer_preset_off">Off</string>
+    <string name="equalizer_preset_auto">Auto (by genre)</string>
+    <string name="equalizer_preset_dialog_title">Equalizer preset</string>
+    <string name="equalizer_preset_dialog_edit">Edit presets</string>
+    <string name="equalizer_auto_genre_title">Auto-select preset by genre</string>
+    <string name="equalizer_default_preset_title">Default preset</string>
+    <string name="equalizer_default_preset_none">Not set</string>
     <string name="settings_app_equalizer">Equalizer</string>
     <string name="settings_app_equalizer_summary">Open the built-in equalizer</string>
 

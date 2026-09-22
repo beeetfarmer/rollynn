@@ -59,6 +59,7 @@ open class BaseMediaService : MediaLibraryService() {
             "android.media3.session.demo.REPEAT_ALL"
         const val ACTION_BIND_EQUALIZER = "com.cappielloantonio.tempo.service.BIND_EQUALIZER"
         const val ACTION_EQUALIZER_UPDATED = "com.cappielloantonio.tempo.service.EQUALIZER_UPDATED"
+        const val ACTION_APPLY_EQUALIZER = "com.cappielloantonio.tempo.service.APPLY_EQUALIZER"
     }
 
     protected lateinit var exoplayer: ExoPlayer
@@ -170,6 +171,8 @@ open class BaseMediaService : MediaLibraryService() {
                 Log.d(TAG, "onMediaItemTransition" + player.currentMediaItemIndex)
                 currentTrackScrobbled = false
                 if (mediaItem == null) return
+
+                applyGenreBasedPreset(mediaItem)
 
                 if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK || reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) {
                     MediaManager.setLastPlayedTimestamp(mediaItem)
@@ -480,6 +483,7 @@ open class BaseMediaService : MediaLibraryService() {
 
     override fun onDestroy() {
         releaseNetworkCallback()
+        try { unregisterReceiver(equalizerApplyReceiver) } catch (_: Exception) { }
         equalizerManager.release()
         stopWidgetUpdates()
         stopRadioHeaderChecks()
@@ -512,10 +516,49 @@ open class BaseMediaService : MediaLibraryService() {
         exoplayer.repeatMode = Preferences.getRepeatMode()
     }
 
+    private val equalizerApplyReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: Intent?) {
+            if (intent?.action == ACTION_APPLY_EQUALIZER) reapplyEqualizer()
+        }
+    }
+
     private fun initializeEqualizerManager() {
         equalizerManager = EqualizerManager()
         val audioSessionId = exoplayer.audioSessionId
         attachEqualizerIfPossible(audioSessionId)
+        androidx.core.content.ContextCompat.registerReceiver(
+            this,
+            equalizerApplyReceiver,
+            android.content.IntentFilter(ACTION_APPLY_EQUALIZER),
+            androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+    }
+
+    /** When auto-by-genre is on, switches the live equalizer to the preset matching the track's genre. */
+    private fun applyGenreBasedPreset(mediaItem: MediaItem) {
+        if (!Preferences.isEqualizerEnabled() || !Preferences.isEqualizerAutoByGenre()) return
+        if (equalizerManager.getNumberOfBands().toInt() == 0) return
+        val genre = mediaItem.mediaMetadata.extras?.getString("genre")
+        EqualizerManager.presetForGenre(genre)?.let { equalizerManager.applyPreset(it) }
+    }
+
+    /** Applies the enable flag and the right preset to the live session: genre-based when auto is on, else the active preset. */
+    private fun applyCurrentPresetToLiveSession() {
+        if (equalizerManager.getNumberOfBands().toInt() == 0) return
+        equalizerManager.setEnabled(Preferences.isEqualizerEnabled())
+        if (Preferences.isEqualizerEnabled() && Preferences.isEqualizerAutoByGenre()) {
+            val genre = exoplayer.currentMediaItem?.mediaMetadata?.extras?.getString("genre")
+            EqualizerManager.presetForGenre(genre)?.let { equalizerManager.applyPreset(it) }
+        } else {
+            EqualizerManager.resolveActivePreset()?.let { equalizerManager.applyPreset(it) }
+        }
+    }
+
+    /** Re-applies the equalizer to the live session and notifies observers (from the apply broadcast). */
+    private fun reapplyEqualizer() {
+        if (equalizerManager.getNumberOfBands().toInt() == 0) return
+        applyCurrentPresetToLiveSession()
+        sendBroadcast(Intent(ACTION_EQUALIZER_UPDATED))
     }
 
     private fun initializeMediaLibrarySession(player: Player) {
@@ -747,13 +790,8 @@ open class BaseMediaService : MediaLibraryService() {
         if (audioSessionId == 0 || audioSessionId == -1) return false
         val attached = equalizerManager.attachToSession(audioSessionId)
         if (attached) {
-            val enabled = Preferences.isEqualizerEnabled()
-            equalizerManager.setEnabled(enabled)
-            val bands = equalizerManager.getNumberOfBands()
-            val savedLevels = Preferences.getEqualizerBandLevels(bands)
-            for (i in 0 until bands) {
-                equalizerManager.setBandLevel(i.toShort(), savedLevels[i])
-            }
+            equalizerManager.captureAndCacheCapabilities()
+            applyCurrentPresetToLiveSession()
             sendBroadcast(Intent(ACTION_EQUALIZER_UPDATED))
         }
         return attached
