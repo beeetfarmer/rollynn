@@ -197,7 +197,7 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
                 MusicUtil.getReadableDurationString(song.getDuration(), false),
                 MusicUtil.getReadableAudioQualityString(song)
         );
-        if (song.getPlayCount() != null && song.getPlayCount() > 0) {
+        if (Preferences.showSongPlayCount() && song.getPlayCount() != null && song.getPlayCount() > 0) {
             subtitle += holder.itemView.getContext().getString(R.string.song_subtitle_play_count, song.getPlayCount());
         }
         holder.item.searchResultSongSubtitleTextView.setText(subtitle);

@@ -613,6 +613,8 @@
     <string name="song_list_page_year">Year %1$d</string>
     <string name="song_subtitle_formatter">%1$s  •  %2$s  %3$s</string>
     <string name="song_subtitle_play_count">  •  x%1$d</string>
+    <string name="settings_show_song_play_count">Show play count on songs</string>
+    <string name="settings_show_song_play_count_summary">Display how many times each song has been played in song lists</string>
     <string name="starred_sync_dialog_negative_button">Cancel</string>
     <string name="starred_sync_dialog_neutral_button">Continue</string>
     <string name="starred_sync_dialog_positive_button">Continue and download</string>

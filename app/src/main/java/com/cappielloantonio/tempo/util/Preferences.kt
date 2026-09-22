@@ -18,6 +18,7 @@ object Preferences {
     private const val BATTERY_OPTIMIZATION = "battery_optimization"
     private const val SERVER_ID = "server_id"
     private const val OPEN_SUBSONIC = "open_subsonic"
+    private const val SHOW_SONG_PLAY_COUNT = "show_song_play_count"
     private const val OPEN_SUBSONIC_EXTENSIONS = "open_subsonic_extensions"
     private const val LOCAL_ADDRESS = "local_address"
     private const val IN_USE_SERVER_ADDRESS = "in_use_server_address"
@@ -258,6 +259,11 @@ object Preferences {
     @JvmStatic
     fun isOpenSubsonic(): Boolean {
         return App.getInstance().preferences.getBoolean(OPEN_SUBSONIC, false)
+    }
+
+    @JvmStatic
+    fun showSongPlayCount(): Boolean {
+        return App.getInstance().preferences.getBoolean(SHOW_SONG_PLAY_COUNT, true)
     }
 
     @JvmStatic

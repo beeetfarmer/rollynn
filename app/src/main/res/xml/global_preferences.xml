@@ -157,6 +157,13 @@
                 android:summary="@string/search_sort_summary"
                 android:key="sort_search_chronologically"
                 app:icon="@drawable/ic_history" />
+
+            <SwitchPreference
+                android:title="@string/settings_show_song_play_count"
+                android:defaultValue="true"
+                android:summary="@string/settings_show_song_play_count_summary"
+                android:key="show_song_play_count"
+                app:icon="@drawable/ic_info_stream" />
         </PreferenceCategory>
 
         <PreferenceCategory app:title="@string/settings_title_playlist">
