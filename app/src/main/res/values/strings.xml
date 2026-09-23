@@ -648,6 +648,8 @@
     <string name="rewind_top_tracks">Top Tracks</string>
     <string name="rewind_not_configured">Set up Koito in Settings to see your Rewind.</string>
     <string name="rewind_no_data">Not enough listening data for this period.</string>
+    <string name="rewind_loading">Loading…</string>
+    <string name="rewind_unreachable">Couldn\'t reach your Koito server. Check it\'s running and the URL and API key are correct.</string>
     <string name="settings_rewind_title">Rewind tab</string>
     <string name="settings_rewind_summary">Show a Koito-powered Rewind of your top artists, albums and tracks by month and year</string>
     <string name="dock_max_items">The dock can show at most 4 items besides More</string>

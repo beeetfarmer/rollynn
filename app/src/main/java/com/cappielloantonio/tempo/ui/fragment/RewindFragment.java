@@ -121,22 +121,32 @@ public class RewindFragment extends Fragment {
                 ? getString(R.string.rewind_period_year, year)
                 : getString(R.string.rewind_period_month, monthLabels[month], year));
 
+        showStatus(R.string.rewind_loading);
         koitoRepository.getSummary(year, month).observe(getViewLifecycleOwner(), summary -> {
             if (getView() == null || token != currentRequest) return; // ignore stale responses
             render(summary);
         });
     }
 
+    /** Clears the content and shows a single status line (loading / unreachable / no data). */
+    private void showStatus(int stringRes) {
+        lastMinutes = 0;
+        minutes.setText("");
+        statsPlays.setText(stringRes);
+        statsUnique.setText("");
+        statsNew.setText("");
+        artistsContainer.removeAllViews();
+        albumsContainer.removeAllViews();
+        tracksContainer.removeAllViews();
+    }
+
     private void render(KoitoSummary summary) {
-        if (summary == null || summary.getPlays() <= 0) {
-            lastMinutes = 0;
-            minutes.setText("");
-            statsPlays.setText(R.string.rewind_no_data);
-            statsUnique.setText("");
-            statsNew.setText("");
-            artistsContainer.removeAllViews();
-            albumsContainer.removeAllViews();
-            tracksContainer.removeAllViews();
+        if (summary == null) { // request failed: Koito unreachable, wrong URL/key, etc.
+            showStatus(R.string.rewind_unreachable);
+            return;
+        }
+        if (summary.getPlays() <= 0) {
+            showStatus(R.string.rewind_no_data);
             return;
         }
 
