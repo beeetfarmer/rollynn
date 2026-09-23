@@ -60,7 +60,6 @@ public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
         currentSortOrder = Preferences.getAlbumSortOrder();
 
         initData();
@@ -118,25 +117,18 @@ public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
     }
 
     private void initAppBar() {
-        activity.setSupportActionBar(bind.toolbar);
+        // Inline filter box on the header row (replaces the old toolbar SearchView).
+        bind.albumFilterEditText.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
 
-        if (activity.getSupportActionBar() != null) {
-            activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            activity.getSupportActionBar().setDisplayShowHomeEnabled(true);
-        }
-
-        bind.toolbar.setNavigationOnClickListener(v -> {
-            hideKeyboard(v);
-            activity.navController.navigateUp();
-        });
-
-
-        bind.appBarLayout.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
-            if ((bind.albumInfoSector.getHeight() + verticalOffset) < (2 * ViewCompat.getMinimumHeight(bind.toolbar))) {
-                bind.toolbar.setTitle(R.string.album_catalogue_title);
-            } else {
-                bind.toolbar.setTitle(R.string.empty_string);
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (albumAdapter != null) albumAdapter.getFilter().filter(s);
             }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) { }
         });
     }
 
@@ -254,31 +246,6 @@ public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
             default:
                 return "";
         }
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.toolbar_menu, menu);
-
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-
-        SearchView searchView = (SearchView) searchItem.getActionView();
-        searchView.setImeOptions(EditorInfo.IME_ACTION_DONE);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                searchView.clearFocus();
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                albumAdapter.getFilter().filter(newText);
-                return false;
-            }
-        });
-
-        searchView.setPadding(-32, 0, 0, 0);
     }
 
     private void hideKeyboard(View view) {

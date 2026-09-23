@@ -58,7 +58,6 @@ public class ArtistCatalogueFragment extends Fragment implements ClickCallback {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
 
         initData();
     }
@@ -92,25 +91,18 @@ public class ArtistCatalogueFragment extends Fragment implements ClickCallback {
     }
 
     private void initAppBar() {
-        activity.setSupportActionBar(bind.toolbar);
+        // Inline filter box on the header row (replaces the old toolbar SearchView).
+        bind.artistFilterEditText.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
 
-        if (activity.getSupportActionBar() != null) {
-            activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            activity.getSupportActionBar().setDisplayShowHomeEnabled(true);
-        }
-
-        bind.toolbar.setNavigationOnClickListener(v -> {
-            hideKeyboard(v);
-            activity.navController.navigateUp();
-        });
-
-
-        bind.appBarLayout.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
-            if ((bind.artistInfoSector.getHeight() + verticalOffset) < (2 * ViewCompat.getMinimumHeight(bind.toolbar))) {
-                bind.toolbar.setTitle(R.string.artist_catalogue_title);
-            } else {
-                bind.toolbar.setTitle(R.string.empty_string);
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterArtists(s.toString());
             }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) { }
         });
     }
 
@@ -167,35 +159,6 @@ public class ArtistCatalogueFragment extends Fragment implements ClickCallback {
         if (bind == null) return;
         ((com.google.android.material.button.MaterialButton) bind.artistViewModeImageView)
                 .setIconResource(listMode ? R.drawable.ic_view_grid : R.drawable.ic_view_list);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.toolbar_menu, menu);
-
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-
-        SearchView searchView = (SearchView) searchItem.getActionView();
-        searchView.setImeOptions(EditorInfo.IME_ACTION_DONE);
-
-        searchView.setQueryHint(getString(R.string.filter_artist));
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                // this toast may be overkill...
-                Toast.makeText(requireContext(), "Search: " + query, Toast.LENGTH_SHORT).show();
-                filterArtists(query);
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                filterArtists(newText);
-                return true;
-            }
-        });
-
-        searchView.setPadding(-32, 0, 0, 0);
     }
 
     private void filterArtists(String query) {
