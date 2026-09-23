@@ -650,6 +650,12 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
         return lastFmScrobbleCount;
     }
 
+    private final com.cappielloantonio.tempo.koito.KoitoRepository koitoRepository = new com.cappielloantonio.tempo.koito.KoitoRepository();
+
+    public LiveData<Long> getKoitoTrackCount(String artist, String title, String album) {
+        return koitoRepository.getTrackCount(artist, title, album);
+    }
+
     public void fetchLastFmScrobbleCount(String artist, String track) {
         lastFmScrobbleCount.postValue(null);
 

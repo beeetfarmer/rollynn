@@ -623,6 +623,12 @@
     <string name="sleep_timer_custom_title">Custom sleep timer</string>
     <string name="sleep_timer_custom_hint">Minutes</string>
     <string name="sleep_timer_custom_suffix">min</string>
+    <string name="settings_koito_category">Koito play stats</string>
+    <string name="settings_koito_use_title">Use Koito for play stats</string>
+    <string name="settings_koito_use_summary">Show album and artist play counts and last played from your Koito server; falls back to the music server when there is no match</string>
+    <string name="settings_koito_url_title">Koito server URL</string>
+    <string name="settings_koito_key_title">Koito API key</string>
+    <string name="settings_koito_key_summary">API key from your Koito account, used to read your listening stats</string>
     <string name="song_subtitle_play_count">  •  x%1$d</string>
     <string name="settings_show_song_play_count">Show play count on songs</string>
     <string name="settings_show_song_play_count_summary">Display how many times each song has been played in song lists</string>

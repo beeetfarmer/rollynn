@@ -16,5 +16,6 @@ open class ArtistID3(
     var albumCount: Int = 0,
     var playCount: Long? = null,
     var played: Date? = null,
+    var musicBrainzId: String? = null,
     var starred: Date? = null,
 ) : Parcelable

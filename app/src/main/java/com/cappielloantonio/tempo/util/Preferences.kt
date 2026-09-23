@@ -22,6 +22,9 @@ object Preferences {
     private const val SHOW_TOP_SONG_INDICATOR = "show_top_song_indicator"
     private const val SLEEP_TIMER_END = "sleep_timer_end"
     private const val SLEEP_TIMER_MINUTES = "sleep_timer_minutes"
+    private const val KOITO_SERVER_URL = "koito_server_url"
+    private const val KOITO_API_KEY = "koito_api_key"
+    private const val USE_KOITO_STATS = "use_koito_stats"
     private const val OPEN_SUBSONIC_EXTENSIONS = "open_subsonic_extensions"
     private const val LOCAL_ADDRESS = "local_address"
     private const val IN_USE_SERVER_ADDRESS = "in_use_server_address"
@@ -299,6 +302,22 @@ object Preferences {
     @JvmStatic
     fun setSleepTimerMinutes(minutes: Int) {
         App.getInstance().preferences.edit().putInt(SLEEP_TIMER_MINUTES, minutes).apply()
+    }
+
+    @JvmStatic
+    fun getKoitoServerUrl(): String? {
+        return App.getInstance().preferences.getString(KOITO_SERVER_URL, null)
+    }
+
+    @JvmStatic
+    fun getKoitoApiKey(): String? {
+        return App.getInstance().preferences.getString(KOITO_API_KEY, null)
+    }
+
+    /** When true (and Koito is configured), album/artist play stats come from Koito instead of the server. */
+    @JvmStatic
+    fun useKoitoStats(): Boolean {
+        return App.getInstance().preferences.getBoolean(USE_KOITO_STATS, false)
     }
 
     @JvmStatic

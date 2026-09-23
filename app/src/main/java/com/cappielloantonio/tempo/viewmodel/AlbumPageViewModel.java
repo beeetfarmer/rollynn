@@ -46,6 +46,16 @@ public class AlbumPageViewModel extends AndroidViewModel {
         return artistRepository.getTopSongs(artistName, count);
     }
 
+    private final com.cappielloantonio.tempo.koito.KoitoRepository koitoRepository = new com.cappielloantonio.tempo.koito.KoitoRepository();
+
+    public LiveData<com.cappielloantonio.tempo.koito.KoitoStats> getKoitoAlbumStats(String mbid, String title, String artistName) {
+        return koitoRepository.getAlbumStats(mbid, title, artistName);
+    }
+
+    public LiveData<java.util.Map<String, Long>> getKoitoAlbumTrackCounts(String mbid, String title, String artistName, java.util.Map<String, String> songs) {
+        return koitoRepository.getAlbumTrackCounts(mbid, title, artistName, songs);
+    }
+
     public MutableLiveData<AlbumID3> getAlbum() {
         return album;
     }

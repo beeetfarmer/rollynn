@@ -68,6 +68,7 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
     private Map<String, Float> downloadProgressMap = new HashMap<>();
     private List<String> rankedTopIds = Collections.emptyList();
     private Set<String> flameIds = Collections.emptySet();
+    private Map<String, Long> koitoTrackCounts = Collections.emptyMap();
     private static final int TOP_SONG_LIMIT = 4;
 
     private final Filter filtering = new Filter() {
@@ -193,6 +194,10 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
 
         holder.item.searchResultSongTitleTextView.setText(song.getTitle());
 
+        Long koitoCount = koitoTrackCounts.get(song.getId());
+        long effectivePlayCount = koitoCount != null ? koitoCount
+                : (song.getPlayCount() != null ? song.getPlayCount() : 0);
+
         boolean isTopSong = Preferences.showTopSongIndicator() && flameIds.contains(song.getId());
         holder.item.topSongIcon.setVisibility(isTopSong ? View.VISIBLE : View.GONE);
 
@@ -204,8 +209,8 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
                 MusicUtil.getReadableDurationString(song.getDuration(), false),
                 MusicUtil.getReadableAudioQualityString(song)
         );
-        if (Preferences.showSongPlayCount() && song.getPlayCount() != null && song.getPlayCount() > 0) {
-            subtitle += holder.itemView.getContext().getString(R.string.song_subtitle_play_count, song.getPlayCount());
+        if (Preferences.showSongPlayCount() && effectivePlayCount > 0) {
+            subtitle += holder.itemView.getContext().getString(R.string.song_subtitle_play_count, effectivePlayCount);
         }
         holder.item.searchResultSongSubtitleTextView.setText(subtitle);
 
@@ -328,6 +333,12 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
         this.songsFull = songs != null ? songs : Collections.emptyList();
         filtering.filter(currentFilter);
         recomputeFlames();
+    }
+
+    /** Per-song play counts from Koito (Subsonic song id -> listen count), overriding the server's. */
+    public void setKoitoTrackCounts(Map<String, Long> counts) {
+        this.koitoTrackCounts = counts != null ? counts : Collections.emptyMap();
+        notifyDataSetChanged();
     }
 
     /** The artist's popular tracks in Last.fm rank order; the flame marks only this album's top few. */

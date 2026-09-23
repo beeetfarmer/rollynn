@@ -144,6 +144,12 @@ public class ArtistPageViewModel extends AndroidViewModel {
 
     public LiveData<ArtistID3> getFullArtist() { return fullArtistDetail; }
 
+    private final com.cappielloantonio.tempo.koito.KoitoRepository koitoRepository = new com.cappielloantonio.tempo.koito.KoitoRepository();
+
+    public LiveData<com.cappielloantonio.tempo.koito.KoitoStats> getKoitoArtistStats(String mbid, String name) {
+        return koitoRepository.getArtistStats(mbid, name);
+    }
+
     public LiveData<List<AlbumID3>> getAlbumList() {
         return albumRepository.getArtistAlbums(artist.getId());
     }

@@ -228,9 +228,7 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
                     AssetLinkUtil.clearLinkAppearance(bind.albumReleaseYearLabel);
                 }
                 bind.albumSongCountDurationTextview.setText(getString(R.string.album_page_tracks_count_and_duration, album.getSongCount(), album.getDuration() != null ? album.getDuration() / 60 : 0));
-                String albumPlayStats = UIUtil.buildPlayStats(album.getPlayCount(), album.getPlayed());
-                bind.albumPlayStatsTextview.setText(albumPlayStats);
-                bind.albumPlayStatsTextview.setVisibility(albumPlayStats != null ? View.VISIBLE : View.GONE);
+                bindAlbumPlayStats(album);
                 if (album.getGenre() != null && !album.getGenre().isEmpty()) {
                     bind.albumGenresTextview.setText(album.getGenre());
                     bind.albumGenresTextview.setVisibility(View.VISIBLE);
@@ -338,6 +336,25 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
         });
     }
 
+    private void bindAlbumPlayStats(AlbumID3 album) {
+        // Show the server's own stats immediately, then override with Koito if it has a match.
+        setAlbumPlayStatsText(UIUtil.buildPlayStats(album.getPlayCount(), album.getPlayed()));
+
+        if (Preferences.useKoitoStats() && com.cappielloantonio.tempo.koito.KoitoClient.isConfigured()) {
+            albumPageViewModel.getKoitoAlbumStats(album.getMusicBrainzId(), album.getName(), album.getArtist())
+                    .observe(getViewLifecycleOwner(), koito -> {
+                        if (bind == null || koito == null) return; // no Koito match: keep the server's stats
+                        java.util.Date lastPlayed = koito.getLastPlayed() != null ? koito.getLastPlayed() : album.getPlayed();
+                        setAlbumPlayStatsText(UIUtil.buildPlayStats(koito.getPlayCount(), lastPlayed));
+                    });
+        }
+    }
+
+    private void setAlbumPlayStatsText(String stats) {
+        bind.albumPlayStatsTextview.setText(stats);
+        bind.albumPlayStatsTextview.setVisibility(stats != null ? View.VISIBLE : View.GONE);
+    }
+
     private void initSongsView() {
         albumPageViewModel.getAlbum().observe(getViewLifecycleOwner(), album -> {
             if (bind != null && album != null) {
@@ -366,9 +383,23 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
                 albumPageViewModel.getAlbumSongLiveList().observe(getViewLifecycleOwner(), songs -> {
                     songHorizontalAdapter.setItems(songs);
                     reapplyPlayback();
+                    bindKoitoTrackCounts(album, songs);
                 });
             }
         });
+    }
+
+    private void bindKoitoTrackCounts(AlbumID3 album, List<Child> songs) {
+        if (!Preferences.useKoitoStats() || !com.cappielloantonio.tempo.koito.KoitoClient.isConfigured() || songs == null) return;
+        java.util.Map<String, String> songTitles = new java.util.HashMap<>();
+        for (Child s : songs) if (s.getId() != null && s.getTitle() != null) songTitles.put(s.getId(), s.getTitle());
+        if (songTitles.isEmpty()) return;
+        albumPageViewModel.getKoitoAlbumTrackCounts(album.getMusicBrainzId(), album.getName(), album.getArtist(), songTitles)
+                .observe(getViewLifecycleOwner(), counts -> {
+                    if (songHorizontalAdapter != null && counts != null && !counts.isEmpty()) {
+                        songHorizontalAdapter.setKoitoTrackCounts(counts);
+                    }
+                });
     }
 
     private void initializeMediaBrowser() {

@@ -364,35 +364,39 @@ public class PlayerControllerFragment extends Fragment {
                         String currentSongId = mediaMetadata.extras.getString("id");
                         long basePlayCount = mediaMetadata.extras.getLong("playCount", 0);
                         long effectivePlayCount = basePlayCount + MediaManager.getPlayCountIncrement(currentSongId);
+
+                        TextView playCountView = createMetadataView("", R.style.PlayerMetadataSecondary);
+                        playCountView.setTextColor(getPlayerTextColor());
                         if (effectivePlayCount != 0) {
-                            TextView playCountView = createMetadataView(effectivePlayCount + " plays", R.style.PlayerMetadataSecondary);
-                            playCountView.setTextColor(getPlayerTextColor());
-                            playerMetadataContainer.addView(playCountView);
-
-                            final long[] lastSeenVersion = {MediaManager.getScrobbleVersion()};
-                            MediaManager.getScrobbledSongId().observe(getViewLifecycleOwner(), scrobbledId -> {
-                                long currentVersion = MediaManager.getScrobbleVersion();
-                                if (currentVersion <= lastSeenVersion[0]) return;
-                                lastSeenVersion[0] = currentVersion;
-                                if (currentSongId != null && currentSongId.equals(scrobbledId)) {
-                                    long updated = basePlayCount + MediaManager.getPlayCountIncrement(currentSongId);
-                                    playCountView.setText(updated + " plays");
-                                }
-                            });
+                            playCountView.setText(effectivePlayCount + " plays");
                         } else {
-                            TextView playCountView = createMetadataView("", R.style.PlayerMetadataSecondary);
-                            playCountView.setTextColor(getPlayerTextColor());
                             playCountView.setVisibility(View.GONE);
-                            playerMetadataContainer.addView(playCountView);
+                        }
+                        playerMetadataContainer.addView(playCountView);
 
-                            final long[] lastSeenVersion = {MediaManager.getScrobbleVersion()};
-                            MediaManager.getScrobbledSongId().observe(getViewLifecycleOwner(), scrobbledId -> {
-                                long currentVersion = MediaManager.getScrobbleVersion();
-                                if (currentVersion <= lastSeenVersion[0]) return;
-                                lastSeenVersion[0] = currentVersion;
-                                if (currentSongId != null && currentSongId.equals(scrobbledId)) {
-                                    long updated = basePlayCount + MediaManager.getPlayCountIncrement(currentSongId);
-                                    playCountView.setText(updated + " plays");
+                        // Koito, when configured and matched, is authoritative; block server increments then.
+                        final boolean[] koitoOverridden = {false};
+                        final long[] lastSeenVersion = {MediaManager.getScrobbleVersion()};
+                        MediaManager.getScrobbledSongId().observe(getViewLifecycleOwner(), scrobbledId -> {
+                            if (koitoOverridden[0]) return;
+                            long currentVersion = MediaManager.getScrobbleVersion();
+                            if (currentVersion <= lastSeenVersion[0]) return;
+                            lastSeenVersion[0] = currentVersion;
+                            if (currentSongId != null && currentSongId.equals(scrobbledId)) {
+                                long updated = basePlayCount + MediaManager.getPlayCountIncrement(currentSongId);
+                                playCountView.setText(updated + " plays");
+                                playCountView.setVisibility(View.VISIBLE);
+                            }
+                        });
+
+                        if (Preferences.useKoitoStats() && com.cappielloantonio.tempo.koito.KoitoClient.isConfigured()) {
+                            String kArtist = mediaMetadata.artist != null ? String.valueOf(mediaMetadata.artist) : null;
+                            String kTitle = mediaMetadata.title != null ? String.valueOf(mediaMetadata.title) : null;
+                            String kAlbum = mediaMetadata.albumTitle != null ? String.valueOf(mediaMetadata.albumTitle) : null;
+                            playerBottomSheetViewModel.getKoitoTrackCount(kArtist, kTitle, kAlbum).observe(getViewLifecycleOwner(), koitoCount -> {
+                                if (koitoCount != null && koitoCount > 0) {
+                                    koitoOverridden[0] = true;
+                                    playCountView.setText(koitoCount + " plays");
                                     playCountView.setVisibility(View.VISIBLE);
                                 }
                             });

@@ -341,6 +341,32 @@
 
         </PreferenceCategory>
 
+        <PreferenceCategory app:title="@string/settings_koito_category">
+
+            <SwitchPreference
+                android:key="use_koito_stats"
+                android:title="@string/settings_koito_use_title"
+                android:summary="@string/settings_koito_use_summary"
+                android:defaultValue="false"
+                app:icon="@drawable/ic_history" />
+
+            <EditTextPreference
+                android:key="koito_server_url"
+                android:title="@string/settings_koito_url_title"
+                android:dependency="use_koito_stats"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_link" />
+
+            <EditTextPreference
+                android:key="koito_api_key"
+                android:title="@string/settings_koito_key_title"
+                android:summary="@string/settings_koito_key_summary"
+                android:inputType="textPassword"
+                android:dependency="use_koito_stats"
+                app:icon="@drawable/ic_link" />
+
+        </PreferenceCategory>
+
         <PreferenceCategory app:title="@string/settings_translation_category">
 
             <ListPreference

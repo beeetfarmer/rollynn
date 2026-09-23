@@ -132,9 +132,17 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
 
         artistPageViewModel.getFullArtist().observe(getViewLifecycleOwner(), fullArtist -> {
             if (bind == null || fullArtist == null) return;
-            String stats = UIUtil.buildPlayStats(fullArtist.getPlayCount(), fullArtist.getPlayed());
-            bind.artistPlayStatsTextview.setText(stats);
-            bind.artistPlayStatsTextview.setVisibility(stats != null ? View.VISIBLE : View.GONE);
+            // Show the server-derived stats immediately, then override with Koito if it has a match.
+            setArtistPlayStatsText(UIUtil.buildPlayStats(fullArtist.getPlayCount(), fullArtist.getPlayed()));
+
+            if (Preferences.useKoitoStats() && com.cappielloantonio.tempo.koito.KoitoClient.isConfigured()) {
+                artistPageViewModel.getKoitoArtistStats(fullArtist.getMusicBrainzId(), fullArtist.getName())
+                        .observe(getViewLifecycleOwner(), koito -> {
+                            if (bind == null || koito == null) return;
+                            java.util.Date lastPlayed = koito.getLastPlayed() != null ? koito.getLastPlayed() : fullArtist.getPlayed();
+                            setArtistPlayStatsText(UIUtil.buildPlayStats(koito.getPlayCount(), lastPlayed));
+                        });
+            }
         });
 
         bind.mostStreamedSongTextViewClickable.setOnClickListener(v -> {
@@ -411,6 +419,11 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
         bundle.putString(Constants.ALBUM_LIST_TITLE, title);
         bundle.putParcelableArrayList(Constants.ALBUMS_OBJECT, new ArrayList<>(albums));
         Navigation.findNavController(requireView()).navigate(R.id.albumListPageFragment, bundle);
+    }
+
+    private void setArtistPlayStatsText(String stats) {
+        bind.artistPlayStatsTextview.setText(stats);
+        bind.artistPlayStatsTextview.setVisibility(stats != null ? View.VISIBLE : View.GONE);
     }
 
     private void initSimilarArtistsView() {
