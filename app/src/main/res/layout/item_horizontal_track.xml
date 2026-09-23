@@ -97,6 +97,19 @@
         app:layout_constraintStart_toEndOf="@+id/song_cover_image_view"
         app:layout_constraintTop_toTopOf="@+id/song_cover_image_view" />
 
+    <!-- Flame overlays the left of the track-number slot, vertically centered on the number's line.
+         It shifts nothing else, so flamed and non-flamed rows stay aligned. -->
+    <ImageView
+        android:id="@+id/top_song_icon"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:src="@drawable/ic_fire"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/track_number_text_view"
+        app:layout_constraintStart_toStartOf="@+id/track_number_text_view"
+        app:layout_constraintTop_toTopOf="@+id/track_number_text_view"
+        tools:visibility="visible" />
+
     <TextView
         android:id="@+id/search_result_song_title_text_view"
         style="@style/LabelMedium"

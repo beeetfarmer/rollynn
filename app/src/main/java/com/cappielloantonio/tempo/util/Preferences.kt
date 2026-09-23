@@ -19,6 +19,7 @@ object Preferences {
     private const val SERVER_ID = "server_id"
     private const val OPEN_SUBSONIC = "open_subsonic"
     private const val SHOW_SONG_PLAY_COUNT = "show_song_play_count"
+    private const val SHOW_TOP_SONG_INDICATOR = "show_top_song_indicator"
     private const val OPEN_SUBSONIC_EXTENSIONS = "open_subsonic_extensions"
     private const val LOCAL_ADDRESS = "local_address"
     private const val IN_USE_SERVER_ADDRESS = "in_use_server_address"
@@ -269,6 +270,11 @@ object Preferences {
     @JvmStatic
     fun showSongPlayCount(): Boolean {
         return App.getInstance().preferences.getBoolean(SHOW_SONG_PLAY_COUNT, true)
+    }
+
+    @JvmStatic
+    fun showTopSongIndicator(): Boolean {
+        return App.getInstance().preferences.getBoolean(SHOW_TOP_SONG_INDICATOR, true)
     }
 
     @JvmStatic

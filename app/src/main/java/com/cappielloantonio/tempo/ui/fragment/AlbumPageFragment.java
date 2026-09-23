@@ -30,6 +30,7 @@ import com.cappielloantonio.tempo.glide.CustomGlideRequest;
 import com.cappielloantonio.tempo.interfaces.ClickCallback;
 import com.cappielloantonio.tempo.model.Download;
 import com.cappielloantonio.tempo.subsonic.models.AlbumID3;
+import com.cappielloantonio.tempo.subsonic.models.Child;
 import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.service.MediaService;
 import com.cappielloantonio.tempo.ui.activity.MainActivity;
@@ -50,6 +51,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -351,6 +353,15 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
                 bind.songRecyclerView.setAdapter(songHorizontalAdapter);
                 setMediaBrowserListenableFuture();
                 reapplyPlayback();
+
+                if (Preferences.showTopSongIndicator() && album.getArtist() != null && !album.getArtist().isEmpty()) {
+                    albumPageViewModel.getTopSongs(album.getArtist(), 50).observe(getViewLifecycleOwner(), topSongs -> {
+                        if (songHorizontalAdapter == null || topSongs == null) return;
+                        List<String> rankedIds = new ArrayList<>();
+                        for (Child s : topSongs) if (s.getId() != null) rankedIds.add(s.getId());
+                        songHorizontalAdapter.setTopSongRankedIds(rankedIds);
+                    });
+                }
 
                 albumPageViewModel.getAlbumSongLiveList().observe(getViewLifecycleOwner(), songs -> {
                     songHorizontalAdapter.setItems(songs);

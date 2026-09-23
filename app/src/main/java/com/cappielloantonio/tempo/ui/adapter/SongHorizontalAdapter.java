@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 @UnstableApi
@@ -65,6 +66,9 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
     private Drawable starOutlinedDrawable;
     private DownloaderManager downloadTracker;
     private Map<String, Float> downloadProgressMap = new HashMap<>();
+    private List<String> rankedTopIds = Collections.emptyList();
+    private Set<String> flameIds = Collections.emptySet();
+    private static final int TOP_SONG_LIMIT = 4;
 
     private final Filter filtering = new Filter() {
         @Override
@@ -188,6 +192,9 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
         Child song = songs.get(position);
 
         holder.item.searchResultSongTitleTextView.setText(song.getTitle());
+
+        boolean isTopSong = Preferences.showTopSongIndicator() && flameIds.contains(song.getId());
+        holder.item.topSongIcon.setVisibility(isTopSong ? View.VISIBLE : View.GONE);
 
         String subtitle = holder.itemView.getContext().getString(
                 R.string.song_subtitle_formatter,
@@ -320,6 +327,30 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
     public void setItems(List<Child> songs) {
         this.songsFull = songs != null ? songs : Collections.emptyList();
         filtering.filter(currentFilter);
+        recomputeFlames();
+    }
+
+    /** The artist's popular tracks in Last.fm rank order; the flame marks only this album's top few. */
+    public void setTopSongRankedIds(List<String> ids) {
+        this.rankedTopIds = ids != null ? ids : Collections.emptyList();
+        recomputeFlames();
+    }
+
+    /** Flames the album's most-popular tracks, capped at {@link #TOP_SONG_LIMIT}, in Last.fm rank order. */
+    private void recomputeFlames() {
+        Set<String> flames = new java.util.HashSet<>();
+        if (songsFull != null && !rankedTopIds.isEmpty()) {
+            Set<String> albumIds = new java.util.HashSet<>();
+            for (Child s : songsFull) if (s.getId() != null) albumIds.add(s.getId());
+            for (String id : rankedTopIds) {
+                if (albumIds.contains(id)) {
+                    flames.add(id);
+                    if (flames.size() >= TOP_SONG_LIMIT) break;
+                }
+            }
+        }
+        this.flameIds = flames;
+        notifyDataSetChanged();
     }
 
     @Override

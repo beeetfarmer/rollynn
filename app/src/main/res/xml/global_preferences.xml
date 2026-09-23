@@ -164,6 +164,13 @@
                 android:summary="@string/settings_show_song_play_count_summary"
                 android:key="show_song_play_count"
                 app:icon="@drawable/ic_info_stream" />
+
+            <SwitchPreference
+                android:title="@string/settings_show_top_song_indicator"
+                android:defaultValue="true"
+                android:summary="@string/settings_show_top_song_indicator_summary"
+                android:key="show_top_song_indicator"
+                app:icon="@drawable/ic_fire" />
         </PreferenceCategory>
 
         <PreferenceCategory app:title="@string/settings_title_playlist">

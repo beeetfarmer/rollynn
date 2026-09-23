@@ -41,6 +41,11 @@ public class AlbumPageViewModel extends AndroidViewModel {
         return albumRepository.getAlbumTracks(albumId);
     }
 
+    /** The artist's globally-popular tracks (Last.fm-backed getTopSongs), used to flag album tracks. */
+    public LiveData<List<Child>> getTopSongs(String artistName, int count) {
+        return artistRepository.getTopSongs(artistName, count);
+    }
+
     public MutableLiveData<AlbumID3> getAlbum() {
         return album;
     }
