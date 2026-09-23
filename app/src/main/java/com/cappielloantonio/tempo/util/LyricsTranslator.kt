@@ -228,34 +228,35 @@ Output MUST be a JSON array with EXACTLY $lineCount strings."""
     }
 
     private fun parseTranslationResponse(content: String, expectedLines: Int): List<String> {
-        var lines: List<String>? = null
+        if (content.isBlank()) throw Exception("Empty translation response")
 
-        try {
-            val arr = JSONArray(content)
-            lines = (0 until arr.length()).map { arr.optString(it) }
-        } catch (_: Exception) {
-            val cleaned = content.replace("```json", "").replace("```", "").trim()
+        val cleaned = content.replace("```json", "").replace("```", "").trim()
+
+        // Try the whole response as a JSON array, then just the bracketed slice.
+        for (candidate in listOf(cleaned, bracketSlice(cleaned))) {
+            if (candidate == null) continue
             try {
-                val arr = JSONArray(cleaned)
-                lines = (0 until arr.length()).map { arr.optString(it) }
-            } catch (_: Exception) {
-                val startIdx = cleaned.indexOf('[')
-                val endIdx = cleaned.lastIndexOf(']')
-                if (startIdx != -1 && endIdx > startIdx) {
-                    try {
-                        val arr = JSONArray(cleaned.substring(startIdx, endIdx + 1))
-                        lines = (0 until arr.length()).map { arr.optString(it) }
-                    } catch (_: Exception) {
-                        lines = cleaned.lines()
-                            .filter { it.trim().isNotEmpty() }
-                            .map { it.trim().removeSurrounding("\"").removeSurrounding("'") }
-                    }
-                }
-            }
+                val arr = JSONArray(candidate)
+                val lines = (0 until arr.length()).map { arr.optString(it) }
+                return fit(lines, expectedLines)
+            } catch (_: Exception) { /* fall through */ }
         }
 
-        if (lines == null) throw Exception("Could not parse translation response")
+        // Last resort: model ignored the JSON instruction and returned plain lines.
+        val lines = cleaned.lines()
+            .filter { it.trim().isNotEmpty() }
+            .map { it.trim().removeSurrounding("\"").removeSurrounding("'").trimEnd(',') }
+        if (lines.isEmpty()) throw Exception("Could not parse translation response")
+        return fit(lines, expectedLines)
+    }
 
+    private fun bracketSlice(text: String): String? {
+        val start = text.indexOf('[')
+        val end = text.lastIndexOf(']')
+        return if (start != -1 && end > start) text.substring(start, end + 1) else null
+    }
+
+    private fun fit(lines: List<String>, expectedLines: Int): List<String> {
         val result = lines.toMutableList()
         while (result.size < expectedLines) result.add("")
         return result.take(expectedLines)
