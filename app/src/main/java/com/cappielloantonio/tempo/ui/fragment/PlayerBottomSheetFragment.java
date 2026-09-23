@@ -364,6 +364,13 @@ public class PlayerBottomSheetFragment extends Fragment {
         }
     }
 
+    /** Fades the full player (album art etc.) so it cross-fades with the mini player during the drag. */
+    public void setBodyAlpha(float alpha) {
+        if (bind != null) {
+            bind.playerBodyLayout.getRoot().setAlpha(alpha);
+        }
+    }
+
     public void setMiniPlayerWidth(int width) {
         if (bind != null) {
             ViewGroup.LayoutParams params = bind.playerHeaderLayout.getRoot().getLayoutParams();

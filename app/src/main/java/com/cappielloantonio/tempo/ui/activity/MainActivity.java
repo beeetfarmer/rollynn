@@ -295,9 +295,11 @@ public class MainActivity extends BaseActivity {
             playerBottomSheetFragment.getPlayerHeader().setAlpha(1 - condensedSlideOffset);
             playerBottomSheetFragment.getPlayerHeader().setVisibility(condensedSlideOffset > 0.99 ? View.GONE : View.VISIBLE);
             
-            // Show body during slide if expanding
+            // Show body during slide if expanding, and cross-fade it with the mini player so the
+            // full-player album art doesn't linger fully opaque while dragging down.
             if (slideOffset > 0.01) {
                 playerBottomSheetFragment.setBodyVisibility(true);
+                playerBottomSheetFragment.setBodyAlpha(condensedSlideOffset);
             } else if (slideOffset <= 0) {
                 playerBottomSheetFragment.setBodyVisibility(false);
             }
@@ -347,7 +349,10 @@ public class MainActivity extends BaseActivity {
                         int availableWidth = screenWidth - width - (sideMargin * 2);
                         fragment.setMiniPlayerWidth(Math.max(minWidth, availableWidth));
                     } else {
-                        fragment.setMiniPlayerWidth(width + 100);
+                        // Independent of dock size: a consistently wide mini player (screen minus side margins).
+                        int screenWidth = getResources().getDisplayMetrics().widthPixels;
+                        int sideMargin = UIUtil.dpToPx(this, 28);
+                        fragment.setMiniPlayerWidth(screenWidth - sideMargin * 2);
                     }
                 }
             }
