@@ -1003,8 +1003,6 @@ object Preferences {
             return listOf(
                 Constants.DOCK_ITEM_HOME,
                 Constants.DOCK_ITEM_SEARCH,
-                Constants.DOCK_ITEM_LIBRARY,
-                Constants.DOCK_ITEM_DOWNLOADS,
                 Constants.DOCK_ITEM_SETTINGS
             )
         }

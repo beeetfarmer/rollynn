@@ -141,6 +141,7 @@ object Constants {
     const val DOCK_ITEM_LIBRARY = "libraryFragment"
     const val DOCK_ITEM_DOWNLOADS = "downloadFragment"
     const val DOCK_ITEM_ALBUMS = "albumCatalogueFragment"
+    const val DOCK_ITEM_ARTISTS = "artistCatalogueFragment"
     const val DOCK_ITEM_PLAYLISTS = "playlistCatalogueFragment"
     const val DOCK_ITEM_SEARCH = "searchFragment"
     const val DOCK_ITEM_SETTINGS = "settingsFragment"

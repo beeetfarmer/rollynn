@@ -59,6 +59,8 @@ public class DockConfigurationFragment extends Fragment {
                 Constants.DOCK_ITEM_SEARCH,
                 Constants.DOCK_ITEM_SETTINGS,
                 Constants.DOCK_ITEM_LIBRARY,
+                Constants.DOCK_ITEM_ALBUMS,
+                Constants.DOCK_ITEM_ARTISTS,
                 Constants.DOCK_ITEM_DOWNLOADS,
                 Constants.DOCK_ITEM_PLAYLISTS
         ));
@@ -124,6 +126,17 @@ public class DockConfigurationFragment extends Fragment {
             return result;
         }
 
+        /** How many items would appear in the dock: mandatory (Home/Search/Settings) plus selected. */
+        private int selectedDockCount() {
+            int count = 0;
+            for (String item : items) {
+                boolean mandatory = item.equals(Constants.DOCK_ITEM_HOME)
+                        || item.equals(Constants.DOCK_ITEM_SEARCH);
+                if (mandatory || selectedItems.contains(item)) count++;
+            }
+            return count;
+        }
+
         @NonNull
         @Override
         public DockViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -137,16 +150,22 @@ public class DockConfigurationFragment extends Fragment {
             holder.name.setText(getItemDisplayName(item));
             holder.icon.setImageResource(getDockIcon(item));
             
-            boolean isMandatory = item.equals(Constants.DOCK_ITEM_HOME) || 
-                                 item.equals(Constants.DOCK_ITEM_SEARCH) || 
-                                 item.equals(Constants.DOCK_ITEM_SETTINGS);
+            boolean isMandatory = item.equals(Constants.DOCK_ITEM_HOME) ||
+                                 item.equals(Constants.DOCK_ITEM_SEARCH);
             
             holder.checkBox.setEnabled(!isMandatory);
             holder.checkBox.setChecked(selectedItems.contains(item) || isMandatory);
             
             holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isChecked) {
-                    if (!selectedItems.contains(item)) selectedItems.add(item);
+                    if (!selectedItems.contains(item)) {
+                        if (selectedDockCount() >= 4) {
+                            buttonView.setChecked(false); // cap: at most 4 items besides More
+                            android.widget.Toast.makeText(buttonView.getContext(), R.string.dock_max_items, android.widget.Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        selectedItems.add(item);
+                    }
                 } else {
                     selectedItems.remove(item);
                 }
@@ -161,6 +180,8 @@ public class DockConfigurationFragment extends Fragment {
         private String getItemDisplayName(String item) {
             switch (item) {
                 case Constants.DOCK_ITEM_LIBRARY: return "Library";
+                case Constants.DOCK_ITEM_ALBUMS: return "Albums";
+                case Constants.DOCK_ITEM_ARTISTS: return "Artists";
                 case Constants.DOCK_ITEM_DOWNLOADS: return "Downloads";
                 case Constants.DOCK_ITEM_PLAYLISTS: return "Playlists";
                 case Constants.DOCK_ITEM_SEARCH: return "Search";
@@ -172,6 +193,8 @@ public class DockConfigurationFragment extends Fragment {
         private int getDockIcon(String item) {
             switch (item) {
                 case Constants.DOCK_ITEM_LIBRARY: return R.drawable.ic_graphic_eq;
+                case Constants.DOCK_ITEM_ALBUMS: return R.drawable.ic_album;
+                case Constants.DOCK_ITEM_ARTISTS: return R.drawable.ic_artist;
                 case Constants.DOCK_ITEM_DOWNLOADS: return R.drawable.ic_file_download;
                 case Constants.DOCK_ITEM_PLAYLISTS: return R.drawable.ic_placeholder_playlist;
                 case Constants.DOCK_ITEM_SEARCH: return R.drawable.ic_search;

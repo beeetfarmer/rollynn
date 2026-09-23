@@ -362,21 +362,25 @@ public class MainActivity extends BaseActivity {
             ((LinearLayout) dockContainer).setOrientation(isLandscape ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
         }
         List<String> items = new java.util.ArrayList<>(Preferences.getDockItems());
-        
-        // Ensure mandatory items are present if they were somehow excluded in saved prefs
-        if (!items.contains(Constants.DOCK_ITEM_HOME)) items.add(Constants.DOCK_ITEM_HOME);
-        if (!items.contains(Constants.DOCK_ITEM_SEARCH)) items.add(Constants.DOCK_ITEM_SEARCH);
-        if (!items.contains(Constants.DOCK_ITEM_SETTINGS)) items.add(Constants.DOCK_ITEM_SETTINGS);
 
-        for (String item : items) {
+        // Home and Search are always in the dock; everything else (Settings included) is optional
+        // and falls into the More menu when not enabled.
+        if (!items.contains(Constants.DOCK_ITEM_HOME)) items.add(0, Constants.DOCK_ITEM_HOME);
+        if (!items.contains(Constants.DOCK_ITEM_SEARCH)) items.add(Constants.DOCK_ITEM_SEARCH);
+
+        // At most 4 items in the dock; everything else lives behind the More button.
+        if (items.size() > 4) items = new java.util.ArrayList<>(items.subList(0, 4));
+        final List<String> dockItems = items;
+
+        for (String item : dockItems) {
             View dockItemView = getLayoutInflater().inflate(R.layout.item_dock_nav, dockContainer, false);
             ImageView icon = dockItemView.findViewById(R.id.dock_item_icon);
             TextView label = dockItemView.findViewById(R.id.dock_item_label);
-            
+
             int fragmentId = getFragmentId(item);
             icon.setImageResource(getDockIcon(item));
             label.setText(getDockLabel(item));
-            
+
             dockItemView.setOnClickListener(v -> {
                 if (navController.getCurrentDestination() == null || navController.getCurrentDestination().getId() != fragmentId) {
                     navController.navigate(fragmentId);
@@ -385,7 +389,47 @@ public class MainActivity extends BaseActivity {
             dockItemView.setTag(fragmentId);
             dockContainer.addView(dockItemView);
         }
+
+        // Always-present More button opens every section not shown in the dock.
+        View moreView = getLayoutInflater().inflate(R.layout.item_dock_nav, dockContainer, false);
+        ((ImageView) moreView.findViewById(R.id.dock_item_icon)).setImageResource(R.drawable.ic_more_vert);
+        ((TextView) moreView.findViewById(R.id.dock_item_label)).setText(R.string.dock_more);
+        moreView.setOnClickListener(v -> showMoreMenu(dockItems));
+        dockContainer.addView(moreView);
+
         updateDockActiveState(navController.getCurrentDestination() != null ? navController.getCurrentDestination().getId() : -1);
+    }
+
+    private void showMoreMenu(List<String> dockItems) {
+        String[] allSections = {
+                Constants.DOCK_ITEM_HOME, Constants.DOCK_ITEM_LIBRARY, Constants.DOCK_ITEM_ALBUMS,
+                Constants.DOCK_ITEM_ARTISTS, Constants.DOCK_ITEM_PLAYLISTS, Constants.DOCK_ITEM_DOWNLOADS,
+                Constants.DOCK_ITEM_SEARCH, Constants.DOCK_ITEM_SETTINGS
+        };
+
+        com.google.android.material.bottomsheet.BottomSheetDialog sheet = new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+        LinearLayout container = new LinearLayout(this);
+        container.setOrientation(LinearLayout.VERTICAL);
+        int pad = (int) (8 * getResources().getDisplayMetrics().density);
+        container.setPadding(0, pad, 0, pad);
+
+        for (String item : allSections) {
+            if (dockItems.contains(item)) continue;
+            View row = getLayoutInflater().inflate(R.layout.item_more_menu, container, false);
+            ((ImageView) row.findViewById(R.id.more_item_icon)).setImageResource(getDockIcon(item));
+            ((TextView) row.findViewById(R.id.more_item_label)).setText(getDockLabel(item));
+            int fragmentId = getFragmentId(item);
+            row.setOnClickListener(v -> {
+                if (navController.getCurrentDestination() == null || navController.getCurrentDestination().getId() != fragmentId) {
+                    navController.navigate(fragmentId);
+                }
+                sheet.dismiss();
+            });
+            container.addView(row);
+        }
+
+        sheet.setContentView(container);
+        sheet.show();
     }
 
     private String getDockLabel(String item) {
@@ -393,6 +437,7 @@ public class MainActivity extends BaseActivity {
             case Constants.DOCK_ITEM_LIBRARY: return "Library";
             case Constants.DOCK_ITEM_DOWNLOADS: return "Downloads";
             case Constants.DOCK_ITEM_ALBUMS: return "Albums";
+            case Constants.DOCK_ITEM_ARTISTS: return "Artists";
             case Constants.DOCK_ITEM_PLAYLISTS: return "Playlists";
             case Constants.DOCK_ITEM_SEARCH: return "Search";
             case Constants.DOCK_ITEM_SETTINGS: return "Settings";
@@ -405,6 +450,7 @@ public class MainActivity extends BaseActivity {
             case Constants.DOCK_ITEM_LIBRARY: return R.id.libraryFragment;
             case Constants.DOCK_ITEM_DOWNLOADS: return R.id.downloadFragment;
             case Constants.DOCK_ITEM_ALBUMS: return R.id.albumCatalogueFragment;
+            case Constants.DOCK_ITEM_ARTISTS: return R.id.artistCatalogueFragment;
             case Constants.DOCK_ITEM_PLAYLISTS: return R.id.playlistCatalogueFragment;
             case Constants.DOCK_ITEM_SEARCH: return R.id.searchFragment;
             case Constants.DOCK_ITEM_SETTINGS: return R.id.settingsFragment;
@@ -416,7 +462,8 @@ public class MainActivity extends BaseActivity {
         switch (item) {
             case Constants.DOCK_ITEM_LIBRARY: return R.drawable.ic_graphic_eq;
             case Constants.DOCK_ITEM_DOWNLOADS: return R.drawable.ic_file_download;
-            case Constants.DOCK_ITEM_ALBUMS: return R.drawable.ic_placeholder_album;
+            case Constants.DOCK_ITEM_ALBUMS: return R.drawable.ic_album;
+            case Constants.DOCK_ITEM_ARTISTS: return R.drawable.ic_artist;
             case Constants.DOCK_ITEM_PLAYLISTS: return R.drawable.ic_playlist_add;
             case Constants.DOCK_ITEM_SEARCH: return R.drawable.ic_search;
             case Constants.DOCK_ITEM_SETTINGS: return R.drawable.ic_settings;

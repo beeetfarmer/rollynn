@@ -629,6 +629,8 @@
     <string name="settings_koito_url_title">Koito server URL</string>
     <string name="settings_koito_key_title">Koito API key</string>
     <string name="settings_koito_key_summary">API key from your Koito account, used to read your listening stats</string>
+    <string name="dock_more">More</string>
+    <string name="dock_max_items">The dock can show at most 4 items besides More</string>
     <string name="song_subtitle_play_count">  •  x%1$d</string>
     <string name="settings_show_song_play_count">Show play count on songs</string>
     <string name="settings_show_song_play_count_summary">Display how many times each song has been played in song lists</string>
