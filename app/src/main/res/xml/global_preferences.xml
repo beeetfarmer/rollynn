@@ -353,7 +353,6 @@
             <EditTextPreference
                 android:key="koito_server_url"
                 android:title="@string/settings_koito_url_title"
-                android:dependency="use_koito_stats"
                 app:useSimpleSummaryProvider="true"
                 app:icon="@drawable/ic_link" />
 
@@ -362,8 +361,14 @@
                 android:title="@string/settings_koito_key_title"
                 android:summary="@string/settings_koito_key_summary"
                 android:inputType="textPassword"
-                android:dependency="use_koito_stats"
                 app:icon="@drawable/ic_link" />
+
+            <SwitchPreference
+                android:key="rewind_tab_enabled"
+                android:title="@string/settings_rewind_title"
+                android:summary="@string/settings_rewind_summary"
+                android:defaultValue="false"
+                app:icon="@drawable/ic_history" />
 
         </PreferenceCategory>
 

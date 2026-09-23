@@ -88,6 +88,23 @@ class KoitoRepository {
      * same-titled tracks on different releases are told apart, then matches by title and reads
      * the track entity's real count. Null on any miss so the caller keeps the server's count.
      */
+    /** Rewind summary for a calendar period (month 1-12, or 0 for the whole year). Null on error. */
+    fun getSummary(year: Int, month: Int): LiveData<KoitoSummary?> {
+        val result = MutableLiveData<KoitoSummary?>(null)
+        val api = KoitoClient.getApi()
+        if (api == null) return result
+        api.summary(year, month).enqueue(object : Callback<KoitoSummary> {
+            override fun onResponse(call: Call<KoitoSummary>, response: Response<KoitoSummary>) {
+                result.postValue(if (response.isSuccessful) response.body() else null)
+            }
+
+            override fun onFailure(call: Call<KoitoSummary>, t: Throwable) {
+                result.postValue(null)
+            }
+        })
+        return result
+    }
+
     fun getTrackCount(artist: String?, title: String?, albumTitle: String?): LiveData<Long?> {
         val result = MutableLiveData<Long?>(null)
         val api = KoitoClient.getApi()

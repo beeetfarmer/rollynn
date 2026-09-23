@@ -32,6 +32,15 @@ object KoitoClient {
     @JvmStatic
     fun isConfigured(): Boolean = getBaseUrl() != null
 
+    /** Turns a Koito image path ("/image/...") into a full URL Glide can load. */
+    @JvmStatic
+    fun imageUrl(path: String?): String? {
+        if (path.isNullOrBlank()) return null
+        if (path.startsWith("http", true)) return path
+        val base = getBaseUrl() ?: return null
+        return base + path.removePrefix("/")
+    }
+
     @JvmStatic
     @Synchronized
     fun getApi(): KoitoApi? {

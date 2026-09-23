@@ -64,6 +64,9 @@ public class DockConfigurationFragment extends Fragment {
                 Constants.DOCK_ITEM_DOWNLOADS,
                 Constants.DOCK_ITEM_PLAYLISTS
         ));
+        if (Preferences.isRewindTabEnabled()) {
+            allItems.add(Constants.DOCK_ITEM_REWIND);
+        }
 
         // Reorder allItems to have current items first in their saved order
         List<String> orderedAllItems = new ArrayList<>(currentItems);
@@ -182,6 +185,7 @@ public class DockConfigurationFragment extends Fragment {
                 case Constants.DOCK_ITEM_LIBRARY: return "Library";
                 case Constants.DOCK_ITEM_ALBUMS: return "Albums";
                 case Constants.DOCK_ITEM_ARTISTS: return "Artists";
+                case Constants.DOCK_ITEM_REWIND: return "Rewind";
                 case Constants.DOCK_ITEM_DOWNLOADS: return "Downloads";
                 case Constants.DOCK_ITEM_PLAYLISTS: return "Playlists";
                 case Constants.DOCK_ITEM_SEARCH: return "Search";
@@ -195,6 +199,7 @@ public class DockConfigurationFragment extends Fragment {
                 case Constants.DOCK_ITEM_LIBRARY: return R.drawable.ic_graphic_eq;
                 case Constants.DOCK_ITEM_ALBUMS: return R.drawable.ic_album;
                 case Constants.DOCK_ITEM_ARTISTS: return R.drawable.ic_artist;
+                case Constants.DOCK_ITEM_REWIND: return R.drawable.ic_history;
                 case Constants.DOCK_ITEM_DOWNLOADS: return R.drawable.ic_file_download;
                 case Constants.DOCK_ITEM_PLAYLISTS: return R.drawable.ic_placeholder_playlist;
                 case Constants.DOCK_ITEM_SEARCH: return R.drawable.ic_search;

@@ -22,12 +22,36 @@ data class KoitoEntity(
     @SerializedName("listen_count") val listenCount: Long = 0,
     @SerializedName("album_id") val albumId: Int? = null,
     val artists: List<KoitoSimpleArtist>? = null,
+    val image: KoitoImage? = null,
 ) {
     fun label(): String? = title ?: name
+    fun artistNames(): String? = artists?.mapNotNull { it.name }?.joinToString(", ")?.ifBlank { null }
 }
 
 @Keep
 data class KoitoSimpleArtist(val id: Int = 0, val name: String? = null)
+
+@Keep
+data class KoitoImage(val xs: String? = null, val small: String? = null, val medium: String? = null, val large: String? = null)
+
+/** Response of GET /apis/web/v1/summary?year=&month= — the data behind Koito's Rewind page. */
+@Keep
+data class KoitoSummary(
+    @SerializedName("top_artists") val topArtists: List<KoitoRankedItem>? = null,
+    @SerializedName("top_albums") val topAlbums: List<KoitoRankedItem>? = null,
+    @SerializedName("top_tracks") val topTracks: List<KoitoRankedItem>? = null,
+    @SerializedName("minutes_listened") val minutesListened: Long = 0,
+    val plays: Long = 0,
+    @SerializedName("unique_tracks") val uniqueTracks: Long = 0,
+    @SerializedName("unique_albums") val uniqueAlbums: Long = 0,
+    @SerializedName("unique_artists") val uniqueArtists: Long = 0,
+    @SerializedName("new_tracks") val newTracks: Long = 0,
+    @SerializedName("new_albums") val newAlbums: Long = 0,
+    @SerializedName("new_artists") val newArtists: Long = 0,
+)
+
+@Keep
+data class KoitoRankedItem(val item: KoitoEntity? = null, val rank: Int = 0)
 
 /** Response of GET /apis/web/v1/listens (newest first). */
 @Keep

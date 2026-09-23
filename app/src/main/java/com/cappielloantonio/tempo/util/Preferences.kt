@@ -25,6 +25,7 @@ object Preferences {
     private const val KOITO_SERVER_URL = "koito_server_url"
     private const val KOITO_API_KEY = "koito_api_key"
     private const val USE_KOITO_STATS = "use_koito_stats"
+    private const val REWIND_TAB_ENABLED = "rewind_tab_enabled"
     private const val OPEN_SUBSONIC_EXTENSIONS = "open_subsonic_extensions"
     private const val LOCAL_ADDRESS = "local_address"
     private const val IN_USE_SERVER_ADDRESS = "in_use_server_address"
@@ -318,6 +319,11 @@ object Preferences {
     @JvmStatic
     fun useKoitoStats(): Boolean {
         return App.getInstance().preferences.getBoolean(USE_KOITO_STATS, false)
+    }
+
+    @JvmStatic
+    fun isRewindTabEnabled(): Boolean {
+        return App.getInstance().preferences.getBoolean(REWIND_TAB_ENABLED, false)
     }
 
     @JvmStatic

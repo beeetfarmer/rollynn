@@ -209,6 +209,11 @@
             app:destination="@id/albumPageFragment" />
     </fragment>
     <fragment
+        android:id="@+id/rewindFragment"
+        android:name="com.cappielloantonio.tempo.ui.fragment.RewindFragment"
+        android:label="RewindFragment"
+        tools:layout="@layout/fragment_rewind" />
+    <fragment
         android:id="@+id/genreCatalogueFragment"
         android:name="com.cappielloantonio.tempo.ui.fragment.GenreCatalogueFragment"
         android:label="GenreCatalogueFragment"

@@ -19,6 +19,10 @@ interface KoitoApi {
     @GET("apis/web/v1/track/{id}")
     fun track(@Path("id") id: Int): Call<KoitoEntity>
 
+    /** Rewind data for a calendar period: month 1-12, or 0 for the whole year. */
+    @GET("apis/web/v1/summary")
+    fun summary(@Query("year") year: Int, @Query("month") month: Int): Call<KoitoSummary>
+
     /** Listens are returned newest-first, so limit=1 yields the last played. */
     @GET("apis/web/v1/listens")
     fun listens(
