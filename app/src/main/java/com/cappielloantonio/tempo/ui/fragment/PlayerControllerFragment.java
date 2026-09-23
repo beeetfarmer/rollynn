@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
@@ -45,6 +46,7 @@ import com.cappielloantonio.tempo.ui.dialog.PlaylistChooserDialog;
 import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.databinding.InnerFragmentPlayerControllerBinding;
 import com.cappielloantonio.tempo.service.EqualizerManager;
+import com.cappielloantonio.tempo.service.BaseMediaService;
 import com.cappielloantonio.tempo.service.MediaService;
 import com.cappielloantonio.tempo.ui.activity.MainActivity;
 import com.cappielloantonio.tempo.ui.dialog.EqualizerPresetPickerDialog;
@@ -92,6 +94,7 @@ public class PlayerControllerFragment extends Fragment {
     private View ratingContainer;
     private ImageButton equalizerButton;
     private ImageButton addToPlaylistButton;
+    private ImageButton sleepTimerButton;
     private ImageButton overflowMenuButton;
     private ImageButton lyricsButton;
     private ChipGroup assetLinkChipGroup;
@@ -180,6 +183,11 @@ public class PlayerControllerFragment extends Fragment {
         addToPlaylistButton = bind.getRoot().findViewById(R.id.button_add_to_playlist);
         if (addToPlaylistButton != null) {
             addToPlaylistButton.setOnClickListener(v -> launchPlaylistChooser());
+        }
+        sleepTimerButton = bind.getRoot().findViewById(R.id.button_sleep_timer);
+        if (sleepTimerButton != null) {
+            sleepTimerButton.setOnClickListener(v -> showSleepTimerDialog());
+            updateSleepTimerButton();
         }
         overflowMenuButton = bind.getRoot().findViewById(R.id.button_overflow_menu);
         lyricsButton = bind.getRoot().findViewById(R.id.player_open_lyrics_button);
@@ -857,6 +865,90 @@ public class PlayerControllerFragment extends Fragment {
             });
             dialog.show(requireActivity().getSupportFragmentManager(), null);
         });
+    }
+
+    private static final int[] SLEEP_TIMER_PRESETS = {0, 15, 30, 45, 60};
+
+    private void showSleepTimerDialog() {
+        boolean active = Preferences.getSleepTimerEnd() > System.currentTimeMillis();
+        int activeMinutes = active ? Preferences.getSleepTimerMinutes() : 0;
+
+        // Labels: Off, presets, then a Custom entry (showing its value when a custom timer is active).
+        int customIndex = SLEEP_TIMER_PRESETS.length;
+        boolean customActive = active && activeMinutes > 0 && presetIndexOf(activeMinutes) < 0;
+        String[] labels = new String[SLEEP_TIMER_PRESETS.length + 1];
+        labels[0] = getString(R.string.sleep_timer_off);
+        for (int i = 1; i < SLEEP_TIMER_PRESETS.length; i++) {
+            labels[i] = getString(R.string.sleep_timer_minutes, SLEEP_TIMER_PRESETS[i]);
+        }
+        labels[customIndex] = customActive
+                ? getString(R.string.sleep_timer_custom_active, activeMinutes)
+                : getString(R.string.sleep_timer_custom);
+
+        int checked;
+        if (!active || activeMinutes == 0) checked = 0;
+        else if (customActive) checked = customIndex;
+        else checked = presetIndexOf(activeMinutes);
+
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireActivity())
+                .setTitle(R.string.sleep_timer_title)
+                .setSingleChoiceItems(labels, checked, (dialog, which) -> {
+                    dialog.dismiss();
+                    if (which == customIndex) {
+                        showCustomSleepTimerInput();
+                    } else {
+                        setSleepTimer(SLEEP_TIMER_PRESETS[which]);
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.cancel())
+                .show();
+    }
+
+    private int presetIndexOf(int minutes) {
+        for (int i = 0; i < SLEEP_TIMER_PRESETS.length; i++) {
+            if (SLEEP_TIMER_PRESETS[i] == minutes) return i;
+        }
+        return -1;
+    }
+
+    private void showCustomSleepTimerInput() {
+        View view = getLayoutInflater().inflate(R.layout.dialog_sleep_timer_custom, null);
+        EditText input = view.findViewById(R.id.sleep_timer_input);
+
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireActivity())
+                .setTitle(R.string.sleep_timer_custom_title)
+                .setView(view)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    try {
+                        int minutes = Integer.parseInt(input.getText().toString().trim());
+                        if (minutes > 0) setSleepTimer(minutes);
+                    } catch (NumberFormatException ignored) {
+                        // no valid number entered; leave the timer unchanged
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.cancel())
+                .show();
+    }
+
+    private void setSleepTimer(int minutes) {
+        Intent intent = new Intent(BaseMediaService.ACTION_SET_SLEEP_TIMER)
+                .setPackage(requireContext().getPackageName());
+        intent.putExtra(BaseMediaService.EXTRA_SLEEP_MINUTES, minutes);
+        requireContext().sendBroadcast(intent);
+        Toast.makeText(requireContext(),
+                minutes == 0 ? getString(R.string.sleep_timer_cancelled)
+                        : getString(R.string.sleep_timer_set, minutes),
+                Toast.LENGTH_SHORT).show();
+        sleepTimerButton.postDelayed(this::updateSleepTimerButton, 100);
+    }
+
+    private void updateSleepTimerButton() {
+        if (sleepTimerButton == null) return;
+        boolean active = Preferences.getSleepTimerEnd() > System.currentTimeMillis();
+        int color = UIUtil.getThemeColor(requireContext(),
+                active ? com.google.android.material.R.attr.colorPrimary
+                        : com.google.android.material.R.attr.colorOnSurface);
+        sleepTimerButton.setBackgroundTintList(android.content.res.ColorStateList.valueOf(color));
     }
 
     private void initOverflowMenu() {

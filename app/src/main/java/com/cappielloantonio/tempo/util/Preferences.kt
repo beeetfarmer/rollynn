@@ -20,6 +20,8 @@ object Preferences {
     private const val OPEN_SUBSONIC = "open_subsonic"
     private const val SHOW_SONG_PLAY_COUNT = "show_song_play_count"
     private const val SHOW_TOP_SONG_INDICATOR = "show_top_song_indicator"
+    private const val SLEEP_TIMER_END = "sleep_timer_end"
+    private const val SLEEP_TIMER_MINUTES = "sleep_timer_minutes"
     private const val OPEN_SUBSONIC_EXTENSIONS = "open_subsonic_extensions"
     private const val LOCAL_ADDRESS = "local_address"
     private const val IN_USE_SERVER_ADDRESS = "in_use_server_address"
@@ -275,6 +277,28 @@ object Preferences {
     @JvmStatic
     fun showTopSongIndicator(): Boolean {
         return App.getInstance().preferences.getBoolean(SHOW_TOP_SONG_INDICATOR, true)
+    }
+
+    /** Epoch millis at which the sleep timer pauses playback, or 0 when no timer is set. */
+    @JvmStatic
+    fun getSleepTimerEnd(): Long {
+        return App.getInstance().preferences.getLong(SLEEP_TIMER_END, 0)
+    }
+
+    @JvmStatic
+    fun setSleepTimerEnd(endMillis: Long) {
+        App.getInstance().preferences.edit().putLong(SLEEP_TIMER_END, endMillis).apply()
+    }
+
+    /** The duration in minutes the active sleep timer was set to, or 0 when none is set. */
+    @JvmStatic
+    fun getSleepTimerMinutes(): Int {
+        return App.getInstance().preferences.getInt(SLEEP_TIMER_MINUTES, 0)
+    }
+
+    @JvmStatic
+    fun setSleepTimerMinutes(minutes: Int) {
+        App.getInstance().preferences.edit().putInt(SLEEP_TIMER_MINUTES, minutes).apply()
     }
 
     @JvmStatic

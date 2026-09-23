@@ -152,6 +152,17 @@
             app:layout_constraintTop_toTopOf="@+id/song_rating_bar" />
 
         <ImageButton
+            android:id="@+id/button_sleep_timer"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/ic_sleep_timer"
+            android:backgroundTint="?attr/colorOnSurface"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/button_add_to_playlist"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
             android:id="@+id/button_add_to_playlist"
             android:layout_width="26dp"
             android:layout_height="26dp"

@@ -60,7 +60,12 @@ open class BaseMediaService : MediaLibraryService() {
         const val ACTION_BIND_EQUALIZER = "com.cappielloantonio.tempo.service.BIND_EQUALIZER"
         const val ACTION_EQUALIZER_UPDATED = "com.cappielloantonio.tempo.service.EQUALIZER_UPDATED"
         const val ACTION_APPLY_EQUALIZER = "com.cappielloantonio.tempo.service.APPLY_EQUALIZER"
+        const val ACTION_SET_SLEEP_TIMER = "com.cappielloantonio.tempo.service.SET_SLEEP_TIMER"
+        const val EXTRA_SLEEP_MINUTES = "sleep_minutes"
     }
+
+    private val sleepTimerHandler = Handler(Looper.getMainLooper())
+    private var sleepTimerRunnable: Runnable? = null
 
     protected lateinit var exoplayer: ExoPlayer
     protected lateinit var mediaLibrarySession: MediaLibrarySession
@@ -484,6 +489,9 @@ open class BaseMediaService : MediaLibraryService() {
     override fun onDestroy() {
         releaseNetworkCallback()
         try { unregisterReceiver(equalizerApplyReceiver) } catch (_: Exception) { }
+        sleepTimerRunnable?.let { sleepTimerHandler.removeCallbacks(it) }
+        Preferences.setSleepTimerEnd(0)
+        Preferences.setSleepTimerMinutes(0)
         equalizerManager.release()
         stopWidgetUpdates()
         stopRadioHeaderChecks()
@@ -518,7 +526,10 @@ open class BaseMediaService : MediaLibraryService() {
 
     private val equalizerApplyReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
-            if (intent?.action == ACTION_APPLY_EQUALIZER) reapplyEqualizer()
+            when (intent?.action) {
+                ACTION_APPLY_EQUALIZER -> reapplyEqualizer()
+                ACTION_SET_SLEEP_TIMER -> handleSleepTimer(intent.getIntExtra(EXTRA_SLEEP_MINUTES, 0))
+            }
         }
     }
 
@@ -526,12 +537,36 @@ open class BaseMediaService : MediaLibraryService() {
         equalizerManager = EqualizerManager()
         val audioSessionId = exoplayer.audioSessionId
         attachEqualizerIfPossible(audioSessionId)
+        val filter = android.content.IntentFilter(ACTION_APPLY_EQUALIZER)
+        filter.addAction(ACTION_SET_SLEEP_TIMER)
         androidx.core.content.ContextCompat.registerReceiver(
             this,
             equalizerApplyReceiver,
-            android.content.IntentFilter(ACTION_APPLY_EQUALIZER),
+            filter,
             androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
         )
+    }
+
+    /** Schedules (or cancels, when minutes <= 0) pausing playback after the given number of minutes. */
+    private fun handleSleepTimer(minutes: Int) {
+        sleepTimerRunnable?.let { sleepTimerHandler.removeCallbacks(it) }
+        sleepTimerRunnable = null
+        if (minutes <= 0) {
+            Preferences.setSleepTimerEnd(0)
+            Preferences.setSleepTimerMinutes(0)
+            return
+        }
+        val delayMillis = minutes * 60_000L
+        Preferences.setSleepTimerEnd(System.currentTimeMillis() + delayMillis)
+        Preferences.setSleepTimerMinutes(minutes)
+        val runnable = Runnable {
+            if (exoplayer.isPlaying) exoplayer.pause()
+            Preferences.setSleepTimerEnd(0)
+            Preferences.setSleepTimerMinutes(0)
+            sleepTimerRunnable = null
+        }
+        sleepTimerRunnable = runnable
+        sleepTimerHandler.postDelayed(runnable, delayMillis)
     }
 
     /** When auto-by-genre is on, switches the live equalizer to the preset matching the track's genre. */
