@@ -258,9 +258,12 @@ public class DownloadFragment extends Fragment implements ClickCallback {
                 downloadViewModel.initViewStack(new DownloadStack(Constants.DOWNLOAD_TYPE_YEAR, null));
                 Preferences.setDefaultDownloadViewType(Constants.DOWNLOAD_TYPE_YEAR);
                 return true;
-            } else if (menuItem.getItemId() == R.id.menu_download_set_directory) { 
+            } else if (menuItem.getItemId() == R.id.menu_download_set_directory) {
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                 startActivityForResult(intent, REQUEST_CODE_PICK_DIRECTORY);
+                return true;
+            } else if (menuItem.getItemId() == R.id.menu_download_delete_all) {
+                confirmDeleteAllDownloads();
                 return true;
             }
 
@@ -268,6 +271,18 @@ public class DownloadFragment extends Fragment implements ClickCallback {
         });
 
         popup.show();
+    }
+
+    private void confirmDeleteAllDownloads() {
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireActivity())
+                .setTitle(R.string.delete_download_storage_dialog_title)
+                .setMessage(R.string.delete_download_storage_dialog_summary)
+                .setNegativeButton(R.string.delete_download_storage_dialog_negative_button, (dialog, which) -> dialog.cancel())
+                .setPositiveButton(R.string.delete_download_storage_dialog_positive_button, (dialog, which) -> {
+                    com.cappielloantonio.tempo.util.DownloadUtil.getDownloadTracker(requireContext()).removeAll();
+                    Toast.makeText(requireContext(), R.string.download_delete_all_done, Toast.LENGTH_SHORT).show();
+                })
+                .show();
     }
 
     private void initializeMediaBrowser() {
