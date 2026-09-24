@@ -117,6 +117,20 @@ public class MainActivity extends BaseActivity {
         View view = bind.getRoot();
         setContentView(view);
 
+        // Draw edge to edge (required on API 35+) and apply only the top (status
+        // bar) inset ourselves — to the nav host that holds the screens, not the
+        // whole CoordinatorLayout, so the bottom sheet and dock keep their own
+        // bottom positioning. Content then flows under the transparent nav bar and
+        // the app background shows there. The artist page removes the top inset
+        // while immersive so its artwork reaches under the status bar.
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        View navHostView = bind.getRoot().findViewById(R.id.nav_host_fragment);
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(navHostView, (v, insets) -> {
+            int top = immersiveBars ? 0 : insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).top;
+            v.setPadding(0, top, 0, 0);
+            return insets;
+        });
+
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
         assetLinkNavigator = new AssetLinkNavigator(this);
 
@@ -323,7 +337,9 @@ public class MainActivity extends BaseActivity {
      * shows through them. Icons are forced light since the artwork behind is dark.
      */
     public void applyImmersiveSystemBars() {
+        immersiveBars = true;
         androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        requestNavHostInsets();
         getWindow().getDecorView().requestApplyInsets();
         getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
         getWindow().setNavigationBarColor(android.graphics.Color.TRANSPARENT);
@@ -349,6 +365,12 @@ public class MainActivity extends BaseActivity {
      * this way keeps the mini player's bottom fixed, so matching its height to the
      * dock grows it upward rather than down toward the dock.
      */
+    private void requestNavHostInsets() {
+        if (bind == null) return;
+        View navHostView = bind.getRoot().findViewById(R.id.nav_host_fragment);
+        if (navHostView != null) androidx.core.view.ViewCompat.requestApplyInsets(navHostView);
+    }
+
     private void updateBottomSheetPeek() {
         if (bottomSheetBehavior == null) return;
         int defaultHeader = UIUtil.dpToPx(this, 48);
@@ -356,13 +378,12 @@ public class MainActivity extends BaseActivity {
         int bottomGap = defaultPeek - defaultHeader;
         int header = currentDockHeight > 0 ? currentDockHeight : defaultHeader;
 
+        // Always edge to edge now, so lift the mini player above the nav bar.
         int navInset = 0;
-        if (immersiveBars) {
-            androidx.core.view.WindowInsetsCompat insets =
-                    androidx.core.view.ViewCompat.getRootWindowInsets(getWindow().getDecorView());
-            if (insets != null) {
-                navInset = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).bottom;
-            }
+        androidx.core.view.WindowInsetsCompat insets =
+                androidx.core.view.ViewCompat.getRootWindowInsets(getWindow().getDecorView());
+        if (insets != null) {
+            navInset = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).bottom;
         }
         bottomSheetBehavior.setPeekHeight(bottomGap + header + navInset, false);
     }
@@ -386,9 +407,10 @@ public class MainActivity extends BaseActivity {
 
     /** Restores the normal opaque surface-coloured system bars. */
     public void restoreDefaultSystemBars() {
-        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
-        getWindow().getDecorView().requestApplyInsets();
         immersiveBars = false;
+        // Stay edge to edge; just re-apply the top inset so content sits below the
+        // status bar again (the artist page had removed it).
+        requestNavHostInsets();
         updateBottomSheetPeek();
         if (playerBarsExpanded) {
             applyPlayerSystemBarColors(true);

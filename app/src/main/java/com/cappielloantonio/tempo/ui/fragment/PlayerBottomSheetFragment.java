@@ -123,6 +123,16 @@ public class PlayerBottomSheetFragment extends Fragment {
     private void initViewPager() {
         bind.playerBodyLayout.playerBodyBottomSheetViewPager.setOrientation(ViewPager2.ORIENTATION_VERTICAL);
         bind.playerBodyLayout.playerBodyBottomSheetViewPager.setAdapter(new PlayerControllerVerticalPager(this));
+
+        // The window is edge to edge, so keep the expanded player's content within
+        // the status and navigation bars (its background still fills behind them).
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(
+                bind.playerBodyLayout.playerBodyBottomSheetViewPager, (v, insets) -> {
+                    androidx.core.graphics.Insets bars =
+                            insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars());
+                    v.setPadding(0, bars.top, 0, bars.bottom);
+                    return insets;
+                });
     }
 
     private void applyPlayerBackgroundColor() {

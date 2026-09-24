@@ -115,7 +115,9 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     protected void applySystemBarColors() {
-        applySystemBarColors(UIUtil.getSystemBarColor(this));
+        // Transparent navigation bar so it blends with the app background instead
+        // of showing as a distinct (contrast-scrimmed) dark bar.
+        applySystemBarColors(UIUtil.getSystemBarColor(this), Color.TRANSPARENT);
     }
 
     protected void applySystemBarColors(int rawColor) {
@@ -124,7 +126,8 @@ public class BaseActivity extends AppCompatActivity {
 
     protected void applySystemBarColors(int statusRawColor, int navRawColor) {
         int statusColor = opaque(statusRawColor);
-        int navColor = opaque(navRawColor);
+        // Keep the nav colour as given so callers can pass a transparent bar.
+        int navColor = Color.alpha(navRawColor) == 0 ? navRawColor : opaque(navRawColor);
 
         getWindow().setStatusBarColor(statusColor);
         getWindow().setNavigationBarColor(navColor);
@@ -138,7 +141,8 @@ public class BaseActivity extends AppCompatActivity {
 
         WindowInsetsControllerCompat insetsController = new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
         insetsController.setAppearanceLightStatusBars(ColorUtils.calculateLuminance(statusColor) > 0.5);
-        insetsController.setAppearanceLightNavigationBars(ColorUtils.calculateLuminance(navColor) > 0.5);
+        insetsController.setAppearanceLightNavigationBars(Color.alpha(navColor) != 0
+                && ColorUtils.calculateLuminance(navColor) > 0.5);
     }
 
     private int opaque(int color) {
