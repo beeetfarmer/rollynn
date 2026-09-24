@@ -90,6 +90,7 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
 
         init(view);
         initAppBar();
+        initHero();
         initArtistInfo();
         initPlayButtons();
         initTopSongsView();
@@ -111,7 +112,16 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
 
     public void onResume() {
         super.onResume();
+        // Applied here (not onStart) so on artist->artist navigation the incoming
+        // page re-asserts immersive bars after the outgoing page restores them.
+        if (activity != null) activity.applyImmersiveSystemBars();
         if (songHorizontalAdapter != null) setMediaBrowserListenableFuture();
+    }
+
+    @Override
+    public void onPause() {
+        if (activity != null) activity.restoreDefaultSystemBars();
+        super.onPause();
     }
 
     @Override
@@ -163,12 +173,58 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
 
     private void initAppBar() {
         activity.setSupportActionBar(bind.animToolbar);
-        if (activity.getSupportActionBar() != null)
+        if (activity.getSupportActionBar() != null) {
             activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            // The collapsing title is disabled, so stop the toolbar falling back to
+            // the app name ("Rollynn") over the artwork.
+            activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
 
-        bind.collapsingToolbar.setTitle(artistPageViewModel.getArtist().getName());
         bind.animToolbar.setNavigationOnClickListener(v -> activity.navController.navigateUp());
-        bind.collapsingToolbar.setExpandedTitleColor(getResources().getColor(R.color.white, null));
+
+        // As the header collapses, fade a solid surface over the toolbar and the
+        // status bar so no strip of artwork lingers behind them; keep them clear
+        // (edge-to-edge over the image) while expanded.
+        bind.animToolbar.setBackgroundColor(UIUtil.getThemeColor(requireContext(), com.google.android.material.R.attr.colorSurface));
+        bind.animToolbar.getBackground().setAlpha(0);
+        bind.appbar.addOnOffsetChangedListener((com.google.android.material.appbar.AppBarLayout.OnOffsetChangedListener) (appBarLayout, verticalOffset) -> {
+            if (bind == null) return;
+            int range = appBarLayout.getTotalScrollRange();
+            float fraction = range > 0 ? Math.min(1f, Math.abs(verticalOffset) / (float) range) : 0f;
+            bind.animToolbar.getBackground().setAlpha((int) (255 * fraction));
+            if (activity != null) activity.setArtistHeaderCollapsed(fraction > 0.85f);
+        });
+    }
+
+    private void initHero() {
+        bind.artistHeroName.setText(artistPageViewModel.getArtist().getName());
+        bind.artistPagePlayButton.setOnClickListener(v -> playArtistTopSongs());
+
+        // Header takes ~45% of the screen height.
+        ViewGroup.LayoutParams appbarParams = bind.appbar.getLayoutParams();
+        appbarParams.height = (int) (getResources().getDisplayMetrics().heightPixels * 0.45f);
+        bind.appbar.setLayoutParams(appbarParams);
+
+        // The name is anchored centred on the header's bottom edge; shift it up so
+        // it sits fully over the artwork rather than straddling the edge.
+        int lift = UIUtil.dpToPx(requireContext(), 10);
+        bind.artistHeroName.post(() -> {
+            if (bind == null) return;
+            bind.artistHeroName.setTranslationY(-(bind.artistHeroName.getHeight() / 2f) - lift);
+        });
+    }
+
+    private void playArtistTopSongs() {
+        artistPageViewModel.getArtistTopSongList().observe(getViewLifecycleOwner(), new Observer<List<Child>>() {
+            @Override
+            public void onChanged(List<Child> songs) {
+                if (songs != null && !songs.isEmpty()) {
+                    MediaManager.startQueue(mediaBrowserListenableFuture, songs, 0);
+                    activity.setBottomSheetInPeek(true);
+                    artistPageViewModel.getArtistTopSongList().removeObserver(this);
+                }
+            }
+        });
     }
 
     private void initArtistInfo() {

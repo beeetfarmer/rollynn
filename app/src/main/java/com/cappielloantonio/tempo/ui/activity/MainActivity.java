@@ -316,6 +316,53 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Transparent system bars so a full-bleed header (the artist page artwork)
+     * shows through them. Icons are forced light since the artwork behind is dark.
+     */
+    public void applyImmersiveSystemBars() {
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        getWindow().getDecorView().requestApplyInsets();
+        getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
+        getWindow().setNavigationBarColor(android.graphics.Color.TRANSPARENT);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            getWindow().setStatusBarContrastEnforced(false);
+            getWindow().setNavigationBarContrastEnforced(false);
+        }
+        androidx.core.view.WindowInsetsControllerCompat controller =
+                new androidx.core.view.WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
+        controller.setAppearanceLightStatusBars(false);
+        controller.setAppearanceLightNavigationBars(false);
+    }
+
+    /**
+     * On the immersive artist page, tints the status bar with the surface colour
+     * once the header has collapsed (so no artwork shows behind it) and keeps it
+     * transparent while expanded. Only the colour changes — the window stays
+     * edge-to-edge, so the artwork still bleeds under the bar when expanded.
+     */
+    public void setArtistHeaderCollapsed(boolean collapsed) {
+        int color = collapsed
+                ? UIUtil.getThemeColor(this, com.google.android.material.R.attr.colorSurface)
+                : android.graphics.Color.TRANSPARENT;
+        getWindow().setStatusBarColor(color);
+        androidx.core.view.WindowInsetsControllerCompat controller =
+                new androidx.core.view.WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
+        controller.setAppearanceLightStatusBars(collapsed
+                && androidx.core.graphics.ColorUtils.calculateLuminance(color) > 0.5);
+    }
+
+    /** Restores the normal opaque surface-coloured system bars. */
+    public void restoreDefaultSystemBars() {
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
+        getWindow().getDecorView().requestApplyInsets();
+        if (playerBarsExpanded) {
+            applyPlayerSystemBarColors(true);
+        } else {
+            applySystemBarColors();
+        }
+    }
+
     private void animateBottomSheet(float slideOffset) {
         PlayerBottomSheetFragment playerBottomSheetFragment = (PlayerBottomSheetFragment) getSupportFragmentManager().findFragmentByTag("PlayerBottomSheet");
         if (playerBottomSheetFragment != null) {
@@ -384,6 +431,21 @@ public class MainActivity extends BaseActivity {
                     }
                 }
             }
+        });
+
+        // Keep the dock clear of the navigation bar. On edge-to-edge pages (the
+        // artist page) the window reaches the screen bottom, so add the nav-bar
+        // inset to the dock's margin; on normal pages the inset is 0.
+        int baseDockMargin = UIUtil.dpToPx(this, 8);
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(bind.navigationDock.getRoot(), (v, insets) -> {
+            int navBottom = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).bottom;
+            android.view.ViewGroup.MarginLayoutParams lp = (android.view.ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            int target = baseDockMargin + navBottom;
+            if (lp.bottomMargin != target) {
+                lp.bottomMargin = target;
+                v.setLayoutParams(lp);
+            }
+            return insets;
         });
 
         setupDock();
