@@ -340,6 +340,7 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         recentlyPlayedArtistAdapter = null;
         topPlayedArtistAdapter = null;
         topPlayedSongAdapter = null;
+        recentlyAddedVideoAdapter = null;
         albumSyncObserverRegistered = false;
         artistSyncObserverRegistered = false;
     }
