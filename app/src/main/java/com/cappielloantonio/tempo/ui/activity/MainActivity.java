@@ -333,6 +333,25 @@ public class MainActivity extends BaseActivity {
                 new androidx.core.view.WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
         controller.setAppearanceLightStatusBars(false);
         controller.setAppearanceLightNavigationBars(false);
+
+        // Edge-to-edge drops the bottom sheet under the nav bar, so raise its peek
+        // by the nav-bar inset to keep the mini player the same distance above the
+        // dock as on normal (inset) pages.
+        setBottomSheetPeekForImmersive(true);
+    }
+
+    private void setBottomSheetPeekForImmersive(boolean immersive) {
+        if (bottomSheetBehavior == null) return;
+        int basePeek = getResources().getDimensionPixelSize(R.dimen.bottom_sheet_behavior_peek_height);
+        int navInset = 0;
+        if (immersive) {
+            androidx.core.view.WindowInsetsCompat insets =
+                    androidx.core.view.ViewCompat.getRootWindowInsets(getWindow().getDecorView());
+            if (insets != null) {
+                navInset = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).bottom;
+            }
+        }
+        bottomSheetBehavior.setPeekHeight(basePeek + navInset, false);
     }
 
     /**
@@ -356,6 +375,7 @@ public class MainActivity extends BaseActivity {
     public void restoreDefaultSystemBars() {
         androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
         getWindow().getDecorView().requestApplyInsets();
+        setBottomSheetPeekForImmersive(false);
         if (playerBarsExpanded) {
             applyPlayerSystemBarColors(true);
         } else {
