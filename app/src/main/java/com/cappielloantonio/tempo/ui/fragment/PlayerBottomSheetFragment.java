@@ -37,6 +37,7 @@ import com.cappielloantonio.tempo.ui.activity.MainActivity;
 import com.cappielloantonio.tempo.ui.fragment.pager.PlayerControllerVerticalPager;
 import com.cappielloantonio.tempo.util.Constants;
 import com.cappielloantonio.tempo.util.MusicUtil;
+import com.cappielloantonio.tempo.util.PlayerBackgroundUtil;
 import com.cappielloantonio.tempo.util.Preferences;
 import com.cappielloantonio.tempo.util.UIUtil;
 import com.cappielloantonio.tempo.viewmodel.PlayerBottomSheetViewModel;
@@ -55,6 +56,8 @@ public class PlayerBottomSheetFragment extends Fragment {
 
     private Handler progressBarHandler;
     private Runnable progressBarRunnable;
+
+    private String backgroundCoverId;
 
     @Nullable
     @Override
@@ -265,7 +268,54 @@ public class PlayerBottomSheetFragment extends Fragment {
                     .from(requireContext(), mediaMetadata.extras.getString("coverArtId"), CustomGlideRequest.ResourceType.Song)
                     .build()
                     .into(bind.playerHeaderLayout.playerHeaderMediaCoverImage);
+
+            applyDynamicBackground(mediaMetadata.extras.getString("coverArtId"));
         }
+    }
+
+    /**
+     * Paints the player body with an Apple Music style blurred-artwork background
+     * derived from the current cover. Falls back to the flat colour when there is
+     * no cover or the fetch fails.
+     */
+    private void applyDynamicBackground(String coverId) {
+        if (bind == null) return;
+
+        backgroundCoverId = coverId;
+
+        if (coverId == null) {
+            bind.playerBodyLayout.playerBodyBottomSheetViewPager.setBackgroundColor(UIUtil.getPlayerBackgroundColor(requireContext()));
+            ((MainActivity) requireActivity()).clearPlayerDynamicBarColors();
+            return;
+        }
+
+        CustomGlideRequest.loadAlbumArtBitmap(requireContext(), coverId, 200,
+                new com.bumptech.glide.request.target.CustomTarget<android.graphics.Bitmap>() {
+                    @Override
+                    public void onResourceReady(@NonNull android.graphics.Bitmap resource,
+                                                @Nullable com.bumptech.glide.request.transition.Transition<? super android.graphics.Bitmap> transition) {
+                        // Ignore late arrivals for a track that is no longer current.
+                        if (bind == null || !coverId.equals(backgroundCoverId)) return;
+
+                        int dominant = PlayerBackgroundUtil.dominantColor(resource);
+
+                        bind.playerBodyLayout.playerBodyBottomSheetViewPager.setBackground(
+                                PlayerBackgroundUtil.buildGlow(requireContext(), dominant));
+                        ((MainActivity) requireActivity()).setPlayerDynamicBarColors(
+                                PlayerBackgroundUtil.statusBarColor(requireContext(), dominant),
+                                PlayerBackgroundUtil.navBarColor(requireContext()));
+                    }
+
+                    @Override
+                    public void onLoadFailed(@Nullable android.graphics.drawable.Drawable errorDrawable) {
+                        if (bind == null || !coverId.equals(backgroundCoverId)) return;
+                        bind.playerBodyLayout.playerBodyBottomSheetViewPager.setBackgroundColor(UIUtil.getPlayerBackgroundColor(requireContext()));
+                    }
+
+                    @Override
+                    public void onLoadCleared(@Nullable android.graphics.drawable.Drawable placeholder) {
+                    }
+                });
     }
 
 

@@ -83,6 +83,9 @@ public class MainActivity extends BaseActivity {
     private BottomSheetBehavior bottomSheetBehavior;
     private boolean isLandscape = false;
     private boolean playerBarsExpanded = false;
+    private boolean hasPlayerDynamicBarColors = false;
+    private int playerStatusBarColor;
+    private int playerNavBarColor;
     private AssetLinkNavigator assetLinkNavigator;
     private AssetLinkUtil.AssetLink pendingAssetLink;
 
@@ -282,9 +285,34 @@ public class MainActivity extends BaseActivity {
     private void applyPlayerSystemBarColors(boolean playerExpanded) {
         playerBarsExpanded = playerExpanded;
         if (playerExpanded) {
-            applySystemBarColors(UIUtil.getPlayerBackgroundColor(this));
+            if (hasPlayerDynamicBarColors) {
+                applySystemBarColors(playerStatusBarColor, playerNavBarColor);
+            } else {
+                applySystemBarColors(UIUtil.getPlayerBackgroundColor(this));
+            }
         } else {
             applySystemBarColors();
+        }
+    }
+
+    /**
+     * Colours the status bar with the player gradient's top colour and the
+     * navigation bar with its bottom colour, so neither shows through over the
+     * album-art background. Applied immediately when the player is expanded.
+     */
+    public void setPlayerDynamicBarColors(int statusColor, int navColor) {
+        playerStatusBarColor = statusColor;
+        playerNavBarColor = navColor;
+        hasPlayerDynamicBarColors = true;
+        if (playerBarsExpanded) {
+            applySystemBarColors(statusColor, navColor);
+        }
+    }
+
+    public void clearPlayerDynamicBarColors() {
+        hasPlayerDynamicBarColors = false;
+        if (playerBarsExpanded) {
+            applySystemBarColors(UIUtil.getPlayerBackgroundColor(this));
         }
     }
 

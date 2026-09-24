@@ -119,25 +119,29 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     protected void applySystemBarColors(int rawColor) {
-        int systemBarColor = Color.rgb(
-                Color.red(rawColor),
-                Color.green(rawColor),
-                Color.blue(rawColor)
-        );
+        applySystemBarColors(rawColor, rawColor);
+    }
 
-        getWindow().setStatusBarColor(systemBarColor);
-        getWindow().setNavigationBarColor(systemBarColor);
+    protected void applySystemBarColors(int statusRawColor, int navRawColor) {
+        int statusColor = opaque(statusRawColor);
+        int navColor = opaque(navRawColor);
+
+        getWindow().setStatusBarColor(statusColor);
+        getWindow().setNavigationBarColor(navColor);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             getWindow().setStatusBarContrastEnforced(false);
             getWindow().setNavigationBarContrastEnforced(false);
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            getWindow().setNavigationBarDividerColor(systemBarColor);
+            getWindow().setNavigationBarDividerColor(navColor);
         }
 
         WindowInsetsControllerCompat insetsController = new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
-        boolean useDarkIcons = ColorUtils.calculateLuminance(systemBarColor) > 0.5;
-        insetsController.setAppearanceLightStatusBars(useDarkIcons);
-        insetsController.setAppearanceLightNavigationBars(useDarkIcons);
+        insetsController.setAppearanceLightStatusBars(ColorUtils.calculateLuminance(statusColor) > 0.5);
+        insetsController.setAppearanceLightNavigationBars(ColorUtils.calculateLuminance(navColor) > 0.5);
+    }
+
+    private int opaque(int color) {
+        return Color.rgb(Color.red(color), Color.green(color), Color.blue(color));
     }
 }
