@@ -86,6 +86,8 @@ public class MainActivity extends BaseActivity {
     private boolean hasPlayerDynamicBarColors = false;
     private int playerStatusBarColor;
     private int playerNavBarColor;
+    private boolean immersiveBars = false;
+    private int currentDockHeight = 0;
     private AssetLinkNavigator assetLinkNavigator;
     private AssetLinkUtil.AssetLink pendingAssetLink;
 
@@ -337,21 +339,32 @@ public class MainActivity extends BaseActivity {
         // Edge-to-edge drops the bottom sheet under the nav bar, so raise its peek
         // by the nav-bar inset to keep the mini player the same distance above the
         // dock as on normal (inset) pages.
-        setBottomSheetPeekForImmersive(true);
+        immersiveBars = true;
+        updateBottomSheetPeek();
     }
 
-    private void setBottomSheetPeekForImmersive(boolean immersive) {
+    /**
+     * Peek height = the empty gap below the mini player + the mini player's own
+     * height (matched to the dock) + the nav-bar inset while immersive. Sizing it
+     * this way keeps the mini player's bottom fixed, so matching its height to the
+     * dock grows it upward rather than down toward the dock.
+     */
+    private void updateBottomSheetPeek() {
         if (bottomSheetBehavior == null) return;
-        int basePeek = getResources().getDimensionPixelSize(R.dimen.bottom_sheet_behavior_peek_height);
+        int defaultHeader = UIUtil.dpToPx(this, 48);
+        int defaultPeek = getResources().getDimensionPixelSize(R.dimen.bottom_sheet_behavior_peek_height);
+        int bottomGap = defaultPeek - defaultHeader;
+        int header = currentDockHeight > 0 ? currentDockHeight : defaultHeader;
+
         int navInset = 0;
-        if (immersive) {
+        if (immersiveBars) {
             androidx.core.view.WindowInsetsCompat insets =
                     androidx.core.view.ViewCompat.getRootWindowInsets(getWindow().getDecorView());
             if (insets != null) {
                 navInset = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).bottom;
             }
         }
-        bottomSheetBehavior.setPeekHeight(basePeek + navInset, false);
+        bottomSheetBehavior.setPeekHeight(bottomGap + header + navInset, false);
     }
 
     /**
@@ -375,7 +388,8 @@ public class MainActivity extends BaseActivity {
     public void restoreDefaultSystemBars() {
         androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
         getWindow().getDecorView().requestApplyInsets();
-        setBottomSheetPeekForImmersive(false);
+        immersiveBars = false;
+        updateBottomSheetPeek();
         if (playerBarsExpanded) {
             applyPlayerSystemBarColors(true);
         } else {
@@ -434,6 +448,7 @@ public class MainActivity extends BaseActivity {
 
         bind.navigationDock.dockCard.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
             int width = right - left;
+            int height = bottom - top;
             if (width > 0) {
                 PlayerBottomSheetFragment fragment = (PlayerBottomSheetFragment) getSupportFragmentManager().findFragmentByTag("PlayerBottomSheet");
                 if (fragment != null) {
@@ -449,7 +464,14 @@ public class MainActivity extends BaseActivity {
                         int sideMargin = UIUtil.dpToPx(this, 28);
                         fragment.setMiniPlayerWidth(screenWidth - sideMargin * 2);
                     }
+                    // Match the mini player's thickness to the dock, growing upward
+                    // (the extra height is absorbed by a taller peek, below).
+                    if (height > 0) fragment.setMiniPlayerHeight(height);
                 }
+            }
+            if (height > 0 && height != currentDockHeight) {
+                currentDockHeight = height;
+                updateBottomSheetPeek();
             }
         });
 

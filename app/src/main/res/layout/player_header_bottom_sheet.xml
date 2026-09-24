@@ -25,9 +25,9 @@
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/player_header_media_cover_image"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_marginStart="8dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="10dp"
         android:scaleType="centerCrop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -43,7 +43,7 @@
         android:maxLines="1"
         android:paddingStart="10dp"
         android:paddingEnd="4dp"
-        android:textSize="11sp"
+        android:textSize="13sp"
         app:layout_constraintBottom_toTopOf="@+id/player_header_media_artist_label"
         app:layout_constraintEnd_toStartOf="@+id/player_header_button"
         app:layout_constraintStart_toEndOf="@+id/player_header_media_cover_image"
@@ -59,7 +59,7 @@
         android:maxLines="1"
         android:paddingStart="10dp"
         android:paddingEnd="4dp"
-        android:textSize="9sp"
+        android:textSize="11sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/player_header_button"
         app:layout_constraintStart_toEndOf="@+id/player_header_media_cover_image"
@@ -67,8 +67,8 @@
 
     <ToggleButton
         android:id="@+id/player_header_button"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
         android:layout_marginEnd="4dp"
         android:background="@drawable/button_play_pause_selector"
         android:checked="false"
@@ -82,8 +82,8 @@
 
     <ImageButton
         android:id="@+id/player_header_next_media_button"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
         android:layout_marginEnd="4dp"
         android:background="@drawable/ic_skip_next"
         android:foreground="?android:attr/selectableItemBackgroundBorderless"
@@ -93,8 +93,8 @@
 
     <ToggleButton
         android:id="@+id/button_favorite_mini"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
         android:layout_marginEnd="12dp"
         android:background="@drawable/button_favorite_selector"
         android:checked="false"

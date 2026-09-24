@@ -429,6 +429,14 @@ public class PlayerBottomSheetFragment extends Fragment {
         }
     }
 
+    public void setMiniPlayerHeight(int height) {
+        if (bind != null) {
+            ViewGroup.LayoutParams params = bind.playerHeaderLayout.getRoot().getLayoutParams();
+            params.height = height;
+            bind.playerHeaderLayout.getRoot().setLayoutParams(params);
+        }
+    }
+
     private void defineProgressBarHandler(MediaBrowser mediaBrowser) {
         progressBarHandler = new Handler();
         progressBarRunnable = () -> {
