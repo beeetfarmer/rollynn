@@ -74,6 +74,81 @@
         app:srcCompat="@drawable/ic_info_stream"
         app:tint="?attr/colorOnSurface" />
 
+    <!-- Video overlay: fills the cover area and plays the matched Popinn video.
+         The PlayerView controller is off — the player screen's seekbar drives it.
+         Kept in one container so fullscreen can reparent the whole thing. -->
+    <FrameLayout
+        android:id="@+id/player_video_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@android:color/black"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/player_media_cover_view_pager"
+        app:layout_constraintEnd_toEndOf="@+id/player_media_cover_view_pager"
+        app:layout_constraintStart_toStartOf="@+id/player_media_cover_view_pager"
+        app:layout_constraintTop_toTopOf="@+id/player_media_cover_view_pager">
+
+        <androidx.media3.ui.AspectRatioFrameLayout
+            android:id="@+id/player_video_aspect"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            app:resize_mode="fit">
+
+            <SurfaceView
+                android:id="@+id/player_video_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </androidx.media3.ui.AspectRatioFrameLayout>
+
+        <androidx.media3.ui.SubtitleView
+            android:id="@+id/player_video_subtitles"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/player_video_seek_back_label"
+            style="@style/TitleMedium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|center_vertical"
+            android:layout_marginStart="40dp"
+            android:alpha="0"
+            android:background="@drawable/bg_music_video_seek_feedback"
+            android:paddingStart="16dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="10dp"
+            android:textColor="@color/white" />
+
+        <TextView
+            android:id="@+id/player_video_seek_forward_label"
+            style="@style/TitleMedium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="40dp"
+            android:alpha="0"
+            android:background="@drawable/bg_music_video_seek_feedback"
+            android:paddingStart="16dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="10dp"
+            android:textColor="@color/white" />
+
+        <ImageButton
+            android:id="@+id/player_video_fullscreen_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="top|end"
+            android:layout_margin="6dp"
+            android:background="@drawable/ripple_player_button"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/ic_fullscreen"
+            app:tint="@color/white" />
+    </FrameLayout>
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline"
         android:layout_width="wrap_content"
@@ -120,6 +195,21 @@
             android:textOn=""
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/player_switch_to_video_button"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_marginStart="16dp"
+            android:background="@drawable/ripple_player_button"
+            android:contentDescription="@string/player_switch_to_video"
+            android:scaleType="fitCenter"
+            android:visibility="gone"
+            app:srcCompat="@drawable/ic_video_switch"
+            app:tint="?attr/colorOnSurface"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/button_favorite"
             app:layout_constraintTop_toTopOf="parent" />
 
         <RatingBar

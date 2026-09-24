@@ -129,6 +129,8 @@
     <string name="music_video_player_error">This video could not be played</string>
     <string name="music_video_seek_forward">%1$d s ⏵⏵</string>
     <string name="music_video_seek_back">⏴⏴ %1$d s</string>
+    <string name="player_switch_to_video">Switch to video</string>
+    <string name="player_switch_to_audio">Switch to audio</string>
     <string name="settings_backup_restore_category">Backup &amp; Restore</string>
     <string name="settings_backup_title">Back up settings</string>
     <string name="settings_backup_summary">Save your settings to a file. Passwords and login details are not included.</string>

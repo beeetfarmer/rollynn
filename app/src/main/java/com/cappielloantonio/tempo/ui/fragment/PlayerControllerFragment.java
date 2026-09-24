@@ -39,6 +39,48 @@ import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.annotation.SuppressLint;
+import android.content.pm.ActivityInfo;
+import android.net.Uri;
+import android.os.Build;
+import android.util.TypedValue;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.SystemClock;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.SurfaceView;
+import android.view.WindowManager;
+import android.widget.FrameLayout;
+
+import androidx.activity.OnBackPressedCallback;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
+import androidx.media3.common.AudioAttributes;
+import androidx.media3.common.C;
+import androidx.media3.common.MimeTypes;
+import androidx.media3.common.PlaybackException;
+import androidx.media3.common.VideoSize;
+import androidx.media3.common.text.CueGroup;
+import androidx.media3.datasource.DefaultHttpDataSource;
+import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
+import androidx.media3.ui.AspectRatioFrameLayout;
+import androidx.media3.ui.PlayerControlView;
+import androidx.media3.ui.SubtitleView;
+
+import com.cappielloantonio.tempo.popinn.PopinnApi;
+import com.cappielloantonio.tempo.popinn.PopinnClient;
+import com.cappielloantonio.tempo.popinn.PopinnPlayRequest;
+import com.cappielloantonio.tempo.popinn.PopinnRepository;
+import com.cappielloantonio.tempo.popinn.PopinnSubtitle;
+import com.cappielloantonio.tempo.popinn.PopinnVideo;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.subsonic.models.Child;
 import com.cappielloantonio.tempo.ui.dialog.PlaylistChooserDialog;
@@ -110,6 +152,44 @@ public class PlayerControllerFragment extends Fragment {
     private boolean isServiceBound = false;
     private boolean isFirstBatch = true;
 
+    // --- Music video switching (Popinn) ---
+    private static final int VIDEO_SEEK_STEP_SECONDS = 10;
+
+    private ImageButton switchToVideoButton;
+    private FrameLayout playerVideoContainer;
+    private AspectRatioFrameLayout playerVideoAspect;
+    private SurfaceView playerVideoView;
+    private SubtitleView playerVideoSubtitles;
+    private PlayerControlView fullscreenController;
+    private ImageButton videoFullscreenButton;
+    private TextView videoSeekBackLabel;
+    private TextView videoSeekForwardLabel;
+
+    private final PopinnRepository popinnRepository = new PopinnRepository();
+    private PopinnVideo matchedVideo;
+    private String matchQueryKey;
+
+    private ExoPlayer videoPlayer;
+    private boolean videoMode = false;
+
+    private long videoWatchedMs;
+    private long videoWatchStartedAt = C.TIME_UNSET;
+    private int videoDurationSeconds;
+    private boolean videoNavidromeScrobbled;
+    private boolean videoPopinnReported;
+
+    private boolean videoFullscreen = false;
+    private ViewGroup videoOriginalParent;
+    private int videoOriginalIndex;
+    private ViewGroup.LayoutParams videoOriginalParams;
+    private int savedOrientation;
+    private OnBackPressedCallback fullscreenBackCallback;
+
+    private final Handler videoSeekHandler = new Handler(Looper.getMainLooper());
+    private int videoAccumulatedSeek;
+    private boolean videoLastSeekForward;
+    private GestureDetector fullscreenGestureDetector;
+
     private final android.content.SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener = (sharedPreferences, key) -> {
         if ("now_playing_metadata".equals(key)) {
             if (bind != null && mediaBrowserListenableFuture != null && mediaBrowserListenableFuture.isDone()) {
@@ -154,6 +234,9 @@ public class PlayerControllerFragment extends Fragment {
 
     @Override
     public void onStop() {
+        // Leaving the screen: report what was watched and drop the video player,
+        // but leave the audio track as it is (do not restart it here).
+        if (videoMode) teardownVideo();
         androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
                 .unregisterOnSharedPreferenceChangeListener(preferenceChangeListener);
         releaseBrowser();
@@ -163,6 +246,7 @@ public class PlayerControllerFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (videoMode) teardownVideo();
         bind = null;
     }
 
@@ -196,6 +280,21 @@ public class PlayerControllerFragment extends Fragment {
         playerAlbumLinkChip = bind.getRoot().findViewById(R.id.asset_link_album_chip);
         playerArtistLinkChip = bind.getRoot().findViewById(R.id.asset_link_artist_chip);
         checkAndSetRatingContainerVisibility();
+        initVideoSwitch();
+    }
+
+    private void initVideoSwitch() {
+        switchToVideoButton = bind.getRoot().findViewById(R.id.player_switch_to_video_button);
+        playerVideoContainer = bind.getRoot().findViewById(R.id.player_video_container);
+        playerVideoAspect = bind.getRoot().findViewById(R.id.player_video_aspect);
+        playerVideoView = bind.getRoot().findViewById(R.id.player_video_view);
+        playerVideoSubtitles = bind.getRoot().findViewById(R.id.player_video_subtitles);
+        videoFullscreenButton = bind.getRoot().findViewById(R.id.player_video_fullscreen_button);
+        videoSeekBackLabel = bind.getRoot().findViewById(R.id.player_video_seek_back_label);
+        videoSeekForwardLabel = bind.getRoot().findViewById(R.id.player_video_seek_forward_label);
+
+        if (switchToVideoButton != null) switchToVideoButton.setOnClickListener(v -> toggleVideoMode());
+        if (videoFullscreenButton != null) videoFullscreenButton.setOnClickListener(v -> toggleFullscreen());
     }
 
     private void initQuickActionView() {
@@ -756,6 +855,7 @@ public class PlayerControllerFragment extends Fragment {
 
     private void initMediaListenable() {
         playerBottomSheetViewModel.getLiveMedia().observe(getViewLifecycleOwner(), media -> {
+            updateVideoMatch(media);
             if (media != null) {
                 ratingViewModel.setSong(media);
                 buttonFavorite.setChecked(media.getStarred() != null);
@@ -1077,6 +1177,515 @@ public class PlayerControllerFragment extends Fragment {
     private void resetPlaybackParameters(MediaBrowser mediaBrowser) {
         mediaBrowser.setPlaybackParameters(new PlaybackParameters(1.0f));
         // TODO Resettare lo skip del silenzio
+    }
+
+    // ----------------------------------------------------------------------
+    // Music video switching
+    // ----------------------------------------------------------------------
+
+    private MediaBrowser getBrowser() {
+        if (mediaBrowserListenableFuture != null && mediaBrowserListenableFuture.isDone()) {
+            try {
+                return mediaBrowserListenableFuture.get();
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
+    }
+
+    /** Called on every track change: hides the button, then looks up a match. */
+    private void updateVideoMatch(Child media) {
+        if (switchToVideoButton == null) return;
+
+        if (videoMode) teardownVideo();
+        matchedVideo = null;
+        switchToVideoButton.setVisibility(View.GONE);
+
+        if (media == null || !PopinnClient.isConfigured()) {
+            matchQueryKey = null;
+            return;
+        }
+
+        String artist = media.getArtist();
+        String title = media.getTitle();
+        if (artist == null || title == null) {
+            matchQueryKey = null;
+            return;
+        }
+
+        String key = artist + "\u0000" + title;
+        matchQueryKey = key;
+        popinnRepository.findVideoForSong(artist, title).observe(getViewLifecycleOwner(), video -> {
+            if (switchToVideoButton == null || !key.equals(matchQueryKey)) return;
+            matchedVideo = video;
+            switchToVideoButton.setVisibility(video != null ? View.VISIBLE : View.GONE);
+        });
+    }
+
+    private void toggleVideoMode() {
+        if (videoMode) exitVideoMode();
+        else enterVideoMode();
+    }
+
+    private void enterVideoMode() {
+        if (videoMode || matchedVideo == null || playerVideoContainer == null) return;
+        MediaBrowser browser = getBrowser();
+        if (browser == null) return;
+
+        videoMode = true;
+        videoWatchedMs = 0;
+        videoWatchStartedAt = C.TIME_UNSET;
+        videoNavidromeScrobbled = false;
+        videoPopinnReported = false;
+        videoDurationSeconds = matchedVideo.getDuration() != null ? matchedVideo.getDuration() : 0;
+
+        browser.pause();
+
+        setSwitchButtonActive(true);
+        playerMediaCoverViewPager.setUserInputEnabled(false);
+        playerVideoContainer.setVisibility(View.VISIBLE);
+
+        if (PopinnClient.hasToken()) {
+            startVideoPlayback();
+        } else {
+            new Thread(() -> {
+                PopinnClient.login();
+                if (getActivity() == null) return;
+                requireActivity().runOnUiThread(() -> {
+                    if (bind != null && videoMode) startVideoPlayback();
+                });
+            }).start();
+        }
+    }
+
+    private void startVideoPlayback() {
+        String url = PopinnClient.toAbsoluteUrl(
+                matchedVideo.getPlaybackUrl() != null ? matchedVideo.getPlaybackUrl() : matchedVideo.getVideoUrl());
+        if (url == null) {
+            exitVideoMode();
+            return;
+        }
+
+        // Subtitles are declared on the MediaItem up front, so fetch them before
+        // building the player. A failure here is not fatal — the video still plays.
+        PopinnApi api = PopinnClient.getApi();
+        if (api == null || matchedVideo.getId() == null) {
+            buildVideoPlayer(url, Collections.emptyList());
+            return;
+        }
+
+        api.getSubtitles(matchedVideo.getId()).enqueue(new Callback<List<PopinnSubtitle>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<PopinnSubtitle>> call, @NonNull Response<List<PopinnSubtitle>> response) {
+                if (bind == null || !videoMode) return;
+                List<PopinnSubtitle> subtitles = response.isSuccessful() && response.body() != null
+                        ? response.body() : Collections.emptyList();
+                buildVideoPlayer(url, subtitles);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<PopinnSubtitle>> call, @NonNull Throwable t) {
+                if (bind == null || !videoMode) return;
+                buildVideoPlayer(url, Collections.emptyList());
+            }
+        });
+    }
+
+    private void buildVideoPlayer(String url, List<PopinnSubtitle> subtitles) {
+        if (bind == null || !videoMode) return;
+
+        DefaultHttpDataSource.Factory dataSourceFactory = new DefaultHttpDataSource.Factory()
+                .setAllowCrossProtocolRedirects(true)
+                .setDefaultRequestProperties(PopinnClient.getAuthHeaders());
+
+        videoPlayer = new ExoPlayer.Builder(requireContext())
+                .setMediaSourceFactory(new DefaultMediaSourceFactory(dataSourceFactory))
+                .setAudioAttributes(AudioAttributes.DEFAULT, true)
+                .setHandleAudioBecomingNoisy(true)
+                .build();
+
+        videoPlayer.addListener(new Player.Listener() {
+            @Override
+            public void onPlaybackStateChanged(int state) {
+                if (state == Player.STATE_READY && videoDurationSeconds <= 0) {
+                    long d = videoPlayer.getDuration();
+                    if (d != C.TIME_UNSET && d > 0) videoDurationSeconds = (int) (d / 1000);
+                }
+                if (state == Player.STATE_ENDED) {
+                    stopWatchClock();
+                }
+            }
+
+            @Override
+            public void onIsPlayingChanged(boolean isPlaying) {
+                if (isPlaying) startWatchClock();
+                else stopWatchClock();
+            }
+
+            @Override
+            public void onVideoSizeChanged(@NonNull VideoSize videoSize) {
+                if (playerVideoAspect != null && videoSize.height > 0) {
+                    float ratio = videoSize.width * videoSize.pixelWidthHeightRatio / videoSize.height;
+                    playerVideoAspect.setAspectRatio(ratio);
+                }
+            }
+
+            @Override
+            public void onCues(@NonNull CueGroup cueGroup) {
+                if (playerVideoSubtitles != null) playerVideoSubtitles.setCues(cueGroup.cues);
+            }
+
+            @Override
+            public void onPlayerError(@NonNull PlaybackException error) {
+                Toast.makeText(requireContext(), R.string.music_video_player_error, Toast.LENGTH_SHORT).show();
+                exitVideoMode();
+            }
+        });
+
+        videoPlayer.setVideoSurfaceView(playerVideoView);
+        applyInlineSubtitleSize();
+        // The player screen's seekbar now drives the video; the transport and
+        // quick-action buttons don't apply to a single video, so hide them.
+        bind.nowPlayingMediaControllerView.setPlayer(videoPlayer);
+        applyVideoModeControls(true);
+
+        List<MediaItem.SubtitleConfiguration> subtitleConfigurations = toSubtitleConfigurations(subtitles);
+        videoPlayer.setMediaItem(new MediaItem.Builder()
+                .setUri(url)
+                .setSubtitleConfigurations(subtitleConfigurations)
+                .build());
+
+        if (!subtitleConfigurations.isEmpty()) {
+            String language = subtitleConfigurations.get(0).language;
+            if (language != null) {
+                videoPlayer.setTrackSelectionParameters(
+                        videoPlayer.getTrackSelectionParameters().buildUpon()
+                                .setPreferredTextLanguage(language)
+                                .build());
+            }
+        }
+
+        videoPlayer.seekTo(0);
+        videoPlayer.setPlayWhenReady(true);
+        videoPlayer.prepare();
+    }
+
+    /**
+     * In video mode only the seekbar and play/pause make sense, so the transport
+     * and quick-action buttons are hidden and restored on the way back to audio.
+     */
+    private void applyVideoModeControls(boolean video) {
+        if (bind == null) return;
+
+        if (video) {
+            bind.nowPlayingMediaControllerView.setShowShuffleButton(false);
+            bind.nowPlayingMediaControllerView.setShowPreviousButton(false);
+            bind.nowPlayingMediaControllerView.setShowNextButton(false);
+            bind.nowPlayingMediaControllerView.setShowRewindButton(false);
+            bind.nowPlayingMediaControllerView.setShowFastForwardButton(false);
+            bind.nowPlayingMediaControllerView.setRepeatToggleModes(RepeatModeUtil.REPEAT_TOGGLE_MODE_NONE);
+        }
+
+        int visibility = video ? View.GONE : View.VISIBLE;
+        if (addToPlaylistButton != null) addToPlaylistButton.setVisibility(visibility);
+        if (equalizerButton != null) equalizerButton.setVisibility(visibility);
+        if (lyricsButton != null) lyricsButton.setVisibility(visibility);
+        if (playerOpenQueueButton != null) playerOpenQueueButton.setVisibility(visibility);
+    }
+
+    /** Small, fixed caption size for the letterboxed video inside the player. */
+    private void applyInlineSubtitleSize() {
+        if (playerVideoSubtitles != null) {
+            playerVideoSubtitles.setFixedTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
+        }
+    }
+
+    private List<MediaItem.SubtitleConfiguration> toSubtitleConfigurations(List<PopinnSubtitle> subtitles) {
+        List<MediaItem.SubtitleConfiguration> configurations = new ArrayList<>();
+        for (PopinnSubtitle subtitle : subtitles) {
+            String subtitleUrl = PopinnClient.toAbsoluteUrl(subtitle.getUrl());
+            if (subtitleUrl == null) continue;
+            configurations.add(new MediaItem.SubtitleConfiguration.Builder(Uri.parse(subtitleUrl))
+                    // Always WebVTT: the server converts SubRip on the way out.
+                    .setMimeType(MimeTypes.TEXT_VTT)
+                    .setLanguage(subtitle.getLanguage())
+                    .setSelectionFlags(configurations.isEmpty() ? C.SELECTION_FLAG_DEFAULT : 0)
+                    .build());
+        }
+        return configurations;
+    }
+
+    private void exitVideoMode() {
+        teardownVideo();
+        // Switching back to audio restarts the track from the beginning.
+        MediaBrowser browser = getBrowser();
+        if (browser != null) {
+            browser.seekTo(0);
+            browser.play();
+        }
+    }
+
+    /** Releases the video player and restores the audio UI. Reports watch time. */
+    private void teardownVideo() {
+        if (videoFullscreen) exitFullscreen();
+        stopWatchClock();
+        reportPopinnPlay();
+
+        if (videoPlayer != null) {
+            videoPlayer.release();
+            videoPlayer = null;
+        }
+
+        MediaBrowser browser = getBrowser();
+        if (browser != null && bind != null) {
+            bind.nowPlayingMediaControllerView.setPlayer(browser);
+            setMediaControllerUI(browser);
+            applyVideoModeControls(false);
+        }
+
+        if (playerVideoContainer != null) playerVideoContainer.setVisibility(View.GONE);
+        if (playerMediaCoverViewPager != null) playerMediaCoverViewPager.setUserInputEnabled(true);
+        setSwitchButtonActive(false);
+        videoMode = false;
+    }
+
+    private void setSwitchButtonActive(boolean active) {
+        if (switchToVideoButton == null || getContext() == null) return;
+        switchToVideoButton.setColorFilter(UIUtil.getThemeColor(requireContext(),
+                active ? com.google.android.material.R.attr.colorPrimary
+                        : com.google.android.material.R.attr.colorOnSurface));
+    }
+
+    private void startWatchClock() {
+        if (videoWatchStartedAt == C.TIME_UNSET) videoWatchStartedAt = SystemClock.elapsedRealtime();
+    }
+
+    private void stopWatchClock() {
+        if (videoWatchStartedAt == C.TIME_UNSET) return;
+        videoWatchedMs += SystemClock.elapsedRealtime() - videoWatchStartedAt;
+        videoWatchStartedAt = C.TIME_UNSET;
+        maybeScrobbleToNavidrome();
+    }
+
+    /**
+     * Credits the song on Navidrome once enough of the video has been watched,
+     * using the same percentage threshold as audio scrobbling (default 90%).
+     */
+    private void maybeScrobbleToNavidrome() {
+        if (videoNavidromeScrobbled) return;
+
+        int dur = videoDurationSeconds;
+        if (dur <= 0 && videoPlayer != null) {
+            long d = videoPlayer.getDuration();
+            if (d != C.TIME_UNSET && d > 0) dur = (int) (d / 1000);
+        }
+        int threshold = Preferences.getScrobbleThreshold();
+        if (dur <= 0 || videoWatchedMs * 100 < dur * 1000L * threshold) return;
+
+        MediaBrowser browser = getBrowser();
+        if (browser != null && browser.getCurrentMediaItem() != null) {
+            MediaManager.scrobble(browser.getCurrentMediaItem(), true, System.currentTimeMillis());
+            videoNavidromeScrobbled = true;
+        }
+    }
+
+    /** Fire-and-forget watch report to Popinn, at most once per video session. */
+    private void reportPopinnPlay() {
+        if (videoPopinnReported || matchedVideo == null || matchedVideo.getId() == null) return;
+
+        long watchedSeconds = videoWatchedMs / 1000;
+        if (watchedSeconds < 1) return;
+
+        PopinnApi api = PopinnClient.getApi();
+        if (api == null) return;
+
+        videoPopinnReported = true;
+        Integer duration = matchedVideo.getDuration() != null && matchedVideo.getDuration() > 0
+                ? matchedVideo.getDuration()
+                : (videoDurationSeconds > 0 ? videoDurationSeconds : null);
+
+        api.recordPlay(matchedVideo.getId(), new PopinnPlayRequest((double) watchedSeconds, duration))
+                .enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) { }
+
+                    @Override
+                    public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) { }
+                });
+    }
+
+    // ---- Fullscreen ----
+
+    private void toggleFullscreen() {
+        if (videoFullscreen) exitFullscreen();
+        else enterFullscreen();
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void enterFullscreen() {
+        if (videoFullscreen || playerVideoContainer == null || activity == null) return;
+        if (!(playerVideoContainer.getParent() instanceof ViewGroup)) return;
+
+        videoOriginalParent = (ViewGroup) playerVideoContainer.getParent();
+        videoOriginalIndex = videoOriginalParent.indexOfChild(playerVideoContainer);
+        videoOriginalParams = playerVideoContainer.getLayoutParams();
+        videoOriginalParent.removeView(playerVideoContainer);
+
+        ViewGroup content = activity.findViewById(android.R.id.content);
+        content.addView(playerVideoContainer, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        savedOrientation = activity.getRequestedOrientation();
+        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+
+        // Draw edge to edge, including behind the notch, so the black video fills
+        // the screen instead of leaving a white inset near the cutout.
+        WindowCompat.setDecorFitsSystemWindows(activity.getWindow(), false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            WindowManager.LayoutParams attrs = activity.getWindow().getAttributes();
+            attrs.layoutInDisplayCutoutMode =
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            activity.getWindow().setAttributes(attrs);
+        }
+
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(activity.getWindow(), playerVideoContainer);
+        controller.hide(WindowInsetsCompat.Type.systemBars());
+        controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        // Standard video controls, created only for fullscreen so their exo_*
+        // ids never collide with the audio seekbar's while inline.
+        fullscreenController = new PlayerControlView(requireContext());
+        fullscreenController.setPlayer(videoPlayer);
+        fullscreenController.setShowTimeoutMs(3000);
+        FrameLayout.LayoutParams controllerParams = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        controllerParams.gravity = android.view.Gravity.BOTTOM;
+        playerVideoContainer.addView(fullscreenController, controllerParams);
+
+        // Full-size captions for the fullscreen video.
+        if (playerVideoSubtitles != null) playerVideoSubtitles.setUserDefaultTextSize();
+
+        playerVideoContainer.setOnTouchListener((v, event) -> {
+            getFullscreenGestureDetector().onTouchEvent(event);
+            return true;
+        });
+
+        fullscreenBackCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                exitFullscreen();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(fullscreenBackCallback);
+
+        videoFullscreen = true;
+    }
+
+    private void exitFullscreen() {
+        if (!videoFullscreen || activity == null) return;
+
+        if (fullscreenBackCallback != null) {
+            fullscreenBackCallback.remove();
+            fullscreenBackCallback = null;
+        }
+
+        playerVideoContainer.setOnTouchListener(null);
+        applyInlineSubtitleSize();
+        if (fullscreenController != null) {
+            fullscreenController.setPlayer(null);
+            playerVideoContainer.removeView(fullscreenController);
+            fullscreenController = null;
+        }
+
+        ViewGroup content = activity.findViewById(android.R.id.content);
+        content.removeView(playerVideoContainer);
+
+        if (videoOriginalParent != null) {
+            videoOriginalParent.addView(playerVideoContainer, videoOriginalIndex, videoOriginalParams);
+            videoOriginalParent = null;
+        }
+
+        activity.setRequestedOrientation(savedOrientation);
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(
+                activity.getWindow(), activity.getWindow().getDecorView());
+        controller.show(WindowInsetsCompat.Type.systemBars());
+        WindowCompat.setDecorFitsSystemWindows(activity.getWindow(), true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            WindowManager.LayoutParams attrs = activity.getWindow().getAttributes();
+            attrs.layoutInDisplayCutoutMode =
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
+            activity.getWindow().setAttributes(attrs);
+        }
+        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        videoSeekHandler.removeCallbacksAndMessages(null);
+        videoFullscreen = false;
+    }
+
+    private GestureDetector getFullscreenGestureDetector() {
+        if (fullscreenGestureDetector == null) {
+            fullscreenGestureDetector = new GestureDetector(requireContext(), new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onDown(@NonNull MotionEvent e) {
+                    return true;
+                }
+
+                @Override
+                public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
+                    if (fullscreenController == null) return true;
+                    if (fullscreenController.isFullyVisible()) fullscreenController.hide();
+                    else fullscreenController.show();
+                    return true;
+                }
+
+                @Override
+                public boolean onDoubleTap(@NonNull MotionEvent e) {
+                    seekVideoBy(e.getX() >= playerVideoView.getWidth() / 2f);
+                    return true;
+                }
+            });
+        }
+        return fullscreenGestureDetector;
+    }
+
+    private void seekVideoBy(boolean forward) {
+        if (videoPlayer == null) return;
+
+        if (videoAccumulatedSeek == 0 || forward != videoLastSeekForward) {
+            videoAccumulatedSeek = VIDEO_SEEK_STEP_SECONDS;
+        } else {
+            videoAccumulatedSeek += VIDEO_SEEK_STEP_SECONDS;
+        }
+        videoLastSeekForward = forward;
+
+        long target = videoPlayer.getCurrentPosition() + (long) VIDEO_SEEK_STEP_SECONDS * 1000 * (forward ? 1 : -1);
+        long duration = videoPlayer.getDuration();
+        if (duration != C.TIME_UNSET) target = Math.min(target, duration);
+        videoPlayer.seekTo(Math.max(target, 0));
+
+        showVideoSeekFeedback(forward);
+    }
+
+    private void showVideoSeekFeedback(boolean forward) {
+        TextView shown = forward ? videoSeekForwardLabel : videoSeekBackLabel;
+        TextView hidden = forward ? videoSeekBackLabel : videoSeekForwardLabel;
+        if (shown == null || hidden == null) return;
+
+        shown.setText(getString(
+                forward ? R.string.music_video_seek_forward : R.string.music_video_seek_back,
+                videoAccumulatedSeek));
+        hidden.animate().cancel();
+        hidden.setAlpha(0f);
+        shown.animate().cancel();
+        shown.setAlpha(1f);
+
+        videoSeekHandler.removeCallbacksAndMessages(null);
+        videoSeekHandler.postDelayed(() -> {
+            videoAccumulatedSeek = 0;
+            if (videoSeekBackLabel != null) videoSeekBackLabel.animate().alpha(0f).setDuration(200).start();
+            if (videoSeekForwardLabel != null) videoSeekForwardLabel.animate().alpha(0f).setDuration(200).start();
+        }, 800);
     }
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {

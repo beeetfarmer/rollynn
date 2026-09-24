@@ -63,6 +63,81 @@ class PopinnRepository {
         return result
     }
 
+    /**
+     * The one Popinn video that matches a playing Subsonic track, or null when
+     * there is none. Resolves the artist by name (reusing the same id cache as
+     * the artist sections), pulls that artist's videos, and matches on title:
+     * an exact normalized match first, then a loose containment either way to
+     * catch "Song (Official Video)" style titling. Emits null quietly on any
+     * miss or when Popinn is unreachable — the switch button just stays hidden.
+     */
+    fun findVideoForSong(artistName: String?, title: String?): LiveData<PopinnVideo?> {
+        val result = MutableLiveData<PopinnVideo?>()
+
+        if (artistName.isNullOrBlank() || title.isNullOrBlank() || !PopinnClient.isConfigured()) {
+            result.value = null
+            return result
+        }
+
+        val api = PopinnClient.getApi()
+        if (api == null) {
+            result.value = null
+            return result
+        }
+
+        val cachedId = artistIdCache[normalize(artistName)]
+        when {
+            cachedId == NO_MATCH -> result.value = null
+            cachedId != null -> fetchAndMatch(api, cachedId, title, result)
+            else -> api.searchArtists(artistName, ARTIST_SEARCH_LIMIT)
+                .enqueue(object : Callback<List<PopinnArtist>> {
+                    override fun onResponse(call: Call<List<PopinnArtist>>, response: Response<List<PopinnArtist>>) {
+                        val matchedId = if (response.isSuccessful) bestMatch(response.body(), artistName)?.id else null
+                        if (matchedId == null) {
+                            if (response.isSuccessful) artistIdCache[normalize(artistName)] = NO_MATCH
+                            result.postValue(null)
+                            return
+                        }
+                        artistIdCache[normalize(artistName)] = matchedId
+                        fetchAndMatch(api, matchedId, title, result)
+                    }
+
+                    override fun onFailure(call: Call<List<PopinnArtist>>, throwable: Throwable) {
+                        Log.w(TAG, "Artist lookup for video match failed", throwable)
+                        result.postValue(null)
+                    }
+                })
+        }
+
+        return result
+    }
+
+    private fun fetchAndMatch(
+        api: PopinnApi,
+        artistId: String,
+        title: String,
+        result: MutableLiveData<PopinnVideo?>
+    ) {
+        api.getVideos(artistId, null, PopinnClient.SORT_LATEST, PopinnClient.SORT_ORDER_DESC, 0, PopinnClient.MAX_PAGE_SIZE)
+            .enqueue(object : Callback<PopinnVideoPage> {
+                override fun onResponse(call: Call<PopinnVideoPage>, response: Response<PopinnVideoPage>) {
+                    val videos = if (response.isSuccessful) response.body()?.items ?: emptyList() else emptyList()
+                    val target = normalize(title)
+                    val match = videos.firstOrNull { normalize(it.title ?: "") == target }
+                        ?: videos.firstOrNull {
+                            val vt = normalize(it.title ?: "")
+                            vt.isNotEmpty() && (vt.contains(target) || target.contains(vt))
+                        }
+                    result.postValue(match)
+                }
+
+                override fun onFailure(call: Call<PopinnVideoPage>, throwable: Throwable) {
+                    Log.w(TAG, "Video match fetch failed", throwable)
+                    result.postValue(null)
+                }
+            })
+    }
+
     /** One page of videos for an already resolved Popinn artist id. */
     fun getArtistVideoPage(artistId: String, skip: Int, limit: Int): LiveData<PopinnVideoResult> {
         val result = MutableLiveData<PopinnVideoResult>()
