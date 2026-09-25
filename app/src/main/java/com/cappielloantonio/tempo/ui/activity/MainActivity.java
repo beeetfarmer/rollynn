@@ -87,6 +87,7 @@ public class MainActivity extends BaseActivity {
     private int playerStatusBarColor;
     private int playerNavBarColor;
     private boolean immersiveBars = false;
+    private boolean suppressNavHostTopInset = false;
     private int currentDockHeight = 0;
     private AssetLinkNavigator assetLinkNavigator;
     private AssetLinkUtil.AssetLink pendingAssetLink;
@@ -126,7 +127,10 @@ public class MainActivity extends BaseActivity {
         androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         View navHostView = bind.getRoot().findViewById(R.id.nav_host_fragment);
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(navHostView, (v, insets) -> {
-            int top = immersiveBars ? 0 : insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).top;
+            // The artist page bleeds under the status bar; the search screen's
+            // Material SearchBar applies the status inset itself. Both skip ours.
+            boolean skipTop = immersiveBars || suppressNavHostTopInset;
+            int top = skipTop ? 0 : insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).top;
             v.setPadding(0, top, 0, 0);
             return insets;
         });
@@ -405,6 +409,19 @@ public class MainActivity extends BaseActivity {
                 && androidx.core.graphics.ColorUtils.calculateLuminance(color) > 0.5);
     }
 
+    /**
+     * On the search page, matches the status bar to whichever surface is showing:
+     * colorSurfaceContainerHigh while the SearchView is expanded (its suggestions
+     * sit on it), or the plain surface behind the collapsed results list.
+     */
+    public void setSearchStatusBar(boolean expanded) {
+        if (playerBarsExpanded) return;
+        int color = UIUtil.getThemeColor(this, expanded
+                ? com.google.android.material.R.attr.colorSurfaceContainerHigh
+                : com.google.android.material.R.attr.colorSurface);
+        applySystemBarColors(color, android.graphics.Color.TRANSPARENT);
+    }
+
     /** Restores the normal opaque surface-coloured system bars. */
     public void restoreDefaultSystemBars() {
         immersiveBars = false;
@@ -464,6 +481,22 @@ public class MainActivity extends BaseActivity {
                             destination.getId() == R.id.searchFragment)
             ) {
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            }
+            boolean isSearch = destination.getId() == R.id.searchFragment;
+            if (isSearch != suppressNavHostTopInset) {
+                suppressNavHostTopInset = isSearch;
+                requestNavHostInsets();
+            }
+            // The expanded SearchView uses colorSurfaceContainerHigh while the
+            // collapsed results list sits on the plain surface; keep the status
+            // bar matching whichever is showing (driven by the SearchView's
+            // transition, defaulting to the collapsed colour here).
+            if (!playerBarsExpanded) {
+                if (isSearch) {
+                    setSearchStatusBar(false);
+                } else {
+                    applySystemBarColors();
+                }
             }
             updateDockActiveState(destination.getId());
         });

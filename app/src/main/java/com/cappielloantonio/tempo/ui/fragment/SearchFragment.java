@@ -187,6 +187,16 @@ public class SearchFragment extends Fragment implements ClickCallback {
 
                     }
                 });
+
+        // Keep the status bar matching whichever surface is showing: the expanded
+        // SearchView (suggestions) vs. the collapsed results list behind it.
+        bind.searchView.addTransitionListener((searchView, previousState, newState) -> {
+            if (activity != null) {
+                activity.setSearchStatusBar(
+                        newState == com.google.android.material.search.SearchView.TransitionState.SHOWING
+                                || newState == com.google.android.material.search.SearchView.TransitionState.SHOWN);
+            }
+        });
     }
 
     public void setRecentSuggestions() {
