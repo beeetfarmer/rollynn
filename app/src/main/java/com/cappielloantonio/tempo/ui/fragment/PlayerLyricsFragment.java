@@ -39,6 +39,7 @@ import com.cappielloantonio.tempo.subsonic.models.LyricsList;
 import com.cappielloantonio.tempo.subsonic.models.Word;
 import com.cappielloantonio.tempo.util.LyricsRomanizer;
 import com.cappielloantonio.tempo.util.LyricsTranslator;
+import com.cappielloantonio.tempo.util.PlayerBackgroundUtil;
 import com.cappielloantonio.tempo.util.MusicUtil;
 import com.cappielloantonio.tempo.util.NetworkUtil;
 import com.cappielloantonio.tempo.util.Preferences;
@@ -70,6 +71,8 @@ public class PlayerLyricsFragment extends Fragment {
     private boolean lyricsSourceSwitchAvailable;
     private List<String> translatedLines;
     private boolean isTranslating;
+    private Integer lyricsHighlightColor;
+    private Integer lyricsShadowColor;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -90,6 +93,64 @@ public class PlayerLyricsFragment extends Fragment {
         initPanelContent();
         observeDownloadState();
         observeLyricsSourceState();
+        styleLyricsActionButtons();
+
+        // Lyrics sit on the album-coloured player background, so drive their colours
+        // from it: white on dark artwork, black on light, with dimmed unsung/second
+        // lines. Covers plain, TTML word-synced, romanization and translation text.
+        playerBottomSheetViewModel.getPlayerDominantColor().observe(getViewLifecycleOwner(), this::applyLyricsColors);
+    }
+
+    private void applyLyricsColors(Integer dominant) {
+        if (bind == null) return;
+        if (dominant == null) {
+            lyricsHighlightColor = null;
+            lyricsShadowColor = null;
+        } else {
+            int fade = PlayerBackgroundUtil.backgroundTopColor(requireContext(), dominant);
+            boolean lightArt = androidx.core.graphics.ColorUtils.calculateLuminance(fade) > 0.5f;
+            int onArt = lightArt ? android.graphics.Color.BLACK : android.graphics.Color.WHITE;
+            lyricsHighlightColor = onArt;
+            lyricsShadowColor = androidx.core.graphics.ColorUtils.setAlphaComponent(onArt, 120);
+        }
+        bind.nowPlayingSongLyricsTextView.setTextColor(lyricsHighlight());
+        updatePanelContent();
+    }
+
+    private int lyricsHighlight() {
+        return lyricsHighlightColor != null ? lyricsHighlightColor
+                : requireContext().getResources().getColor(R.color.lyricsTextColor, null);
+    }
+
+    private int lyricsShadow() {
+        return lyricsShadowColor != null ? lyricsShadowColor
+                : requireContext().getResources().getColor(R.color.shadowsLyricsTextColor, null);
+    }
+
+    /**
+     * The tonal Material style clashes with the player's dynamic background, so give
+     * the lyrics action buttons a neutral frosted look: a faint scrim in the theme's
+     * on-surface colour with matching icon/text, readable on any album colour.
+     */
+    private void styleLyricsActionButtons() {
+        if (bind == null) return;
+        boolean night = (getResources().getConfiguration().uiMode
+                & android.content.res.Configuration.UI_MODE_NIGHT_MASK)
+                == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        int content = night ? android.graphics.Color.WHITE : android.graphics.Color.parseColor("#222222");
+        int scrim = androidx.core.graphics.ColorUtils.setAlphaComponent(content, night ? 38 : 28);
+        android.content.res.ColorStateList scrimTint = android.content.res.ColorStateList.valueOf(scrim);
+        android.content.res.ColorStateList contentTint = android.content.res.ColorStateList.valueOf(content);
+
+        com.google.android.material.button.MaterialButton[] buttons = {
+                bind.translateLyricsButton, bind.downloadLyricsButton, bind.lyricsSourceToggleButton};
+        for (com.google.android.material.button.MaterialButton b : buttons) {
+            if (b == null) continue;
+            b.setAlpha(1f);
+            b.setBackgroundTintList(scrimTint);
+            b.setIconTint(contentTint);
+            b.setTextColor(content);
+        }
     }
 
     @Override
@@ -139,10 +200,8 @@ public class PlayerLyricsFragment extends Fragment {
     }
 
     private void initOverlay() {
-        float overlayLift = getResources().getDisplayMetrics().density * 64f;
-        bind.lyricsSourceToggleButton.setTranslationY(-overlayLift);
-        bind.downloadLyricsButton.setTranslationY(-overlayLift);
-        bind.translateLyricsButton.setTranslationY(-overlayLift);
+        // The actions now sit in a row at the bottom of the cover area, so the old
+        // upward lift (which clipped them inside the new row container) is dropped.
 
         bind.translateLyricsButton.setOnClickListener(view -> {
             if (isTranslating) return;
@@ -312,6 +371,7 @@ public class PlayerLyricsFragment extends Fragment {
         }
 
         bind.nowPlayingSongLyricsSrollView.smoothScrollTo(0, 0);
+        bind.nowPlayingSongLyricsTextView.setTextColor(lyricsHighlight());
 
         boolean hasLyrics = hasStructuredLyrics(currentLyricsList) || hasText(currentLyrics);
         boolean showTranslate = hasLyrics && !NetworkUtil.isServerUnreachable()
@@ -385,7 +445,7 @@ public class PlayerLyricsFragment extends Fragment {
             if (lines != null) {
                 SpannableStringBuilder builder = new SpannableStringBuilder();
                 int secondarySize = (int) (bind.nowPlayingSongLyricsTextView.getTextSize() * 0.75f);
-                int secondaryColor = requireContext().getResources().getColor(R.color.shadowsLyricsTextColor, null);
+                int secondaryColor = lyricsShadow();
 
                 for (int i = 0; i < lines.size(); i++) {
                     String text = lines.get(i).getValue().trim();
@@ -497,8 +557,8 @@ public class PlayerLyricsFragment extends Fragment {
 
         cachedLineIdx = curIdx;
 
-        int highlightColor = requireContext().getResources().getColor(R.color.lyricsTextColor, null);
-        int shadowColor = requireContext().getResources().getColor(R.color.shadowsLyricsTextColor, null);
+        int highlightColor = lyricsHighlight();
+        int shadowColor = lyricsShadow();
         boolean romanize = Preferences.isLyricsRomanizationEnabled();
         int secondarySize = (int) (bind.nowPlayingSongLyricsTextView.getTextSize() * 0.75f);
 

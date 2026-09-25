@@ -35,7 +35,7 @@
         android:id="@+id/now_playing_song_lyrics_sroll_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/lyrics_actions_bar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintDimensionRatio="1:1"
@@ -53,64 +53,71 @@
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.core.widget.NestedScrollView>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/lyrics_source_toggle_button"
-        style="@style/Widget.Material3.Button.TonalButton"
+    <!-- Lyrics actions in a row just above the bottom of the cover area (rather
+         than stacked on the right, where they covered the lyrics). Tints are set
+         in code so they suit the player's dynamic background. -->
+    <LinearLayout
+        android:id="@+id/lyrics_actions_bar"
         android:layout_width="wrap_content"
-        android:layout_height="36dp"
-        android:layout_margin="16dp"
-        android:alpha="0.85"
-        android:minWidth="0dp"
-        android:paddingHorizontal="12dp"
-        android:contentDescription="@string/player_lyrics_source_server_content_description"
-        android:text="@string/player_lyrics_source_server_label"
-        android:textAllCaps="false"
-        android:textSize="11sp"
-        android:visibility="gone"
-        android:insetTop="0dp"
-        android:insetBottom="0dp"
-        app:cornerRadius="64dp"
-        app:icon="@drawable/ic_swap_horiz"
-        app:iconGravity="textStart"
-        app:iconPadding="2dp"
-        app:iconSize="14dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/translate_lyrics_button"
-        style="@style/Widget.Material3.Button.TonalButton.Icon"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_margin="16dp"
-        android:alpha="0.7"
-        android:insetLeft="0dp"
-        android:insetTop="0dp"
-        android:insetRight="0dp"
-        android:insetBottom="0dp"
-        android:visibility="gone"
-        app:cornerRadius="64dp"
-        app:icon="@drawable/ic_translate"
-        app:layout_constraintBottom_toTopOf="@+id/download_lyrics_button"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/translate_lyrics_button"
+            style="@style/Widget.Material3.Button.TonalButton.Icon"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="8dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            android:visibility="gone"
+            app:cornerRadius="64dp"
+            app:icon="@drawable/ic_translate"
+            app:iconSize="18dp" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/download_lyrics_button"
-        style="@style/Widget.Material3.Button.TonalButton.Icon"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_margin="16dp"
-        android:alpha="0.7"
-        android:contentDescription="@string/player_lyrics_download_content_description"
-        android:insetLeft="0dp"
-        android:insetTop="0dp"
-        android:insetRight="0dp"
-        android:insetBottom="0dp"
-        android:visibility="gone"
-        app:cornerRadius="64dp"
-        app:icon="@drawable/ic_download"
-        app:layout_constraintBottom_toTopOf="@+id/lyrics_source_toggle_button"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/download_lyrics_button"
+            style="@style/Widget.Material3.Button.TonalButton.Icon"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="8dp"
+            android:contentDescription="@string/player_lyrics_download_content_description"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            android:visibility="gone"
+            app:cornerRadius="64dp"
+            app:icon="@drawable/ic_download"
+            app:iconSize="18dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/lyrics_source_toggle_button"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:minWidth="0dp"
+            android:paddingHorizontal="12dp"
+            android:contentDescription="@string/player_lyrics_source_server_content_description"
+            android:text="@string/player_lyrics_source_server_label"
+            android:textAllCaps="false"
+            android:textSize="11sp"
+            android:visibility="gone"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:cornerRadius="64dp"
+            app:icon="@drawable/ic_swap_horiz"
+            app:iconGravity="textStart"
+            app:iconPadding="2dp"
+            app:iconSize="14dp" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/temp_lyrics_line_text_view"

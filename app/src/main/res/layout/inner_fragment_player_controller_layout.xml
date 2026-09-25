@@ -172,7 +172,7 @@
             android:id="@+id/button_favorite"
             android:layout_width="26dp"
             android:layout_height="26dp"
-            android:background="@drawable/button_favorite_star_selector"
+            android:background="@drawable/button_favorite_selector"
             android:backgroundTint="?attr/colorOnSurface"
             android:checked="false"
             android:text=""
