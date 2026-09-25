@@ -69,6 +69,8 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
     private List<String> rankedTopIds = Collections.emptyList();
     private Set<String> flameIds = Collections.emptySet();
     private Map<String, Long> koitoTrackCounts = Collections.emptyMap();
+    private Integer titleColorOverride;
+    private Integer subtitleColorOverride;
     private static final int TOP_SONG_LIMIT = 4;
 
     private final Filter filtering = new Filter() {
@@ -137,6 +139,13 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
                 updateRatingInList(songId, rating);
             });
         }
+    }
+
+    /** Overrides the track title/subtitle colours (e.g. for a coloured background). */
+    public void setTextColorOverride(int titleColor, int subtitleColor) {
+        this.titleColorOverride = titleColor;
+        this.subtitleColorOverride = subtitleColor;
+        notifyDataSetChanged();
     }
 
     private void updateFavoriteInList(String songId, Date starred) {
@@ -215,6 +224,14 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
         holder.item.searchResultSongSubtitleTextView.setText(subtitle);
 
         holder.item.trackNumberTextView.setText(MusicUtil.getReadableTrackNumber(holder.itemView.getContext(), song.getTrack()));
+
+        // Optional legibility override (e.g. the album page's coloured background).
+        if (titleColorOverride != null) {
+            holder.item.searchResultSongTitleTextView.setTextColor(titleColorOverride);
+            holder.item.searchResultSongSubtitleTextView.setTextColor(subtitleColorOverride);
+            holder.item.trackNumberTextView.setTextColor(subtitleColorOverride);
+            holder.item.discTitleTextView.setTextColor(subtitleColorOverride);
+        }
 
         Float progress = downloadProgressMap.get(song.getId());
         if (progress != null && progress < 1.0f) {

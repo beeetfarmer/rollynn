@@ -43,6 +43,7 @@ import com.cappielloantonio.tempo.util.DownloadUtil;
 import com.cappielloantonio.tempo.util.MappingUtil;
 import com.cappielloantonio.tempo.util.MusicUtil;
 import com.cappielloantonio.tempo.util.ExternalAudioWriter;
+import com.cappielloantonio.tempo.util.PlayerBackgroundUtil;
 import com.cappielloantonio.tempo.util.Preferences;
 import com.cappielloantonio.tempo.util.UIUtil;
 import com.cappielloantonio.tempo.viewmodel.AlbumPageViewModel;
@@ -63,6 +64,9 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
     private PlaybackViewModel playbackViewModel;
     private SongHorizontalAdapter songHorizontalAdapter;
     private ListenableFuture<MediaBrowser> mediaBrowserListenableFuture;
+    private String currentCoverId;
+    private Integer trackTitleColor;
+    private Integer trackSubtitleColor;
 
     /** @noinspection deprecation*/
     @Override
@@ -89,6 +93,7 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
 
         init(view);
         initAppBar();
+        initHero();
         initAlbumInfoTextButton();
         initAlbumNotes();
         initMusicButton();
@@ -110,7 +115,16 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
 
     public void onResume() {
         super.onResume();
+        // Applied here (not onStart) so the incoming page re-asserts immersive bars
+        // after the outgoing page restores them. Portrait full-bleed header only.
+        if (activity != null && bind != null && bind.appbar != null) activity.applyImmersiveSystemBars();
         if (songHorizontalAdapter != null) setMediaBrowserListenableFuture();
+    }
+
+    @Override
+    public void onPause() {
+        if (activity != null) activity.restoreDefaultSystemBars();
+        super.onPause();
     }
 
     @Override
@@ -189,16 +203,27 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
         if (activity.getSupportActionBar() != null) {
             activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             activity.getSupportActionBar().setDisplayShowHomeEnabled(true);
-
+            // The collapsing title is disabled and the name overlays the artwork,
+            // so stop the toolbar falling back to the app name over the image.
+            activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
+
+        // The app bar's background is set to the album colour once the artwork
+        // loads (see applyDynamicBackground); as the parallax art scrolls away it
+        // reveals that matching colour behind the status bar and back button,
+        // rather than a solid black/surface bar.
 
         albumPageViewModel.getAlbum().observe(getViewLifecycleOwner(), album -> {
             if (bind != null && album != null) {
-                bind.animToolbar.setTitle(album.getName());
-
                 bind.albumNameLabel.setText(album.getName());
                 bind.albumArtistLabel.setText(album.getArtist());
                 AssetLinkUtil.applyLinkAppearance(bind.albumArtistLabel);
+                // Keep the on-art colour if it was already computed (applyLinkAppearance
+                // would otherwise reset the artist to the theme accent).
+                if (trackTitleColor != null) {
+                    bind.albumNameLabel.setTextColor(trackTitleColor);
+                    bind.albumArtistLabel.setTextColor(trackTitleColor);
+                }
                 AssetLinkUtil.AssetLink artistLink = buildArtistLink(album);
                 bind.albumArtistLabel.setOnLongClickListener(v -> {
                     if (artistLink != null) {
@@ -208,71 +233,81 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
                     }
                     return false;
                 });
-                bind.albumReleaseYearLabel.setText(album.getYear() != 0 ? String.valueOf(album.getYear()) : "");
-                if (album.getYear() != 0) {
-                    bind.albumReleaseYearLabel.setVisibility(View.VISIBLE);
-                    AssetLinkUtil.applyLinkAppearance(bind.albumReleaseYearLabel);
-                    bind.albumReleaseYearLabel.setOnClickListener(v -> openYearLink(album.getYear()));
-                    bind.albumReleaseYearLabel.setOnLongClickListener(v -> {
-                        AssetLinkUtil.AssetLink yearLink = buildYearLink(album.getYear());
-                        if (yearLink != null) {
-                            AssetLinkUtil.copyToClipboard(requireContext(), yearLink);
-                            Toast.makeText(requireContext(), getString(R.string.asset_link_copied_toast, yearLink.id), Toast.LENGTH_SHORT).show();
-                        }
-                        return true;
-                    });
-                } else {
-                    bind.albumReleaseYearLabel.setVisibility(View.GONE);
-                    bind.albumReleaseYearLabel.setOnClickListener(null);
-                    bind.albumReleaseYearLabel.setOnLongClickListener(null);
-                    AssetLinkUtil.clearLinkAppearance(bind.albumReleaseYearLabel);
+                // Landscape's classic layout shows these individually; guard them
+                // since the portrait hero shows a single combined line instead.
+                if (bind.albumReleaseYearLabel != null) {
+                    bind.albumReleaseYearLabel.setText(album.getYear() != 0 ? String.valueOf(album.getYear()) : "");
+                    if (album.getYear() != 0) {
+                        bind.albumReleaseYearLabel.setVisibility(View.VISIBLE);
+                        AssetLinkUtil.applyLinkAppearance(bind.albumReleaseYearLabel);
+                        bind.albumReleaseYearLabel.setOnClickListener(v -> openYearLink(album.getYear()));
+                        bind.albumReleaseYearLabel.setOnLongClickListener(v -> {
+                            AssetLinkUtil.AssetLink yearLink = buildYearLink(album.getYear());
+                            if (yearLink != null) {
+                                AssetLinkUtil.copyToClipboard(requireContext(), yearLink);
+                                Toast.makeText(requireContext(), getString(R.string.asset_link_copied_toast, yearLink.id), Toast.LENGTH_SHORT).show();
+                            }
+                            return true;
+                        });
+                    } else {
+                        bind.albumReleaseYearLabel.setVisibility(View.GONE);
+                        bind.albumReleaseYearLabel.setOnClickListener(null);
+                        bind.albumReleaseYearLabel.setOnLongClickListener(null);
+                        AssetLinkUtil.clearLinkAppearance(bind.albumReleaseYearLabel);
+                    }
                 }
-                bind.albumSongCountDurationTextview.setText(getString(R.string.album_page_tracks_count_and_duration, album.getSongCount(), album.getDuration() != null ? album.getDuration() / 60 : 0));
+                if (bind.albumSongCountDurationTextview != null) {
+                    bind.albumSongCountDurationTextview.setText(getString(R.string.album_page_tracks_count_and_duration, album.getSongCount(), album.getDuration() != null ? album.getDuration() / 60 : 0));
+                }
+                if (bind.albumGenresTextview != null) {
+                    if (album.getGenre() != null && !album.getGenre().isEmpty()) {
+                        bind.albumGenresTextview.setText(album.getGenre());
+                        bind.albumGenresTextview.setVisibility(View.VISIBLE);
+                    } else {
+                        bind.albumGenresTextview.setVisibility(View.GONE);
+                    }
+                }
                 bindAlbumPlayStats(album);
-                if (album.getGenre() != null && !album.getGenre().isEmpty()) {
-                    bind.albumGenresTextview.setText(album.getGenre());
-                    bind.albumGenresTextview.setVisibility(View.VISIBLE);
-                }
-                else{
-                    bind.albumGenresTextview.setVisibility(View.GONE);
-                }
 
-                if (album.getReleaseDate() != null && album.getOriginalReleaseDate() != null) {
-                    if (album.getReleaseDate().getFormattedDate() != null || album.getOriginalReleaseDate().getFormattedDate() != null)
-                        bind.albumReleaseYearsTextview.setVisibility(View.VISIBLE);
-                    else
-                        bind.albumReleaseYearsTextview.setVisibility(View.GONE);
-
-                    if (album.getReleaseDate().getFormattedDate() == null || album.getOriginalReleaseDate().getFormattedDate() == null) {
-                        bind.albumReleaseYearsTextview.setText(getString(R.string.album_page_release_date_label, album.getReleaseDate() != null ? album.getReleaseDate().getFormattedDate() : album.getOriginalReleaseDate().getFormattedDate()));
-                    }
-
-                    if (album.getReleaseDate().getFormattedDate() != null && album.getOriginalReleaseDate().getFormattedDate() != null) {
-                        if (Objects.equals(album.getReleaseDate().getYear(), album.getOriginalReleaseDate().getYear()) && Objects.equals(album.getReleaseDate().getMonth(), album.getOriginalReleaseDate().getMonth()) && Objects.equals(album.getReleaseDate().getDay(), album.getOriginalReleaseDate().getDay())) {
-                            bind.albumReleaseYearsTextview.setText(getString(R.string.album_page_release_date_label, album.getReleaseDate().getFormattedDate()));
-                        } else {
-                            bind.albumReleaseYearsTextview.setText(getString(R.string.album_page_release_dates_label, album.getReleaseDate().getFormattedDate(), album.getOriginalReleaseDate().getFormattedDate()));
-                        }
-                    }
+                // Portrait hero: year · genre · N songs • M minutes on one line, over the art.
+                if (bind.albumHeroInfo != null) {
+                    java.util.List<String> parts = new java.util.ArrayList<>();
+                    if (album.getYear() != 0) parts.add(String.valueOf(album.getYear()));
+                    if (album.getGenre() != null && !album.getGenre().isEmpty()) parts.add(album.getGenre());
+                    parts.add(getString(R.string.album_page_tracks_count_and_duration, album.getSongCount(),
+                            album.getDuration() != null ? album.getDuration() / 60 : 0));
+                    bind.albumHeroInfo.setText(android.text.TextUtils.join("  ·  ", parts));
                 }
             }
         });
 
         bind.animToolbar.setNavigationOnClickListener(v -> activity.navController.navigateUp());
 
-        Objects.requireNonNull(bind.animToolbar.getOverflowIcon()).setTint(requireContext().getResources().getColor(R.color.titleTextColor, null));
-
-        bind.albumOtherInfoButton.setOnClickListener(v -> {
-            if (bind.albumDetailView.getVisibility() == View.GONE) {
-                bind.albumDetailView.setVisibility(View.VISIBLE);
-            } else if (bind.albumDetailView.getVisibility() == View.VISIBLE) {
-                bind.albumDetailView.setVisibility(View.GONE);
-            }
-        });
-
-        if(Preferences.showAlbumDetail()){
-            bind.albumDetailView.setVisibility(View.VISIBLE);
+        if (bind.animToolbar.getOverflowIcon() != null) {
+            bind.animToolbar.getOverflowIcon().setTint(requireContext().getResources().getColor(R.color.titleTextColor, null));
         }
+
+        // The album detail (genres, notes, dates, stats) is always shown now, so
+        // the collapsible arrow is gone from the portrait header; hide it in the
+        // landscape layout too.
+        if (bind.albumDetailView != null) bind.albumDetailView.setVisibility(View.VISIBLE);
+        if (bind.albumOtherInfoButton != null) bind.albumOtherInfoButton.setVisibility(View.GONE);
+    }
+
+    private void initHero() {
+        if (bind.appbar == null || bind.albumHero == null) return; // landscape keeps the classic header
+        // Header takes ~52% of the screen height so the square cover fills it.
+        ViewGroup.LayoutParams appbarParams = bind.appbar.getLayoutParams();
+        appbarParams.height = (int) (getResources().getDisplayMetrics().heightPixels * 0.52f);
+        bind.appbar.setLayoutParams(appbarParams);
+
+        // The name block is anchored centred on the header's bottom edge; shift it
+        // up so it sits fully over the artwork rather than straddling the edge.
+        int lift = UIUtil.dpToPx(requireContext(), 10);
+        bind.albumHero.post(() -> {
+            if (bind == null) return;
+            bind.albumHero.setTranslationY(-(bind.albumHero.getHeight() / 2f) - lift);
+        });
     }
 
     private void initAlbumInfoTextButton() {
@@ -332,8 +367,112 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
         albumPageViewModel.getAlbum().observe(getViewLifecycleOwner(), album -> {
             if (bind != null && album != null) {
                 CustomGlideRequest.Builder.from(requireContext(), album.getCoverArtId(), CustomGlideRequest.ResourceType.Album).build().into(bind.albumCoverImageView);
+                applyDynamicBackground(album.getCoverArtId());
             }
         });
+    }
+
+    /**
+     * Apple Music style: pull the album's colour so the artwork dissolves into a
+     * matching background below it, and switch the overlaid name/artist to white or
+     * black for legibility against the artwork. Portrait full-bleed header only.
+     */
+    private void applyDynamicBackground(String coverId) {
+        if (bind == null || bind.albumContentContainer == null || coverId == null) return;
+        final String requested = coverId;
+        currentCoverId = coverId;
+        CustomGlideRequest.loadAlbumArtBitmap(requireContext(), coverId, 200,
+                new com.bumptech.glide.request.target.CustomTarget<android.graphics.Bitmap>() {
+                    @Override
+                    public void onResourceReady(@NonNull android.graphics.Bitmap resource,
+                                                @Nullable com.bumptech.glide.request.transition.Transition<? super android.graphics.Bitmap> transition) {
+                        if (bind == null || !requested.equals(currentCoverId)) return;
+                        int dominant = PlayerBackgroundUtil.dominantColor(resource);
+                        int fadeColor = PlayerBackgroundUtil.backgroundTopColor(requireContext(), dominant);
+
+                        // The album colour up top (where the art dissolves in) easing
+                        // down to the app's base colour, so on short albums the empty
+                        // lower area reads as an intentional fade, not a flat void.
+                        int base = PlayerBackgroundUtil.baseColor(requireContext());
+                        bind.albumContentContainer.setBackground(new android.graphics.drawable.GradientDrawable(
+                                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                                new int[]{fadeColor, fadeColor,
+                                        androidx.core.graphics.ColorUtils.blendARGB(dominant, base, 0.45f),
+                                        androidx.core.graphics.ColorUtils.blendARGB(dominant, base, 0.85f)}));
+
+                        if (bind.albumCoverBottomFade != null) {
+                            bind.albumCoverBottomFade.setBackground(new android.graphics.drawable.GradientDrawable(
+                                    android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                                    new int[]{android.graphics.Color.TRANSPARENT, fadeColor}));
+                        }
+                        // The art scrolls away to reveal this matching colour behind
+                        // the status bar and back button (instead of a black bar).
+                        if (bind.appbar != null) bind.appbar.setBackgroundColor(fadeColor);
+
+                        applyOnArtColors(fadeColor);
+                    }
+
+                    @Override
+                    public void onLoadCleared(@Nullable android.graphics.drawable.Drawable placeholder) {
+                    }
+                });
+    }
+
+    /**
+     * Recolours the overlaid name/artist, the play/shuffle/favourite controls, the
+     * back and overflow icons, and the track list to white or black for legibility
+     * against {@code artColor} (the colour the artwork dissolves into).
+     */
+    private void applyOnArtColors(int artColor) {
+        if (bind == null) return;
+        boolean lightArt = androidx.core.graphics.ColorUtils.calculateLuminance(artColor) > 0.5f;
+        int onArt = lightArt ? android.graphics.Color.BLACK : android.graphics.Color.WHITE;
+        int contrast = lightArt ? android.graphics.Color.WHITE : android.graphics.Color.BLACK;
+        android.content.res.ColorStateList onArtTint = android.content.res.ColorStateList.valueOf(onArt);
+
+        int secondary = androidx.core.graphics.ColorUtils.setAlphaComponent(onArt, 190);
+        bind.albumNameLabel.setTextColor(onArt);
+        bind.albumArtistLabel.setTextColor(onArt);
+
+        // The detail block (genre, duration, dates, notes, stats) sits on the same
+        // colour; recolour it so it stays readable on light and dark artwork alike.
+        setDetailTextColor(bind.albumHeroInfo, secondary);
+        setDetailTextColor(bind.albumReleaseYearLabel, secondary);
+        setDetailTextColor(bind.albumGenresTextview, secondary);
+        setDetailTextColor(bind.albumSongCountDurationTextview, secondary);
+        setDetailTextColor(bind.albumNotesTextview, secondary);
+        setDetailTextColor(bind.albumPlayStatsTextview, secondary);
+
+        // Play: a filled pill in the on-art colour with contrasting label/icon.
+        if (bind.albumPagePlayButton instanceof com.google.android.material.button.MaterialButton) {
+            com.google.android.material.button.MaterialButton play =
+                    (com.google.android.material.button.MaterialButton) bind.albumPagePlayButton;
+            play.setBackgroundTintList(onArtTint);
+            play.setTextColor(contrast);
+            play.setIconTint(android.content.res.ColorStateList.valueOf(contrast));
+        }
+        if (bind.albumPageShuffleIcon != null) bind.albumPageShuffleIcon.setColorFilter(onArt);
+        bind.buttonFavorite.setBackgroundTintList(onArtTint);
+
+        if (bind.animToolbar != null) {
+            bind.animToolbar.setNavigationIconTint(onArt);
+            if (bind.animToolbar.getOverflowIcon() != null) bind.animToolbar.getOverflowIcon().setTint(onArt);
+        }
+
+        // Track rows sit on the same colour; dim the subtitle slightly.
+        trackTitleColor = onArt;
+        trackSubtitleColor = secondary;
+        applyTrackTextColors();
+    }
+
+    private void setDetailTextColor(android.widget.TextView view, int color) {
+        if (view != null) view.setTextColor(color);
+    }
+
+    private void applyTrackTextColors() {
+        if (songHorizontalAdapter != null && trackTitleColor != null) {
+            songHorizontalAdapter.setTextColorOverride(trackTitleColor, trackSubtitleColor);
+        }
     }
 
     private void bindAlbumPlayStats(AlbumID3 album) {
@@ -368,6 +507,7 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
 
                 songHorizontalAdapter = new SongHorizontalAdapter(getViewLifecycleOwner(), this, false, false, album);
                 bind.songRecyclerView.setAdapter(songHorizontalAdapter);
+                applyTrackTextColors();
                 setMediaBrowserListenableFuture();
                 reapplyPlayback();
 
