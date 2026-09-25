@@ -683,10 +683,7 @@ public class PlayerControllerFragment extends Fragment {
 
         }
 
-        playerTrackInfo.setOnClickListener(view -> {
-            TrackInfoDialog dialog = new TrackInfoDialog(mediaMetadata);
-            dialog.show(activity.getSupportFragmentManager(), null);
-            });
+        // Track info moved to the overflow menu; the cover button is gone.
     }
     private void updateAssetLinkChips(MediaMetadata mediaMetadata) {
         if (assetLinkChipGroup == null) return;
@@ -1126,6 +1123,16 @@ public class PlayerControllerFragment extends Fragment {
                                 MediaManager.enqueue(activityBrowserFuture, mixMedia, true);
                             }
                         });
+                    }
+                    return true;
+                } else if (id == R.id.menu_track_info) {
+                    if (mediaBrowserListenableFuture != null && mediaBrowserListenableFuture.isDone()) {
+                        try {
+                            MediaBrowser browser = mediaBrowserListenableFuture.get();
+                            new TrackInfoDialog(browser.getMediaMetadata())
+                                    .show(activity.getSupportFragmentManager(), null);
+                        } catch (Exception ignored) {
+                        }
                     }
                     return true;
                 }

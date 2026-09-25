@@ -59,21 +59,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageButton
-        android:id="@+id/player_info_track"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="12dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:alpha="0.5"
-        android:background="@drawable/ripple_player_button"
-        android:scaleType="fitCenter"
-        app:layout_constraintBottom_toBottomOf="@+id/player_media_cover_view_pager"
-        app:layout_constraintEnd_toEndOf="@+id/player_media_cover_view_pager"
-        app:srcCompat="@drawable/ic_info_stream"
-        app:tint="?attr/colorOnSurface" />
-
     <!-- Video overlay: fills the cover area and plays the matched Popinn video.
          The PlayerView controller is off — the player screen's seekbar drives it.
          Kept in one container so fullscreen can reparent the whole thing. -->
@@ -187,7 +172,7 @@
             android:id="@+id/button_favorite"
             android:layout_width="26dp"
             android:layout_height="26dp"
-            android:background="@drawable/button_favorite_selector"
+            android:background="@drawable/button_favorite_star_selector"
             android:backgroundTint="?attr/colorOnSurface"
             android:checked="false"
             android:text=""

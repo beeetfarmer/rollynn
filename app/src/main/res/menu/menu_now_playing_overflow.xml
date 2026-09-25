@@ -12,4 +12,7 @@
     <item
         android:id="@+id/menu_instant_mix"
         android:title="@string/song_bottom_sheet_instant_mix" />
+    <item
+        android:id="@+id/menu_track_info"
+        android:title="@string/song_bottom_sheet_track_info" />
 </menu>
