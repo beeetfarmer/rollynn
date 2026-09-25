@@ -3,13 +3,9 @@ package com.cappielloantonio.tempo.util;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.RadialGradient;
-import android.graphics.Shader;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 
 import androidx.core.graphics.ColorUtils;
 
@@ -17,19 +13,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Builds the YouTube Music style player background: a mostly dark surface with a
- * soft glow of the album's colour radiating out from behind the artwork and
- * fading to the base colour toward the top and bottom edges. The activity paints
- * the system bars with matching edge colours so they blend in.
+ * Builds the Apple Music style player background: the album's colour filling the
+ * area below the artwork (which the artwork's bottom edge fades into), lightly
+ * darkening toward the controls. {@link #backgroundTopColor} is the colour the
+ * artwork dissolves into, kept in sync between the background and the art fade.
  */
 public final class PlayerBackgroundUtil {
-
-    private static final int OUT_WIDTH = 200;
-    private static final int OUT_HEIGHT = 400;
-    // The glow sits behind the artwork, which occupies the upper part of the player,
-    // and stays tight so most of the screen falls back to the near-black base.
-    private static final float GLOW_CENTER_Y = 0.30f;
-    private static final float GLOW_RADIUS = 0.42f;
 
     private PlayerBackgroundUtil() {
     }
@@ -47,41 +36,28 @@ public final class PlayerBackgroundUtil {
         return UIUtil.getPlayerBackgroundColor(context);
     }
 
+    /**
+     * The rich album colour that fills the area below the artwork and that the
+     * artwork's bottom edge fades into, so the two blend seamlessly. Toned very
+     * slightly toward the base so text stays legible over it.
+     */
+    public static int backgroundTopColor(Context context, int dominant) {
+        return ColorUtils.blendARGB(dominant, baseColor(context), 0.08f);
+    }
+
+    /**
+     * Apple Music style background: the album's colour up top (where the artwork
+     * dissolves into it) darkening toward the controls at the bottom. The artwork
+     * covers roughly the top half, so the top colour is held solid until midway.
+     */
     public static Drawable buildGlow(Context context, int dominant) {
-        int base = baseColor(context);
-
-        Bitmap out = Bitmap.createBitmap(OUT_WIDTH, OUT_HEIGHT, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(out);
-        canvas.drawColor(base);
-
-        float cx = OUT_WIDTH * 0.5f;
-        float cy = OUT_HEIGHT * GLOW_CENTER_Y;
-        float radius = OUT_HEIGHT * GLOW_RADIUS;
-
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setShader(new RadialGradient(cx, cy, radius,
-                new int[]{
-                        ColorUtils.setAlphaComponent(dominant, 205),
-                        ColorUtils.setAlphaComponent(dominant, 70),
-                        Color.TRANSPARENT
-                },
-                new float[]{0f, 0.55f, 1f},
-                Shader.TileMode.CLAMP));
-        canvas.drawRect(0, 0, OUT_WIDTH, OUT_HEIGHT, paint);
-
-        BitmapDrawable drawable = new BitmapDrawable(context.getResources(), out);
-        drawable.setFilterBitmap(true);
-        return drawable;
-    }
-
-    /** Status bar colour: the base only lightly tinted by the album colour. */
-    public static int statusBarColor(Context context, int dominant) {
-        return ColorUtils.blendARGB(dominant, baseColor(context), 0.85f);
-    }
-
-    /** Navigation bar colour: the base, matching the dark bottom of the player. */
-    public static int navBarColor(Context context) {
-        return baseColor(context);
+        int top = backgroundTopColor(context, dominant);
+        // Keep the album colour rich toward the bottom (only lightly darkened for
+        // control contrast) instead of fading almost to black. Held solid down to
+        // ~66% so the art (which covers 50-60%) always fades into a matching colour.
+        int bottom = ColorUtils.blendARGB(dominant, baseColor(context), 0.40f);
+        return new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{top, top, top, bottom});
     }
 
     /**

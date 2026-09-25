@@ -192,6 +192,7 @@ public class PlayerControllerFragment extends Fragment {
 
     private final android.content.SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener = (sharedPreferences, key) -> {
         if ("now_playing_metadata".equals(key)) {
+            updateCoverHeight();
             if (bind != null && mediaBrowserListenableFuture != null && mediaBrowserListenableFuture.isDone()) {
                 try {
                     MediaBrowser browser = mediaBrowserListenableFuture.get();
@@ -281,6 +282,23 @@ public class PlayerControllerFragment extends Fragment {
         playerArtistLinkChip = bind.getRoot().findViewById(R.id.asset_link_artist_chip);
         checkAndSetRatingContainerVisibility();
         initVideoSwitch();
+        updateCoverHeight();
+    }
+
+    /**
+     * Size the album art from how much metadata is shown: with only a couple of
+     * lines it takes more of the screen (up to 60%), shrinking toward a 50% floor
+     * as more fields are enabled so they always have room.
+     */
+    private void updateCoverHeight() {
+        if (bind == null) return;
+        androidx.constraintlayout.widget.Guideline guideline = bind.getRoot().findViewById(R.id.guideline);
+        if (guideline == null) return;
+
+        int count = Preferences.getNowPlayingMetadata().size();
+        float percent = 0.60f - Math.max(0, count - 2) * 0.02f;
+        percent = Math.max(0.50f, Math.min(0.60f, percent));
+        guideline.setGuidelinePercent(percent);
     }
 
     private void initVideoSwitch() {

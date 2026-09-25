@@ -125,8 +125,8 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     protected void applySystemBarColors(int statusRawColor, int navRawColor) {
-        int statusColor = opaque(statusRawColor);
-        // Keep the nav colour as given so callers can pass a transparent bar.
+        // Keep colours as given so callers can pass a transparent (see-through) bar.
+        int statusColor = Color.alpha(statusRawColor) == 0 ? statusRawColor : opaque(statusRawColor);
         int navColor = Color.alpha(navRawColor) == 0 ? navRawColor : opaque(navRawColor);
 
         getWindow().setStatusBarColor(statusColor);
@@ -140,7 +140,8 @@ public class BaseActivity extends AppCompatActivity {
         }
 
         WindowInsetsControllerCompat insetsController = new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
-        insetsController.setAppearanceLightStatusBars(ColorUtils.calculateLuminance(statusColor) > 0.5);
+        insetsController.setAppearanceLightStatusBars(Color.alpha(statusColor) != 0
+                && ColorUtils.calculateLuminance(statusColor) > 0.5);
         insetsController.setAppearanceLightNavigationBars(Color.alpha(navColor) != 0
                 && ColorUtils.calculateLuminance(navColor) > 0.5);
     }

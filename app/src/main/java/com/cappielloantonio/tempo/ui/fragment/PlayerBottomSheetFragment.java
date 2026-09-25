@@ -124,13 +124,14 @@ public class PlayerBottomSheetFragment extends Fragment {
         bind.playerBodyLayout.playerBodyBottomSheetViewPager.setOrientation(ViewPager2.ORIENTATION_VERTICAL);
         bind.playerBodyLayout.playerBodyBottomSheetViewPager.setAdapter(new PlayerControllerVerticalPager(this));
 
-        // The window is edge to edge, so keep the expanded player's content within
-        // the status and navigation bars (its background still fills behind them).
+        // Edge to edge: keep the player content clear of the navigation bar. The
+        // top is left unpadded so the album art can bleed under the status bar
+        // like the artist page; pages that need it (the queue) inset themselves.
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(
                 bind.playerBodyLayout.playerBodyBottomSheetViewPager, (v, insets) -> {
                     androidx.core.graphics.Insets bars =
                             insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars());
-                    v.setPadding(0, bars.top, 0, bars.bottom);
+                    v.setPadding(0, 0, 0, bars.bottom);
                     return insets;
                 });
     }
@@ -295,6 +296,7 @@ public class PlayerBottomSheetFragment extends Fragment {
 
         if (coverId == null) {
             bind.playerBodyLayout.playerBodyBottomSheetViewPager.setBackgroundColor(UIUtil.getPlayerBackgroundColor(requireContext()));
+            playerBottomSheetViewModel.setPlayerDominantColor(null);
             ((MainActivity) requireActivity()).clearPlayerDynamicBarColors();
             return;
         }
@@ -308,12 +310,16 @@ public class PlayerBottomSheetFragment extends Fragment {
                         if (bind == null || !coverId.equals(backgroundCoverId)) return;
 
                         int dominant = PlayerBackgroundUtil.dominantColor(resource);
+                        playerBottomSheetViewModel.setPlayerDominantColor(dominant);
 
                         bind.playerBodyLayout.playerBodyBottomSheetViewPager.setBackground(
                                 PlayerBackgroundUtil.buildGlow(requireContext(), dominant));
+                        // Both bars transparent so the album art shows under the
+                        // status bar and the coloured background flows under the
+                        // navigation bar, edge to edge.
                         ((MainActivity) requireActivity()).setPlayerDynamicBarColors(
-                                PlayerBackgroundUtil.statusBarColor(requireContext(), dominant),
-                                PlayerBackgroundUtil.navBarColor(requireContext()));
+                                android.graphics.Color.TRANSPARENT,
+                                android.graphics.Color.TRANSPARENT);
                     }
 
                     @Override

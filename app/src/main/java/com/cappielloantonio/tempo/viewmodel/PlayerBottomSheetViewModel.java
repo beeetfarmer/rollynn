@@ -83,7 +83,17 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
     private final MutableLiveData<ArtistID3> liveArtist = new MutableLiveData<>(null);
     private final MutableLiveData<List<Child>> instantMix = new MutableLiveData<>(null);
     private final MutableLiveData<Long> lastFmScrobbleCount = new MutableLiveData<>(null);
+    private final MutableLiveData<Integer> playerDominantColor = new MutableLiveData<>(null);
     private final Gson gson = new Gson();
+
+    public LiveData<Integer> getPlayerDominantColor() {
+        return playerDominantColor;
+    }
+
+    public void setPlayerDominantColor(Integer color) {
+        playerDominantColor.setValue(color);
+    }
+
     private boolean lyricsSyncState = true;
     private LiveData<LyricsCache> cachedLyricsSource;
     private String currentSongId;

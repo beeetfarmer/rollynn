@@ -159,6 +159,15 @@ public class PlayerQueueFragment extends Fragment implements ClickCallback {
         bind.playerQueueRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         bind.playerQueueRecyclerView.setHasFixedSize(true);
 
+        // The player body no longer pads the top (so album art can bleed under the
+        // status bar), so keep the queue list below the status bar itself.
+        int basePaddingTop = bind.playerQueueRecyclerView.getPaddingTop();
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(bind.playerQueueRecyclerView, (v, insets) -> {
+            int statusTop = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).top;
+            v.setPadding(v.getPaddingLeft(), basePaddingTop + statusTop, v.getPaddingRight(), v.getPaddingBottom());
+            return insets;
+        });
+
         playerSongQueueAdapter = new PlayerSongQueueAdapter(this);
         bind.playerQueueRecyclerView.setAdapter(playerSongQueueAdapter);
         playerSongQueueAdapter.observeMetadataEvents(getViewLifecycleOwner());
