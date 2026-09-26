@@ -125,7 +125,7 @@
             android:id="@+id/player_video_fullscreen_button"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_gravity="top|end"
+            android:layout_gravity="bottom|start"
             android:layout_margin="6dp"
             android:background="@drawable/ripple_player_button"
             android:padding="8dp"
