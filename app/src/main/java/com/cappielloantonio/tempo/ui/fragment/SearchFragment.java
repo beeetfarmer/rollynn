@@ -60,6 +60,7 @@ public class SearchFragment extends Fragment implements ClickCallback {
     private ListenableFuture<MediaBrowser> mediaBrowserListenableFuture;
     private final Handler suggestionHandler = new Handler(Looper.getMainLooper());
     private Runnable pendingSuggestion;
+    private boolean hasSearched = false;
 
     @Nullable
     @Override
@@ -196,6 +197,15 @@ public class SearchFragment extends Fragment implements ClickCallback {
                         newState == com.google.android.material.search.SearchView.TransitionState.SHOWING
                                 || newState == com.google.android.material.search.SearchView.TransitionState.SHOWN);
             }
+            // The SearchView opens automatically on entry (inputFocus). If it is
+            // dismissed with back before any search, leave the tab instead of
+            // showing the empty results page.
+            if (newState == com.google.android.material.search.SearchView.TransitionState.HIDDEN
+                    && !hasSearched && activity != null) {
+                searchView.post(() -> {
+                    if (isAdded() && !hasSearched) activity.navController.navigateUp();
+                });
+            }
         });
     }
 
@@ -247,6 +257,7 @@ public class SearchFragment extends Fragment implements ClickCallback {
 
     public void search(String query) {
         if (pendingSuggestion != null) suggestionHandler.removeCallbacks(pendingSuggestion);
+        hasSearched = true;
         searchViewModel.setQuery(query);
         bind.searchBar.setText(query);
         bind.searchView.hide();
