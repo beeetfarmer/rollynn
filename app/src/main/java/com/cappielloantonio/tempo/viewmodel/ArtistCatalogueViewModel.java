@@ -7,10 +7,14 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import androidx.lifecycle.Observer;
+
 import com.cappielloantonio.tempo.App;
+import com.cappielloantonio.tempo.repository.ArtistRepository;
 import com.cappielloantonio.tempo.subsonic.base.ApiResponse;
 import com.cappielloantonio.tempo.subsonic.models.ArtistID3;
 import com.cappielloantonio.tempo.subsonic.models.IndexID3;
+import com.cappielloantonio.tempo.util.Preferences;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +34,20 @@ public class ArtistCatalogueViewModel extends AndroidViewModel {
     }
 
     public void loadArtists() {
+        // "All artists" (incl. track/featured) comes from the Navidrome native API;
+        // "album artists" (the default) from the Subsonic getArtists endpoint.
+        if (Preferences.isArtistTabAllArtists()) {
+            MutableLiveData<List<ArtistID3>> source = new ArtistRepository().getAllArtists();
+            source.observeForever(new Observer<List<ArtistID3>>() {
+                @Override
+                public void onChanged(List<ArtistID3> artists) {
+                    if (artists != null && !artists.isEmpty()) artistList.setValue(artists);
+                    source.removeObserver(this);
+                }
+            });
+            return;
+        }
+
         App.getSubsonicClientInstance(false)
                 .getBrowsingClient()
                 .getArtists()

@@ -761,6 +761,8 @@
     <string name="settings_album_detail_summary">If enabled, show the album details like genre, song count etc. on the album page</string>
     <string name="settings_artist_sort_by_album_count">Sort artists by album count</string>
     <string name="settings_artist_sort_by_album_count_summary">If enabled, sort the artists by album count. Sort by name if disabled.</string>
+    <string name="settings_artist_tab_all_artists">Show all artists</string>
+    <string name="settings_artist_tab_all_artists_summary">Include track and featured artists in the Artists tab, not just album artists (Navidrome).</string>
 
     <string name="folder_play_collecting">Collecting songs from folder…</string>
     <string name="folder_play_playing">Playing %d songs</string>

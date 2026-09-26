@@ -152,6 +152,13 @@
                 app:icon="@drawable/ic_placeholder_artist" />
 
             <SwitchPreference
+                android:title="@string/settings_artist_tab_all_artists"
+                android:defaultValue="false"
+                android:summary="@string/settings_artist_tab_all_artists_summary"
+                android:key="artist_tab_all_artists"
+                app:icon="@drawable/ic_artist" />
+
+            <SwitchPreference
                 android:title="@string/search_sort_title"
                 android:defaultValue="false"
                 android:summary="@string/search_sort_summary"

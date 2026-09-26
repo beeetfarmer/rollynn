@@ -137,7 +137,25 @@ class NavidromeClient {
                 order = "DESC",
                 start = 0,
                 end = count,
-                libraryId = activeLibraryId()
+                libraryId = activeLibraryId(),
+                role = null
+            )
+        } ?: return emptyList()
+
+        return artists.map { it.toArtistID3() }
+    }
+
+    /** Every artist (incl. track/featured performers), for the "all artists" Artists tab. */
+    fun getAllArtists(): List<ArtistID3> {
+        val artists = executeWithAuth { token ->
+            service.getArtistsSorted(
+                auth = token,
+                sort = "name",
+                order = "ASC",
+                start = 0,
+                end = 10000,
+                libraryId = activeLibraryId(),
+                role = "artist"
             )
         } ?: return emptyList()
 

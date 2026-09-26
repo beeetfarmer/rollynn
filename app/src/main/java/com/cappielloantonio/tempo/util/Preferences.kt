@@ -19,6 +19,7 @@ object Preferences {
     private const val SERVER_ID = "server_id"
     private const val ACTIVE_MUSIC_FOLDER = "active_music_folder"
     private const val TOP_SONGS_DEFAULT_HIDDEN = "top_songs_default_hidden_applied"
+    private const val ARTIST_TAB_ALL_ARTISTS = "artist_tab_all_artists"
     private const val OPEN_SUBSONIC = "open_subsonic"
     private const val SHOW_SONG_PLAY_COUNT = "show_song_play_count"
     private const val SHOW_TOP_SONG_INDICATOR = "show_top_song_indicator"
@@ -139,6 +140,12 @@ object Preferences {
     @JvmStatic
     fun setActiveMusicFolderId(id: String?) {
         App.getInstance().preferences.edit().putString(ACTIVE_MUSIC_FOLDER, id).apply()
+    }
+
+    /** When true, the Artists tab lists all artists (incl. track/featured), not just album artists. */
+    @JvmStatic
+    fun isArtistTabAllArtists(): Boolean {
+        return App.getInstance().preferences.getBoolean(ARTIST_TAB_ALL_ARTISTS, false)
     }
 
     /** One-time flag so "This week's top songs" is hidden once for existing installs. */

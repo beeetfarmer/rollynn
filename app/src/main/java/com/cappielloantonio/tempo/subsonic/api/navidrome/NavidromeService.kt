@@ -50,6 +50,7 @@ interface NavidromeService {
         @Query("_order") order: String,
         @Query("_start") start: Int,
         @Query("_end") end: Int,
-        @Query("library_id") libraryId: String?
+        @Query("library_id") libraryId: String?,
+        @Query("role") role: String?
     ): Call<List<NavidromeArtist>>
 }

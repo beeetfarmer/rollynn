@@ -378,6 +378,19 @@ public class ArtistRepository {
         return result;
     }
 
+    /** All artists (incl. track/featured) via the Navidrome native API, for the Artists tab. */
+    public MutableLiveData<List<ArtistID3>> getAllArtists() {
+        MutableLiveData<List<ArtistID3>> result = new MutableLiveData<>();
+        java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                result.postValue(com.cappielloantonio.tempo.subsonic.api.navidrome.NavidromeClient.getInstance().getAllArtists());
+            } catch (Exception e) {
+                result.postValue(null);
+            }
+        });
+        return result;
+    }
+
     public MutableLiveData<List<ArtistID3>> getTopPlayedArtists(int count) {
         MutableLiveData<List<ArtistID3>> result = new MutableLiveData<>();
         java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
