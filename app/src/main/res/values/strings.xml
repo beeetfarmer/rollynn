@@ -171,6 +171,14 @@
     <string name="home_rearrangement_dialog_positive_button">Save</string>
     <string name="home_rearrangement_dialog_title">Rearrange home</string>
     <string name="home_rearrangement_dialog_subtitle">Please note that in order for the changes made to take effect, it is necessary to restart the application.</string>
+    <string name="home_library_filter_content_description">Filter by library</string>
+    <string name="home_library_filter_title">Show library</string>
+    <string name="home_library_filter_all">All libraries</string>
+    <string name="home_library_filter_none">No libraries available</string>
+    <string name="library_restart_title">Restart required</string>
+    <string name="library_restart_message">Restart the app to apply the library change across all screens.</string>
+    <string name="library_restart_now">Restart now</string>
+    <string name="library_restart_later">Later</string>
     <string name="home_section_music">Music</string>
     <string name="home_section_podcast">Podcast</string>
     <string name="home_section_radio">Radio</string>

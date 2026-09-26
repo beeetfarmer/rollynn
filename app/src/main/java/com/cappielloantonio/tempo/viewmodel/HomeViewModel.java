@@ -487,10 +487,23 @@ public class HomeViewModel extends AndroidViewModel {
                     changed = true;
                 }
             }
+            // One-time: hide "This week's top songs" for existing installs too, since
+            // it's built from local play history and can't be scoped to a library.
+            if (!Preferences.isTopSongsDefaultHiddenApplied()) {
+                for (HomeSector sector : sectors) {
+                    if (Constants.HOME_SECTOR_TOP_SONGS.equals(sector.getId())) {
+                        sector.setVisible(false);
+                        changed = true;
+                    }
+                }
+                Preferences.setTopSongsDefaultHiddenApplied(true);
+            }
+
             if (changed) {
                 Preferences.setHomeSectorList(sectors);
             }
         } else {
+            Preferences.setTopSongsDefaultHiddenApplied(true);
             sectors = fillStandardHomeSectorList();
         }
     }
@@ -502,7 +515,7 @@ public class HomeViewModel extends AndroidViewModel {
         sectors.add(new HomeSector(Constants.HOME_SECTOR_MADE_FOR_YOU, getApplication().getString(R.string.home_title_made_for_you), true, 2));
         sectors.add(new HomeSector(Constants.HOME_SECTOR_BEST_OF, getApplication().getString(R.string.home_title_best_of), true, 3));
         sectors.add(new HomeSector(Constants.HOME_SECTOR_RADIO_STATION, getApplication().getString(R.string.home_title_radio_station), true, 4));
-        sectors.add(new HomeSector(Constants.HOME_SECTOR_TOP_SONGS, getApplication().getString(R.string.home_title_top_songs), true, 5));
+        sectors.add(new HomeSector(Constants.HOME_SECTOR_TOP_SONGS, getApplication().getString(R.string.home_title_top_songs), false, 5));
         sectors.add(new HomeSector(Constants.HOME_SECTOR_STARRED_TRACKS, getApplication().getString(R.string.home_title_starred_tracks), true, 6));
         sectors.add(new HomeSector(Constants.HOME_SECTOR_STARRED_ALBUMS, getApplication().getString(R.string.home_title_starred_albums), true, 7));
         sectors.add(new HomeSector(Constants.HOME_SECTOR_STARRED_ARTISTS, getApplication().getString(R.string.home_title_starred_artists), true, 8));

@@ -94,6 +94,9 @@ class NavidromeClient {
         return null
     }
 
+    /** The library the app is scoped to, or null for all (matches the Subsonic musicFolderId). */
+    private fun activeLibraryId(): String? = Preferences.getActiveMusicFolderId()?.ifBlank { null }
+
     fun getRecentlyPlayedSongs(count: Int): List<Child> {
         val songs = executeWithAuth { token ->
             service.getSongs(
@@ -102,7 +105,8 @@ class NavidromeClient {
                 order = "DESC",
                 start = 0,
                 end = count,
-                recentlyPlayed = true
+                recentlyPlayed = true,
+                libraryId = activeLibraryId()
             )
         } ?: return emptyList()
 
@@ -117,7 +121,8 @@ class NavidromeClient {
                 order = "DESC",
                 start = 0,
                 end = count,
-                recentlyPlayed = true
+                recentlyPlayed = true,
+                libraryId = activeLibraryId()
             )
         } ?: return emptyList()
 
@@ -131,7 +136,8 @@ class NavidromeClient {
                 sort = "play_count",
                 order = "DESC",
                 start = 0,
-                end = count
+                end = count,
+                libraryId = activeLibraryId()
             )
         } ?: return emptyList()
 
@@ -145,7 +151,8 @@ class NavidromeClient {
                 sort = "play_count",
                 order = "DESC",
                 start = 0,
-                end = count
+                end = count,
+                libraryId = activeLibraryId()
             )
         } ?: return emptyList()
 

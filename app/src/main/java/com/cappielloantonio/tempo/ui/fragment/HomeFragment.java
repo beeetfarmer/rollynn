@@ -70,6 +70,79 @@ public class HomeFragment extends Fragment {
         applyHomeTitle();
 
         tabLayout = bind.homeTabLayout;
+
+        android.widget.ImageButton libraryFilter = bind.getRoot().findViewById(R.id.home_library_filter);
+        if (libraryFilter != null) libraryFilter.setOnClickListener(v -> showLibraryFilterDialog());
+    }
+
+    /**
+     * Lets the user scope the whole app to one Navidrome library (music folder) or
+     * "All". The choice is stored globally and the activity is recreated so every
+     * tab reloads through the folder-scoped API. See Subsonic.getParams().
+     */
+    private void showLibraryFilterDialog() {
+        new com.cappielloantonio.tempo.repository.DirectoryRepository().getMusicFolders()
+                .observe(getViewLifecycleOwner(), folders -> {
+                    if (bind == null || getContext() == null) return;
+                    if (folders == null || folders.isEmpty()) {
+                        android.widget.Toast.makeText(getContext(), R.string.home_library_filter_none, android.widget.Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    java.util.List<String> ids = new java.util.ArrayList<>();
+                    java.util.List<CharSequence> labels = new java.util.ArrayList<>();
+                    ids.add(null); // All libraries
+                    labels.add(getString(R.string.home_library_filter_all));
+                    for (com.cappielloantonio.tempo.subsonic.models.MusicFolder folder : folders) {
+                        ids.add(folder.getId());
+                        labels.add(folder.getName());
+                    }
+
+                    String current = Preferences.getActiveMusicFolderId();
+                    int checked = 0;
+                    for (int i = 0; i < ids.size(); i++) {
+                        if (Objects.equals(ids.get(i), current)) {
+                            checked = i;
+                            break;
+                        }
+                    }
+
+                    new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                            .setTitle(R.string.home_library_filter_title)
+                            .setSingleChoiceItems(labels.toArray(new CharSequence[0]), checked, (dialog, which) -> {
+                                String selected = ids.get(which);
+                                dialog.dismiss();
+                                if (!Objects.equals(selected, Preferences.getActiveMusicFolderId())) {
+                                    Preferences.setActiveMusicFolderId(selected);
+                                    showLibraryRestartDialog();
+                                }
+                            })
+                            .setNegativeButton(android.R.string.cancel, null)
+                            .show();
+                });
+    }
+
+    private void showLibraryRestartDialog() {
+        if (getContext() == null) return;
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.library_restart_title)
+                .setMessage(R.string.library_restart_message)
+                .setCancelable(false)
+                .setPositiveButton(R.string.library_restart_now, (d, w) -> restartApp())
+                .setNegativeButton(R.string.library_restart_later, null)
+                .show();
+    }
+
+    /** Fully restarts the app so every screen reloads scoped to the new library. */
+    private void restartApp() {
+        if (getContext() == null) return;
+        android.content.Context context = requireContext().getApplicationContext();
+        android.content.Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+        if (intent != null) {
+            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            context.startActivity(intent);
+        }
+        Runtime.getRuntime().exit(0);
     }
 
     private void applyHomeTitle() {

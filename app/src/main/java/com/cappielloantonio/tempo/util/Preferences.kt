@@ -17,6 +17,8 @@ object Preferences {
     private const val LOW_SECURITY = "low_security"
     private const val BATTERY_OPTIMIZATION = "battery_optimization"
     private const val SERVER_ID = "server_id"
+    private const val ACTIVE_MUSIC_FOLDER = "active_music_folder"
+    private const val TOP_SONGS_DEFAULT_HIDDEN = "top_songs_default_hidden_applied"
     private const val OPEN_SUBSONIC = "open_subsonic"
     private const val SHOW_SONG_PLAY_COUNT = "show_song_play_count"
     private const val SHOW_TOP_SONG_INDICATOR = "show_top_song_indicator"
@@ -127,6 +129,28 @@ object Preferences {
     const val MUSIC_VIDEO_SORT_ALPHABETICAL = "alphabetical"
     const val MUSIC_VIDEO_SORT_DATE_ADDED = "date_added"
 
+
+    /** The library (music folder) the whole app is scoped to, or null for all. */
+    @JvmStatic
+    fun getActiveMusicFolderId(): String? {
+        return App.getInstance().preferences.getString(ACTIVE_MUSIC_FOLDER, null)
+    }
+
+    @JvmStatic
+    fun setActiveMusicFolderId(id: String?) {
+        App.getInstance().preferences.edit().putString(ACTIVE_MUSIC_FOLDER, id).apply()
+    }
+
+    /** One-time flag so "This week's top songs" is hidden once for existing installs. */
+    @JvmStatic
+    fun isTopSongsDefaultHiddenApplied(): Boolean {
+        return App.getInstance().preferences.getBoolean(TOP_SONGS_DEFAULT_HIDDEN, false)
+    }
+
+    @JvmStatic
+    fun setTopSongsDefaultHiddenApplied(applied: Boolean) {
+        App.getInstance().preferences.edit().putBoolean(TOP_SONGS_DEFAULT_HIDDEN, applied).apply()
+    }
 
     @JvmStatic
     fun getServer(): String? {

@@ -39,7 +39,9 @@ public class BaseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Flavors.initializeCastContext(this);
         initializeDownloader();
-        checkBatteryOptimization();
+        // Only nudge on a fresh launch, not on a recreate (e.g. a library switch or
+        // config change), so the battery dialog doesn't reappear each time.
+        if (savedInstanceState == null) checkBatteryOptimization();
         checkPermission();
         checkAlwaysOnDisplay();
     }

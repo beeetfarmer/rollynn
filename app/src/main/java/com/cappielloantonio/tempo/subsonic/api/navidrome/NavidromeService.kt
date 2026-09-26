@@ -18,7 +18,8 @@ interface NavidromeService {
         @Query("_order") order: String,
         @Query("_start") start: Int,
         @Query("_end") end: Int,
-        @Query("recently_played") recentlyPlayed: Boolean
+        @Query("recently_played") recentlyPlayed: Boolean,
+        @Query("library_id") libraryId: String?
     ): Call<List<NavidromeSong>>
 
     @GET("api/song")
@@ -27,7 +28,8 @@ interface NavidromeService {
         @Query("_sort") sort: String,
         @Query("_order") order: String,
         @Query("_start") start: Int,
-        @Query("_end") end: Int
+        @Query("_end") end: Int,
+        @Query("library_id") libraryId: String?
     ): Call<List<NavidromeSong>>
 
     @GET("api/artist")
@@ -37,7 +39,8 @@ interface NavidromeService {
         @Query("_order") order: String,
         @Query("_start") start: Int,
         @Query("_end") end: Int,
-        @Query("recently_played") recentlyPlayed: Boolean
+        @Query("recently_played") recentlyPlayed: Boolean,
+        @Query("library_id") libraryId: String?
     ): Call<List<NavidromeArtist>>
 
     @GET("api/artist")
@@ -46,6 +49,7 @@ interface NavidromeService {
         @Query("_sort") sort: String,
         @Query("_order") order: String,
         @Query("_start") start: Int,
-        @Query("_end") end: Int
+        @Query("_end") end: Int,
+        @Query("library_id") libraryId: String?
     ): Call<List<NavidromeArtist>>
 }

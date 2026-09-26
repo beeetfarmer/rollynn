@@ -162,6 +162,14 @@ public class Subsonic {
         params.put("c", preferences.getClientName());
         params.put("f", "json");
 
+        // Scope the whole app to one library when the user picks one on the home
+        // screen. Folder-aware endpoints (album lists, artists, search, starred,
+        // random, ...) honour it; others ignore the extra parameter.
+        String activeMusicFolderId = com.cappielloantonio.tempo.util.Preferences.getActiveMusicFolderId();
+        if (activeMusicFolderId != null && !activeMusicFolderId.isEmpty()) {
+            params.put("musicFolderId", activeMusicFolderId);
+        }
+
         return params;
     }
 }
