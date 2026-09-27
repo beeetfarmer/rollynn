@@ -260,18 +260,27 @@ public class PlaylistRepository {
     }
 
     public void createPlaylist(String playlistId, String name, ArrayList<String> songsId) {
+        createPlaylist(playlistId, name, songsId, null);
+    }
+
+    public void createPlaylist(String playlistId, String name, ArrayList<String> songsId, AddToPlaylistCallback callback) {
         App.getSubsonicClientInstance(false)
                 .getPlaylistClient()
                 .createPlaylist(playlistId, name, songsId)
                 .enqueue(new Callback<ApiResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
-                        if (response.isSuccessful()) notifyPlaylistChanged();
+                        if (response.isSuccessful()) {
+                            notifyPlaylistChanged();
+                            if (callback != null) callback.onSuccess();
+                        } else if (callback != null) {
+                            callback.onFailure();
+                        }
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
-
+                        if (callback != null) callback.onFailure();
                     }
                 });
     }

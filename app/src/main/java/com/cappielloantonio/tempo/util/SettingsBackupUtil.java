@@ -72,6 +72,7 @@ public final class SettingsBackupUtil {
             "last_fm_api_key",
             "translation_api_key",
             "popinn_password",
+            "audiomuse_api_token",
             // Session identity
             "server",
             "user",

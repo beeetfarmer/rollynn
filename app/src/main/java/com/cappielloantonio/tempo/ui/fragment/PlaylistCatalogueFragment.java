@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -198,9 +199,27 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
             if (selectionMode) {
                 moveSelectedToFolder();
             } else {
-                showCreateFolderDialog();
+                showCreateMenu(v);
             }
         });
+    }
+
+    /** The + button offers a new folder or an AudioMuse-AI generated playlist. */
+    private void showCreateMenu(View anchor) {
+        PopupMenu popup = new PopupMenu(requireContext(), anchor);
+        popup.getMenu().add(0, 0, 0, R.string.playlist_create_folder);
+        popup.getMenu().add(0, 1, 1, R.string.playlist_create_ai);
+        popup.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == 0) {
+                showCreateFolderDialog();
+            } else if (!com.cappielloantonio.tempo.audiomuse.AudioMuseClient.isConfigured()) {
+                Toast.makeText(requireContext(), R.string.ai_playlist_not_configured, Toast.LENGTH_LONG).show();
+            } else {
+                Navigation.findNavController(requireView()).navigate(R.id.action_playlistCatalogueFragment_to_aiPlaylistFragment);
+            }
+            return true;
+        });
+        popup.show();
     }
 
     private void filterPlaylistsForCurrentFolder() {

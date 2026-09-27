@@ -379,6 +379,23 @@
 
         </PreferenceCategory>
 
+        <PreferenceCategory app:title="@string/settings_audiomuse_category">
+
+            <EditTextPreference
+                android:key="audiomuse_server_url"
+                android:title="@string/settings_audiomuse_url_title"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_link" />
+
+            <EditTextPreference
+                android:key="audiomuse_api_token"
+                android:title="@string/settings_audiomuse_token_title"
+                android:summary="@string/settings_audiomuse_token_summary"
+                android:inputType="textPassword"
+                app:icon="@drawable/ic_link" />
+
+        </PreferenceCategory>
+
         <PreferenceCategory app:title="@string/settings_translation_category">
 
             <ListPreference

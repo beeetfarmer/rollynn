@@ -233,7 +233,16 @@
         <action
             android:id="@+id/action_playlistCatalogueFragment_to_playlistPageFragment"
             app:destination="@id/playlistPageFragment" />
+        <action
+            android:id="@+id/action_playlistCatalogueFragment_to_aiPlaylistFragment"
+            app:destination="@id/aiPlaylistFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/aiPlaylistFragment"
+        android:name="com.cappielloantonio.tempo.ui.fragment.AiPlaylistFragment"
+        android:label="AiPlaylistFragment"
+        tools:layout="@layout/fragment_ai_playlist" />
 
     <fragment
         android:id="@+id/artistPageFragment"
