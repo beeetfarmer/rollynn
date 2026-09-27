@@ -96,10 +96,21 @@ public final class PlayerBackgroundUtil {
         Bitmap out = art.copy(Bitmap.Config.ARGB_8888, true);
         Canvas canvas = new Canvas(out);
 
-        // Cheap strong blur: shrink in two steps (to avoid aliasing) and scale back.
-        Bitmap small = Bitmap.createScaledBitmap(art, Math.max(1, width / 4), Math.max(1, height / 4), true);
-        Bitmap tiny = Bitmap.createScaledBitmap(small, Math.max(1, width / 16), Math.max(1, height / 16), true);
-        Bitmap blurred = Bitmap.createScaledBitmap(tiny, width, height, true);
+        // Strong, smooth blur: box-blur a 1/6 size copy (three passes approximate a
+        // Gaussian), then scale it back up. Scaling alone leaves visible blocks.
+        int sw = Math.max(1, width / 6);
+        int sh = Math.max(1, height / 6);
+        Bitmap small = Bitmap.createScaledBitmap(art, sw, sh, true);
+        int[] pixels = new int[sw * sh];
+        small.getPixels(pixels, 0, sw, 0, 0, sw, sh);
+        int[] scratch = new int[pixels.length];
+        for (int pass = 0; pass < 3; pass++) {
+            boxBlurTransposed(pixels, scratch, sw, sh, 5);
+            boxBlurTransposed(scratch, pixels, sh, sw, 5);
+        }
+        small.recycle();
+        small = Bitmap.createBitmap(pixels, sw, sh, Bitmap.Config.ARGB_8888);
+        Bitmap blurred = Bitmap.createScaledBitmap(small, width, height, true);
 
         // Blur ramps in over the lower part, under the colour fade.
         Paint blurPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -120,8 +131,34 @@ public final class PlayerBackgroundUtil {
         canvas.drawRect(0, height * 0.55f, width, height, fadePaint);
 
         small.recycle();
-        tiny.recycle();
         blurred.recycle();
         return out;
+    }
+
+    /**
+     * One horizontal box-blur pass of radius {@code r} over {@code src} (w x h),
+     * written transposed into {@code dst} (h x w), so calling it twice blurs both
+     * axes and restores the orientation. Output is opaque.
+     */
+    private static void boxBlurTransposed(int[] src, int[] dst, int w, int h, int r) {
+        int div = 2 * r + 1;
+        for (int y = 0; y < h; y++) {
+            int row = y * w;
+            int rs = 0, gs = 0, bs = 0;
+            for (int i = -r; i <= r; i++) {
+                int c = src[row + Math.min(w - 1, Math.max(0, i))];
+                rs += (c >> 16) & 0xFF;
+                gs += (c >> 8) & 0xFF;
+                bs += c & 0xFF;
+            }
+            for (int x = 0; x < w; x++) {
+                dst[x * h + y] = 0xFF000000 | ((rs / div) << 16) | ((gs / div) << 8) | (bs / div);
+                int in = src[row + Math.min(w - 1, x + r + 1)];
+                int out = src[row + Math.max(0, x - r)];
+                rs += ((in >> 16) & 0xFF) - ((out >> 16) & 0xFF);
+                gs += ((in >> 8) & 0xFF) - ((out >> 8) & 0xFF);
+                bs += (in & 0xFF) - (out & 0xFF);
+            }
+        }
     }
 }

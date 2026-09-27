@@ -18,7 +18,8 @@ import java.security.MessageDigest;
  * the edge that is actually visible.
  */
 public class ArtFadeTransformation extends BitmapTransformation {
-    private static final String ID = "com.cappielloantonio.tempo.glide.ArtFadeTransformation";
+    // Bump the version whenever the fade's look changes so cached art is redone.
+    private static final String ID = "com.cappielloantonio.tempo.glide.ArtFadeTransformation.v2";
 
     private final int color;
 

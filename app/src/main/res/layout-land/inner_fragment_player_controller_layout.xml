@@ -194,7 +194,9 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="16dp"
-        app:bar_height="2dp"
+        app:bar_height="7dp"
+        app:scrubber_dragged_size="0dp"
+        app:scrubber_enabled_size="0dp"
         app:buffered_color="?attr/colorOnSecondaryContainer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/vertical_guideline"
@@ -205,7 +207,7 @@
         app:unplayed_color="?attr/colorSurfaceVariant" />
 
     <TextView
-        android:id="@+id/exo_duration"
+        android:id="@+id/player_remaining_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

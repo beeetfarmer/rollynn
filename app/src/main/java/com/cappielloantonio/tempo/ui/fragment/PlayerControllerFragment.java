@@ -225,6 +225,50 @@ public class PlayerControllerFragment extends Fragment {
         initEqualizerButton();
         initOverflowMenu();
 
+        // Apple Music style seek bar: the time bar draws square ends, so clip its
+        // (thumbless, 7dp) track to a pill.
+        View timeBar = view.findViewById(R.id.exo_progress);
+        timeBar.setOutlineProvider(new android.view.ViewOutlineProvider() {
+            @Override
+            public void getOutline(View v, android.graphics.Outline outline) {
+                int barHeight = UIUtil.dpToPx(v.getContext(), 7);
+                int top = (v.getHeight() - barHeight) / 2;
+                outline.setRoundRect(v.getPaddingLeft(), top, v.getWidth() - v.getPaddingRight(),
+                        top + barHeight, barHeight / 2f);
+            }
+        });
+        timeBar.setClipToOutline(true);
+
+        // Apple Music style: time left on the right, and the bar swells while dragged.
+        TextView remainingTime = view.findViewById(R.id.player_remaining_time);
+        StringBuilder timeBuilder = new StringBuilder();
+        java.util.Formatter timeFormatter = new java.util.Formatter(timeBuilder, java.util.Locale.getDefault());
+        java.util.function.LongConsumer showRemaining = position -> {
+            Player player = bind.nowPlayingMediaControllerView.getPlayer();
+            long duration = player != null ? player.getDuration() : C.TIME_UNSET;
+            remainingTime.setText(duration == C.TIME_UNSET ? ""
+                    : "-" + androidx.media3.common.util.Util.getStringForTime(
+                    timeBuilder, timeFormatter, Math.max(0, duration - position)));
+        };
+        bind.nowPlayingMediaControllerView.setProgressUpdateListener((position, buffered) -> showRemaining.accept(position));
+        ((androidx.media3.ui.DefaultTimeBar) timeBar).addListener(new androidx.media3.ui.TimeBar.OnScrubListener() {
+            @Override
+            public void onScrubStart(@NonNull androidx.media3.ui.TimeBar bar, long position) {
+                timeBar.animate().scaleY(1.8f).scaleX(1.03f).setDuration(150).start();
+                showRemaining.accept(position);
+            }
+
+            @Override
+            public void onScrubMove(@NonNull androidx.media3.ui.TimeBar bar, long position) {
+                showRemaining.accept(position);
+            }
+
+            @Override
+            public void onScrubStop(@NonNull androidx.media3.ui.TimeBar bar, long position, boolean canceled) {
+                timeBar.animate().scaleY(1f).scaleX(1f).setDuration(200).start();
+            }
+        });
+
         playerBottomSheetViewModel.getPlayerDominantColor().observe(getViewLifecycleOwner(), dominant -> {
             playerContentColor = dominant == null ? null
                     : PlayerBackgroundUtil.contentColor(requireContext(), dominant);
@@ -630,7 +674,7 @@ public class PlayerControllerFragment extends Fragment {
         tintPlayerViews(bind.getRoot(), color);
 
         int secondary = androidx.core.graphics.ColorUtils.setAlphaComponent(color, 0xB3);
-        for (int id : new int[]{R.id.exo_position, R.id.exo_duration, R.id.rating_text}) {
+        for (int id : new int[]{R.id.exo_position, R.id.player_remaining_time, R.id.rating_text}) {
             View label = bind.getRoot().findViewById(id);
             if (label instanceof TextView) ((TextView) label).setTextColor(secondary);
         }

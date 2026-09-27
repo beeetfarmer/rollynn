@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Apple Music style skip forward: two solid triangles with softened corners. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@color/titleTextColor"
+        android:strokeColor="@color/titleTextColor"
+        android:strokeLineJoin="round"
+        android:strokeWidth="1.6"
+        android:pathData="M2.2,6.4L11,12L2.2,17.6Z M12.2,6.4L21,12L12.2,17.6Z" />
+</vector>
