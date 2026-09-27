@@ -58,6 +58,8 @@
     <color name="gradientSubtitleColor">#BFBFBF</color>
     <color name="titleTextColor">#252525</color>
     <color name="subtitleTextColor">#646464</color>
+    <!-- Translucent so secondary text keeps contrast on the album-coloured player background -->
+    <color name="playerSubtitleTextColor">#B3000000</color>
     <color name="dividerColor">#e0e0e0</color>
     <color name="white">#FFFFFF</color>
 

@@ -116,9 +116,7 @@ public class PlayerLyricsFragment extends Fragment {
             lyricsHighlightColor = null;
             lyricsShadowColor = null;
         } else {
-            int fade = PlayerBackgroundUtil.backgroundTopColor(requireContext(), dominant);
-            boolean lightArt = androidx.core.graphics.ColorUtils.calculateLuminance(fade) > 0.5f;
-            int onArt = lightArt ? android.graphics.Color.BLACK : android.graphics.Color.WHITE;
+            int onArt = PlayerBackgroundUtil.contentColor(requireContext(), dominant);
             lyricsHighlightColor = onArt;
             lyricsShadowColor = androidx.core.graphics.ColorUtils.setAlphaComponent(onArt, 120);
         }

@@ -61,6 +61,7 @@
     <TextView
         android:id="@+id/queue_song_subtitle_text_view"
         style="@style/LabelSmall"
+        android:textColor="@color/playerSubtitleTextColor"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:ellipsize="marquee"

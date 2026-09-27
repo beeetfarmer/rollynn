@@ -171,6 +171,9 @@ public class PlayerQueueFragment extends Fragment implements ClickCallback {
         playerSongQueueAdapter = new PlayerSongQueueAdapter(this);
         bind.playerQueueRecyclerView.setAdapter(playerSongQueueAdapter);
         playerSongQueueAdapter.observeMetadataEvents(getViewLifecycleOwner());
+        playerBottomSheetViewModel.getPlayerDominantColor().observe(getViewLifecycleOwner(), dominant ->
+                playerSongQueueAdapter.setContentColor(dominant == null ? null
+                        : com.cappielloantonio.tempo.util.PlayerBackgroundUtil.contentColor(requireContext(), dominant)));
         reapplyPlayback();
 
         playerBottomSheetViewModel.getQueueSong().observe(getViewLifecycleOwner(), queue -> {

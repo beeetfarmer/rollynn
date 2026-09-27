@@ -46,6 +46,16 @@ public final class PlayerBackgroundUtil {
     }
 
     /**
+     * Black or white, whichever reads on {@link #backgroundTopColor}. The theme's
+     * text colours ignore the album colour, so dark text lands on dark art in light
+     * mode (and vice versa); content over the background should use this instead.
+     */
+    public static int contentColor(Context context, int dominant) {
+        return ColorUtils.calculateLuminance(backgroundTopColor(context, dominant)) > 0.5
+                ? Color.BLACK : Color.WHITE;
+    }
+
+    /**
      * Apple Music style background: the album's colour up top (where the artwork
      * dissolves into it) darkening toward the controls at the bottom. The artwork
      * covers roughly the top half, so the top colour is held solid until midway.

@@ -48,6 +48,8 @@ public class PlayerSongQueueAdapter extends RecyclerView.Adapter<PlayerSongQueue
     private String currentPlayingId;
     private boolean isPlaying;
     private List<Integer> currentPlayingPositions = Collections.emptyList();
+    // Text/icon colour picked from the album-coloured background; null = theme default.
+    private Integer contentColor;
 
     public PlayerSongQueueAdapter(ClickCallback click) {
         this.click = click;
@@ -66,6 +68,7 @@ public class PlayerSongQueueAdapter extends RecyclerView.Adapter<PlayerSongQueue
         Child song = songs.get(holder.getLayoutPosition());
 
         holder.item.queueSongTitleTextView.setText(song.getTitle());
+        applyContentColor(holder);
         holder.item.queueSongSubtitleTextView.setText(
                 holder.itemView.getContext().getString(
                         R.string.song_subtitle_formatter,
@@ -268,6 +271,31 @@ public class PlayerSongQueueAdapter extends RecyclerView.Adapter<PlayerSongQueue
 
     public Child getItem(int id) {
         return songs.get(id);
+    }
+
+    public void setContentColor(Integer color) {
+        if (Objects.equals(contentColor, color)) return;
+        contentColor = color;
+        notifyDataSetChanged();
+    }
+
+    private void applyContentColor(ViewHolder holder) {
+        android.content.Context context = holder.itemView.getContext();
+        int title = contentColor != null ? contentColor : context.getColor(R.color.titleTextColor);
+        int subtitle = contentColor != null
+                ? androidx.core.graphics.ColorUtils.setAlphaComponent(contentColor, 0xB3)
+                : context.getColor(R.color.playerSubtitleTextColor);
+        holder.item.queueSongTitleTextView.setTextColor(title);
+        holder.item.queueSongSubtitleTextView.setTextColor(subtitle);
+
+        android.content.res.ColorStateList iconTint =
+                contentColor != null ? android.content.res.ColorStateList.valueOf(contentColor) : null;
+        android.widget.ImageView[] icons = {holder.item.queueSongHolderImage,
+                holder.item.oneStarIcon, holder.item.twoStarIcon, holder.item.threeStarIcon,
+                holder.item.fourStarIcon, holder.item.fiveStarIcon};
+        for (android.widget.ImageView icon : icons) {
+            androidx.core.widget.ImageViewCompat.setImageTintList(icon, iconTint);
+        }
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
