@@ -385,19 +385,16 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
         if (bind == null || bind.albumContentContainer == null) return;
         int fadeColor = PlayerBackgroundUtil.backgroundTopColor(requireContext(), edge);
 
-        // The album colour up top (where the art dissolves in) easing down to the
-        // app's base colour, so on short albums the empty lower area reads as an
-        // intentional fade, not a flat void.
-        int base = PlayerBackgroundUtil.baseColor(requireContext());
-        bind.albumContentContainer.setBackground(new android.graphics.drawable.GradientDrawable(
-                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{fadeColor, fadeColor,
-                        androidx.core.graphics.ColorUtils.blendARGB(edge, base, 0.45f),
-                        androidx.core.graphics.ColorUtils.blendARGB(edge, base, 0.85f)}));
+        // One solid colour down the whole page, as Apple Music does, so the text
+        // colour picked from it stays legible everywhere (a gradient toward the theme
+        // base left light text on a light bottom half and vice versa).
+        bind.albumContentContainer.setBackgroundColor(fadeColor);
 
         // The art scrolls away to reveal this matching colour behind the status bar
-        // and back button (instead of a black bar).
+        // and back button, and the collapsed header's pinned strip is covered with it.
         if (bind.appbar != null) bind.appbar.setBackgroundColor(fadeColor);
+        bind.collapsingToolbar.setContentScrimColor(fadeColor);
+        bind.collapsingToolbar.setStatusBarScrimColor(fadeColor);
 
         applyOnArtColors(fadeColor);
     }
