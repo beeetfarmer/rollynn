@@ -19,6 +19,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.RatingBar;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 import android.widget.Toast;
@@ -100,6 +101,7 @@ import com.cappielloantonio.tempo.util.AssetLinkUtil;
 import com.cappielloantonio.tempo.util.Constants;
 import com.cappielloantonio.tempo.util.MusicUtil;
 import com.cappielloantonio.tempo.util.Preferences;
+import com.cappielloantonio.tempo.util.PlayerBackgroundUtil;
 import com.cappielloantonio.tempo.util.UIUtil;
 import com.cappielloantonio.tempo.viewmodel.PlayerBottomSheetViewModel;
 import com.cappielloantonio.tempo.viewmodel.RatingViewModel;
@@ -137,6 +139,8 @@ public class PlayerControllerFragment extends Fragment {
     private ImageButton equalizerButton;
     private ImageButton addToPlaylistButton;
     private ImageButton sleepTimerButton;
+    // White or black picked from the album-coloured background; null = theme default.
+    private Integer playerContentColor;
     private ImageButton overflowMenuButton;
     private ImageButton lyricsButton;
     private ChipGroup assetLinkChipGroup;
@@ -220,6 +224,12 @@ public class PlayerControllerFragment extends Fragment {
         initMediaListenable();
         initEqualizerButton();
         initOverflowMenu();
+
+        playerBottomSheetViewModel.getPlayerDominantColor().observe(getViewLifecycleOwner(), dominant -> {
+            playerContentColor = dominant == null ? null
+                    : PlayerBackgroundUtil.contentColor(requireContext(), dominant);
+            applyPlayerContentColor();
+        });
 
         return view;
     }
@@ -599,8 +609,64 @@ public class PlayerControllerFragment extends Fragment {
     }
 
     private int getPlayerTextColor() {
+        if (playerContentColor != null) return playerContentColor;
         int mode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
         return mode == Configuration.UI_MODE_NIGHT_YES ? Color.WHITE : Color.BLACK;
+    }
+
+    private int contentColor() {
+        return playerContentColor != null ? playerContentColor
+                : UIUtil.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface);
+    }
+
+    /**
+     * Recolours the text, icons, buttons and seek bar over the album-coloured
+     * background so they stay visible on any artwork. The artwork and video area
+     * are left alone; the time and rating labels are dimmed slightly.
+     */
+    private void applyPlayerContentColor() {
+        if (bind == null) return;
+        int color = contentColor();
+        tintPlayerViews(bind.getRoot(), color);
+
+        int secondary = androidx.core.graphics.ColorUtils.setAlphaComponent(color, 0xB3);
+        for (int id : new int[]{R.id.exo_position, R.id.exo_duration, R.id.rating_text}) {
+            View label = bind.getRoot().findViewById(id);
+            if (label instanceof TextView) ((TextView) label).setTextColor(secondary);
+        }
+
+        // These show an active state in the accent colour; let them re-apply it.
+        updateSleepTimerButton();
+        setSwitchButtonActive(videoMode);
+    }
+
+    private void tintPlayerViews(View view, int color) {
+        int id = view.getId();
+        if (id == R.id.player_media_cover_view_pager || id == R.id.player_video_container) return;
+
+        android.content.res.ColorStateList tint = android.content.res.ColorStateList.valueOf(color);
+        if (view instanceof androidx.media3.ui.DefaultTimeBar) {
+            androidx.media3.ui.DefaultTimeBar bar = (androidx.media3.ui.DefaultTimeBar) view;
+            bar.setPlayedColor(color);
+            bar.setScrubberColor(color);
+            bar.setBufferedColor(androidx.core.graphics.ColorUtils.setAlphaComponent(color, 0x66));
+            bar.setUnplayedColor(androidx.core.graphics.ColorUtils.setAlphaComponent(color, 0x33));
+        } else if (view instanceof android.widget.RatingBar) {
+            ((android.widget.RatingBar) view).setProgressTintList(tint);
+        } else if (view instanceof ImageView) {
+            // Icons are drawn either as the image (app:tint) or as the background.
+            if (((ImageView) view).getImageTintList() != null) ((ImageView) view).setImageTintList(tint);
+            if (view.getBackgroundTintList() != null) view.setBackgroundTintList(tint);
+        } else if (view instanceof android.widget.CompoundButton) {
+            // Favourite / skip-silence toggles draw their icon as a tinted background.
+            if (view.getBackgroundTintList() != null) view.setBackgroundTintList(tint);
+        } else if (view instanceof TextView && !(view instanceof com.google.android.material.button.MaterialButton)
+                && !(view instanceof com.google.android.material.chip.Chip)) {
+            ((TextView) view).setTextColor(color);
+        } else if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) tintPlayerViews(group.getChildAt(i), color);
+        }
     }
 
     private void bindAlbumLink(View view) {
@@ -1065,8 +1131,8 @@ public class PlayerControllerFragment extends Fragment {
         if (sleepTimerButton == null) return;
         boolean active = Preferences.getSleepTimerEnd() > System.currentTimeMillis();
         int color = UIUtil.getThemeColor(requireContext(),
-                active ? com.google.android.material.R.attr.colorPrimary
-                        : com.google.android.material.R.attr.colorOnSurface);
+                com.google.android.material.R.attr.colorPrimary);
+        if (!active) color = contentColor();
         sleepTimerButton.setBackgroundTintList(android.content.res.ColorStateList.valueOf(color));
     }
 
@@ -1476,9 +1542,9 @@ public class PlayerControllerFragment extends Fragment {
 
     private void setSwitchButtonActive(boolean active) {
         if (switchToVideoButton == null || getContext() == null) return;
-        switchToVideoButton.setColorFilter(UIUtil.getThemeColor(requireContext(),
-                active ? com.google.android.material.R.attr.colorPrimary
-                        : com.google.android.material.R.attr.colorOnSurface));
+        switchToVideoButton.setColorFilter(active
+                ? UIUtil.getThemeColor(requireContext(), com.google.android.material.R.attr.colorPrimary)
+                : contentColor());
     }
 
     private void startWatchClock() {

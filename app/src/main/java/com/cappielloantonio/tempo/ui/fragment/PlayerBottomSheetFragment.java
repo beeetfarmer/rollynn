@@ -312,8 +312,10 @@ public class PlayerBottomSheetFragment extends Fragment {
                         int dominant = PlayerBackgroundUtil.edgeColor(resource);
                         playerBottomSheetViewModel.setPlayerDominantColor(dominant);
 
-                        bind.playerBodyLayout.playerBodyBottomSheetViewPager.setBackground(
-                                PlayerBackgroundUtil.buildGlow(requireContext(), dominant));
+                        // One solid colour (as on the album and artist pages) so the
+                        // controls' white/black picked from it reads everywhere.
+                        bind.playerBodyLayout.playerBodyBottomSheetViewPager.setBackgroundColor(
+                                PlayerBackgroundUtil.backgroundTopColor(requireContext(), dominant));
                         // Both bars transparent so the album art shows under the
                         // status bar and the coloured background flows under the
                         // navigation bar, edge to edge.
