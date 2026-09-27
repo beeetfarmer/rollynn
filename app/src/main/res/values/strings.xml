@@ -646,6 +646,9 @@
     <string name="settings_audiomuse_url_title">AudioMuse-AI server URL</string>
     <string name="settings_audiomuse_token_title">AudioMuse-AI API token</string>
     <string name="settings_audiomuse_token_summary">The server\'s API_TOKEN, needed when AudioMuse-AI has authentication enabled</string>
+    <string name="settings_similar_artists_source_title">Similar artists source</string>
+    <string name="settings_similar_artists_source_server">Music server</string>
+    <string name="settings_similar_artists_source_audiomuse">AudioMuse-AI (sonic similarity)</string>
     <string name="playlist_create_folder">New folder</string>
     <string name="playlist_create_ai">AI playlist</string>
     <string name="ai_playlist_title">AI playlist</string>

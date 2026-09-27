@@ -21,3 +21,8 @@ data class AudioMuseTrack(
     @SerializedName("title") val title: String?,
     @SerializedName("artist") val artist: String?,
 )
+
+data class AudioMuseSimilarArtist(
+    @SerializedName("artist") val artist: String?,
+    @SerializedName("artist_id") val artistId: String?,
+)

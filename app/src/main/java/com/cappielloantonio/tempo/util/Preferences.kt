@@ -30,6 +30,7 @@ object Preferences {
     private const val USE_KOITO_STATS = "use_koito_stats"
     private const val AUDIOMUSE_SERVER_URL = "audiomuse_server_url"
     private const val AUDIOMUSE_API_TOKEN = "audiomuse_api_token"
+    private const val SIMILAR_ARTISTS_SOURCE = "similar_artists_source"
     private const val REWIND_TAB_ENABLED = "rewind_tab_enabled"
     private const val OPEN_SUBSONIC_EXTENSIONS = "open_subsonic_extensions"
     private const val LOCAL_ADDRESS = "local_address"
@@ -356,6 +357,12 @@ object Preferences {
     @JvmStatic
     fun getAudioMuseApiToken(): String? {
         return App.getInstance().preferences.getString(AUDIOMUSE_API_TOKEN, null)
+    }
+
+    /** True when similar artists should come from AudioMuse-AI rather than the music server. */
+    @JvmStatic
+    fun useAudioMuseSimilarArtists(): Boolean {
+        return App.getInstance().preferences.getString(SIMILAR_ARTISTS_SOURCE, "server") == "audiomuse"
     }
 
     /** When true (and Koito is configured), album/artist play stats come from Koito instead of the server. */

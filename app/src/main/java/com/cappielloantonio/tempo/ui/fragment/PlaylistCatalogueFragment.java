@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.PopupMenu;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -52,6 +51,7 @@ import java.util.stream.Collectors;
 public class PlaylistCatalogueFragment extends Fragment implements ClickCallback {
     private FragmentPlaylistCatalogueBinding bind;
     private MainActivity activity;
+    private boolean aiPlaylistAvailable;
     private PlaylistCatalogueViewModel playlistCatalogueViewModel;
     private PlaylistFolderViewModel folderViewModel;
 
@@ -198,10 +198,19 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
         bind.createFolderFab.setOnClickListener(v -> {
             if (selectionMode) {
                 moveSelectedToFolder();
-            } else {
+            } else if (aiPlaylistAvailable) {
                 showCreateMenu(v);
+            } else {
+                showCreateFolderDialog();
             }
         });
+
+        // Offer AI playlists only while AudioMuse-AI is actually reachable; otherwise
+        // the + button goes straight to creating a folder, as before.
+        aiPlaylistAvailable = false;
+        if (com.cappielloantonio.tempo.audiomuse.AudioMuseClient.isConfigured()) {
+            com.cappielloantonio.tempo.audiomuse.AudioMuseRepository.checkAvailable(available -> aiPlaylistAvailable = available);
+        }
     }
 
     /** The + button offers a new folder or an AudioMuse-AI generated playlist. */
@@ -212,8 +221,6 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
         popup.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == 0) {
                 showCreateFolderDialog();
-            } else if (!com.cappielloantonio.tempo.audiomuse.AudioMuseClient.isConfigured()) {
-                Toast.makeText(requireContext(), R.string.ai_playlist_not_configured, Toast.LENGTH_LONG).show();
             } else {
                 Navigation.findNavController(requireView()).navigate(R.id.action_playlistCatalogueFragment_to_aiPlaylistFragment);
             }

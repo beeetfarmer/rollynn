@@ -28,6 +28,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cappielloantonio.tempo.R;
+import com.cappielloantonio.tempo.audiomuse.AudioMuseClient;
+import com.cappielloantonio.tempo.audiomuse.AudioMuseRepository;
 import com.cappielloantonio.tempo.databinding.FragmentArtistPageBinding;
 import com.cappielloantonio.tempo.glide.CustomGlideRequest;
 import com.cappielloantonio.tempo.helper.recyclerview.CustomLinearSnapHelper;
@@ -552,24 +554,39 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
         tintListRows(bind.similarArtistsRecyclerView);
 
         artistPageViewModel.getArtistInfo(artistPageViewModel.getArtist().getId()).observe(getViewLifecycleOwner(), artist -> {
-            if (artist == null) {
-                if (bind != null) bind.similarArtistSector.setVisibility(View.GONE);
+            List<ArtistID3> serverArtists = new ArrayList<>();
+            if (artist != null && artist.getSimilarArtists() != null) serverArtists.addAll(artist.getSimilarArtists());
+
+            if (Preferences.useAudioMuseSimilarArtists() && AudioMuseClient.isConfigured()) {
+                loadAudioMuseSimilarArtists(serverArtists);
             } else {
-                if (bind != null && artist.getSimilarArtists() != null)
-                    bind.similarArtistSector.setVisibility(!artist.getSimilarArtists().isEmpty() ? View.VISIBLE : View.GONE);
-
-                List<ArtistID3> artists = new ArrayList<>();
-
-                if (artist.getSimilarArtists() != null) {
-                    artists.addAll(artist.getSimilarArtists());
-                }
-
-                similarArtistAdapter.setItems(artists);
+                showSimilarArtists(serverArtists);
             }
         });
 
         CustomLinearSnapHelper similarArtistSnapHelper = new CustomLinearSnapHelper();
         similarArtistSnapHelper.attachToRecyclerView(bind.similarArtistsRecyclerView);
+    }
+
+    /**
+     * Sonically similar artists from AudioMuse-AI. Falls back to the music server's
+     * list when AudioMuse-AI is unreachable or finds nothing, so the section never
+     * disappears just because the other source was chosen.
+     */
+    private void loadAudioMuseSimilarArtists(List<ArtistID3> fallback) {
+        String artistId = artistPageViewModel.getArtist().getId();
+        if (artistId == null) {
+            showSimilarArtists(fallback);
+            return;
+        }
+        AudioMuseRepository.similarArtists(artistId, 12, artists ->
+                showSimilarArtists(artists == null || artists.isEmpty() ? fallback : new ArrayList<>(artists)));
+    }
+
+    private void showSimilarArtists(List<ArtistID3> artists) {
+        if (bind == null) return;
+        bind.similarArtistSector.setVisibility(artists.isEmpty() ? View.GONE : View.VISIBLE);
+        similarArtistAdapter.setItems(artists);
     }
 
     private void initializeMediaBrowser() {

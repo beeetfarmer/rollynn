@@ -394,6 +394,16 @@
                 android:inputType="textPassword"
                 app:icon="@drawable/ic_link" />
 
+            <ListPreference
+                app:defaultValue="server"
+                app:dialogTitle="@string/settings_similar_artists_source_title"
+                app:entries="@array/similar_artists_source_titles"
+                app:entryValues="@array/similar_artists_source_values"
+                app:key="similar_artists_source"
+                app:title="@string/settings_similar_artists_source_title"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_artist" />
+
         </PreferenceCategory>
 
         <PreferenceCategory app:title="@string/settings_translation_category">

@@ -2,7 +2,9 @@ package com.cappielloantonio.tempo.audiomuse
 
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface AudioMuseApi {
     /**
@@ -13,4 +15,12 @@ interface AudioMuseApi {
      */
     @POST("chat/api/chatPlaylist")
     fun chatPlaylist(@Body request: AudioMuseChatRequest): Call<AudioMuseChatResponse>
+
+    /** Artists that sound alike, by the music server's artist id; ids in the result are the server's too. */
+    /** Cheap, secret-free config read; used to check the server is up and the token accepted. */
+    @GET("chat/api/config_defaults")
+    fun configDefaults(): Call<okhttp3.ResponseBody>
+
+    @GET("api/similar_artists")
+    fun similarArtists(@Query("artist_id") artistId: String, @Query("n") count: Int): Call<List<AudioMuseSimilarArtist>>
 }
