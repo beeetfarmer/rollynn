@@ -156,6 +156,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/rating_container"
+        android:clipChildren="false"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"

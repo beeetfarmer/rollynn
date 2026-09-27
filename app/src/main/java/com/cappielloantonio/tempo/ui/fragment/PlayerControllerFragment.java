@@ -984,7 +984,15 @@ public class PlayerControllerFragment extends Fragment {
             if (media != null) {
                 ratingViewModel.setSong(media);
                 buttonFavorite.setChecked(media.getStarred() != null);
-                buttonFavorite.setOnClickListener(v -> playerBottomSheetViewModel.setFavorite(requireContext(), media));
+                buttonFavorite.setOnClickListener(v -> {
+                    playerBottomSheetViewModel.setFavorite(requireContext(), media);
+                    // The toggle has already flipped: a firm pulse for a heart, a tick to un-heart.
+                    v.performHapticFeedback(buttonFavorite.isChecked() && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R
+                            ? android.view.HapticFeedbackConstants.CONFIRM
+                            : buttonFavorite.isChecked() ? android.view.HapticFeedbackConstants.LONG_PRESS
+                            : android.view.HapticFeedbackConstants.CLOCK_TICK);
+                    popView(v, 1f, 1.35f);
+                });
                 buttonFavorite.setOnLongClickListener(v -> {
                     Bundle bundle = new Bundle();
                     bundle.putParcelable(Constants.TRACK_OBJECT, media);
@@ -1005,15 +1013,8 @@ public class PlayerControllerFragment extends Fragment {
                     songRatingBar.setRating(0);
                 }
 
-                songRatingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
-                    @Override
-                    public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
-                        if (fromUser) {
-                            ratingViewModel.rate((int) rating);
-                            media.setUserRating((int) rating);
-                            MediaManager.postRatingEvent(media.getId(), (int) rating);
-                        }
-                    }
+                songRatingBar.setOnRatingBarChangeListener((ratingBar, rating, fromUser) -> {
+                    if (fromUser) onUserRated(media, (int) rating);
                 });
 
 
@@ -1055,14 +1056,31 @@ public class PlayerControllerFragment extends Fragment {
                 songRatingBar.setOnRatingBarChangeListener(null);
                 songRatingBar.setRating(rating);
                 songRatingBar.setOnRatingBarChangeListener((ratingBar, r, fromUser) -> {
-                    if (fromUser) {
-                        ratingViewModel.rate((int) r);
-                        media.setUserRating((int) r);
-                        MediaManager.postRatingEvent(media.getId(), (int) r);
-                    }
+                    if (fromUser) onUserRated(media, (int) r);
                 });
             }
         });
+    }
+
+    private void onUserRated(Child media, int rating) {
+        ratingViewModel.rate(rating);
+        media.setUserRating(rating);
+        MediaManager.postRatingEvent(media.getId(), rating);
+
+        songRatingBar.performHapticFeedback(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R
+                ? android.view.HapticFeedbackConstants.CONFIRM
+                : android.view.HapticFeedbackConstants.LONG_PRESS);
+        // The layout draws the stars at 0.8 scale; settle back to that.
+        popView(songRatingBar, 0.8f, 1.15f);
+    }
+
+    /** A quick springy grow-and-settle back to {@code restScale}, to acknowledge a tap. */
+    private void popView(View view, float restScale, float grow) {
+        view.animate().cancel();
+        view.setScaleX(restScale * grow);
+        view.setScaleY(restScale * grow);
+        view.animate().scaleX(restScale).scaleY(restScale).setDuration(350)
+                .setInterpolator(new android.view.animation.OvershootInterpolator(3f)).start();
     }
 
     private void initPlaybackSpeedButton(MediaBrowser mediaBrowser) {
