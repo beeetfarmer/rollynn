@@ -102,7 +102,7 @@ public class PlayerLyricsFragment extends Fragment {
         initPanelContent();
         observeDownloadState();
         observeLyricsSourceState();
-        styleLyricsActionButtons();
+        styleLyricsActionButtons(null);
 
         // Lyrics sit on the album-coloured player background, so drive their colours
         // from it: white on dark artwork, black on light, with dimmed unsung/second
@@ -120,6 +120,7 @@ public class PlayerLyricsFragment extends Fragment {
             lyricsHighlightColor = onArt;
             lyricsShadowColor = androidx.core.graphics.ColorUtils.setAlphaComponent(onArt, 120);
         }
+        styleLyricsActionButtons(lyricsHighlightColor);
         bind.nowPlayingSongLyricsTextView.setTextColor(lyricsHighlight());
         updatePanelContent();
     }
@@ -136,16 +137,18 @@ public class PlayerLyricsFragment extends Fragment {
 
     /**
      * The tonal Material style clashes with the player's dynamic background, so give
-     * the lyrics action buttons a neutral frosted look: a faint scrim in the theme's
-     * on-surface colour with matching icon/text, readable on any album colour.
+     * the lyrics action buttons a frosted look: a faint scrim with icon/text in
+     * {@code onArt} (white or black from the album colour), readable on any artwork.
+     * Null (no artwork colour) falls back to the theme's on-surface colour.
      */
-    private void styleLyricsActionButtons() {
+    private void styleLyricsActionButtons(@Nullable Integer onArt) {
         if (bind == null) return;
         boolean night = (getResources().getConfiguration().uiMode
                 & android.content.res.Configuration.UI_MODE_NIGHT_MASK)
                 == android.content.res.Configuration.UI_MODE_NIGHT_YES;
-        int content = night ? android.graphics.Color.WHITE : android.graphics.Color.parseColor("#222222");
-        int scrim = androidx.core.graphics.ColorUtils.setAlphaComponent(content, night ? 38 : 28);
+        int content = onArt != null ? onArt
+                : night ? android.graphics.Color.WHITE : android.graphics.Color.parseColor("#222222");
+        int scrim = androidx.core.graphics.ColorUtils.setAlphaComponent(content, 40);
         android.content.res.ColorStateList scrimTint = android.content.res.ColorStateList.valueOf(scrim);
         android.content.res.ColorStateList contentTint = android.content.res.ColorStateList.valueOf(content);
 
@@ -427,7 +430,7 @@ public class PlayerLyricsFragment extends Fragment {
 
         bind.lyricsSourceToggleButton.setVisibility(hasLyrics ? View.VISIBLE : View.GONE);
         bind.lyricsSourceToggleButton.setEnabled(hasLyrics);
-        bind.lyricsSourceToggleButton.setAlpha(lyricsSourceSwitchAvailable ? 0.85f : 0.65f);
+        bind.lyricsSourceToggleButton.setAlpha(lyricsSourceSwitchAvailable ? 1f : 0.6f);
     }
 
     private boolean hasText(String value) {
