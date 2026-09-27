@@ -309,7 +309,7 @@ public class PlayerBottomSheetFragment extends Fragment {
                         // Ignore late arrivals for a track that is no longer current.
                         if (bind == null || !coverId.equals(backgroundCoverId)) return;
 
-                        int dominant = PlayerBackgroundUtil.dominantColor(resource);
+                        int dominant = PlayerBackgroundUtil.edgeColor(resource);
                         playerBottomSheetViewModel.setPlayerDominantColor(dominant);
 
                         bind.playerBodyLayout.playerBodyBottomSheetViewPager.setBackground(

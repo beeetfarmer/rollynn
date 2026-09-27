@@ -5,7 +5,9 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
+import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
@@ -18,14 +20,18 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.bumptech.glide.signature.ObjectKey;
 import com.cappielloantonio.tempo.App;
 import com.cappielloantonio.tempo.R;
+import com.cappielloantonio.tempo.util.PlayerBackgroundUtil;
 import com.cappielloantonio.tempo.util.Preferences;
 import com.cappielloantonio.tempo.util.Util;
 import com.google.android.material.elevation.SurfaceColors;
 
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.IntConsumer;
 
 public class CustomGlideRequest {
     private static final String TAG = "CustomGlideRequest";
@@ -121,6 +127,44 @@ public class CustomGlideRequest {
                 .load(url)
                 .apply(createRequestOptions(context, coverId, ResourceType.Album))
                 .into(target);
+    }
+
+    /**
+     * Apple Music style hero art: reads the colour of the art's bottom edge, hands it
+     * to {@code onEdgeColor} (to colour the background below), then loads the art into
+     * {@code view} blurred and dissolved into that colour so the two join seamlessly.
+     * {@code onFailed} runs if the art can't be fetched; null loads it plainly instead.
+     */
+    public static void loadFadedArt(Context context, String coverId, ResourceType type, ImageView view,
+                                    IntConsumer onEdgeColor, @Nullable Runnable onFailed) {
+        // Drop late results when the view has moved on to another cover.
+        view.setTag(coverId);
+        if (coverId == null) {
+            Builder.from(context, null, type).build().into(view);
+            return;
+        }
+        loadAlbumArtBitmap(context, coverId, 200, new CustomTarget<Bitmap>() {
+            @Override
+            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                if (!Objects.equals(coverId, view.getTag())) return;
+                int edge = PlayerBackgroundUtil.edgeColor(resource);
+                onEdgeColor.accept(edge);
+                Builder.from(context, coverId, type).build()
+                        .transform(new ArtFadeTransformation(PlayerBackgroundUtil.backgroundTopColor(context, edge)))
+                        .into(view);
+            }
+
+            @Override
+            public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                if (!Objects.equals(coverId, view.getTag())) return;
+                if (onFailed != null) onFailed.run();
+                else Builder.from(context, coverId, type).build().into(view);
+            }
+
+            @Override
+            public void onLoadCleared(@Nullable Drawable placeholder) {
+            }
+        });
     }
 
     public static class Builder {

@@ -35,20 +35,6 @@ public class PlayerCoverFragment extends Fragment {
 
         playerBottomSheetViewModel = new ViewModelProvider(requireActivity()).get(PlayerBottomSheetViewModel.class);
 
-        // Fade the artwork's bottom into the player background colour so it melts
-        // into the area where the title and controls sit (Apple Music style).
-        playerBottomSheetViewModel.getPlayerDominantColor().observe(getViewLifecycleOwner(), dominant -> {
-            if (bind == null) return;
-            if (dominant == null) {
-                bind.nowPlayingCoverBottomFade.setBackground(null);
-                return;
-            }
-            int fadeColor = com.cappielloantonio.tempo.util.PlayerBackgroundUtil.backgroundTopColor(requireContext(), dominant);
-            bind.nowPlayingCoverBottomFade.setBackground(new android.graphics.drawable.GradientDrawable(
-                    android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-                    new int[]{android.graphics.Color.TRANSPARENT, fadeColor}));
-        });
-
         return view;
     }
 
@@ -102,9 +88,12 @@ public class PlayerCoverFragment extends Fragment {
     }
 
     private void setCover(MediaMetadata mediaMetadata) {
-        CustomGlideRequest.Builder
-                .from(requireContext(), mediaMetadata.extras != null ? mediaMetadata.extras.getString("coverArtId") : null, CustomGlideRequest.ResourceType.Song)
-                .build()
-                .into(bind.nowPlayingSongCoverImageView);
+        if (bind == null) return;
+        // Blurred and dissolved into its edge colour, which the player sheet also
+        // uses for the background below, so the art melts into it (Apple Music style).
+        CustomGlideRequest.loadFadedArt(requireContext(),
+                mediaMetadata.extras != null ? mediaMetadata.extras.getString("coverArtId") : null,
+                CustomGlideRequest.ResourceType.Song, bind.nowPlayingSongCoverImageView, edge -> {
+                }, null);
     }
 }

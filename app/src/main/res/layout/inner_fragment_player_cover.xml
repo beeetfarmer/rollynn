@@ -14,14 +14,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Fades the bottom of the artwork into the player background colour so the
-         art dissolves into it (its gradient is set in code from the album colour). -->
-    <View
-        android:id="@+id/now_playing_cover_bottom_fade"
-        android:layout_width="match_parent"
-        android:layout_height="170dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

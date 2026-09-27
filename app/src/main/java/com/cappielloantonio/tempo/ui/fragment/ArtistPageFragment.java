@@ -25,6 +25,7 @@ import androidx.media3.session.SessionToken;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.databinding.FragmentArtistPageBinding;
@@ -199,6 +200,10 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
         ViewGroup.LayoutParams appbarParams = bind.appbar.getLayoutParams();
         appbarParams.height = (int) (getResources().getDisplayMetrics().heightPixels * 0.45f);
         bind.appbar.setLayoutParams(appbarParams);
+        // The collapsing layout grows by the status bar inset, pushing the art's
+        // bottom under the content; pin the art to the visible header so its
+        // faded bottom edge lines up with the background below.
+        bind.artistBackdropImageView.getLayoutParams().height = appbarParams.height;
 
         // The name is anchored centred on the header's bottom edge; shift it up so
         // it sits fully over the artwork rather than straddling the edge.
@@ -239,43 +244,15 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
                             ? currentArtist.getId()
                             : null;
                     
-                    CustomGlideRequest.Builder
-                            .from(requireContext(), primaryId, CustomGlideRequest.ResourceType.Artist)
-                            .build()
-                            .listener(new com.bumptech.glide.request.RequestListener<Drawable>() {
-                                @Override
-                                public boolean onLoadFailed(@Nullable com.bumptech.glide.load.engine.GlideException e,
-                                                            Object model,
-                                                            @NonNull com.bumptech.glide.request.target.Target<Drawable> target,
-                                                            boolean isFirstResource) {
-                                    if (e != null) {
-                                        e.getMessage();
-                                        if (e.getMessage().contains("400") && fallbackId != null) {
-
-                                            Log.d("ArtistCover", "Primary ID failed (400), trying fallback: " + fallbackId);
-
-                                            CustomGlideRequest.Builder
-                                                    .from(requireContext(), fallbackId, CustomGlideRequest.ResourceType.Artist)
-                                                    .build()
-                                                    .into(bind.artistBackdropImageView);
-                                            return true;
-                                        }
-                                    }
-                                    return false;
-                                }
-
-                                @Override
-                                public boolean onResourceReady(@NonNull Drawable resource,
-                                                               @NonNull Object model,
-                                                               com.bumptech.glide.request.target.Target<Drawable> target,
-                                                               @NonNull com.bumptech.glide.load.DataSource dataSource,
-                                                               boolean isFirstResource) {
-                                    return false;
-                                }
-                            })
-                            .into(bind.artistBackdropImageView);
-
-                    applyArtistBackground(primaryId, fallbackId);
+                    CustomGlideRequest.loadFadedArt(requireContext(), primaryId,
+                            CustomGlideRequest.ResourceType.Artist, bind.artistBackdropImageView,
+                            this::applyArtistColors,
+                            fallbackId == null ? null : () -> {
+                                if (bind == null) return;
+                                CustomGlideRequest.loadFadedArt(requireContext(), fallbackId,
+                                        CustomGlideRequest.ResourceType.Artist, bind.artistBackdropImageView,
+                                        this::applyArtistColors, null);
+                            });
                 }
 
                 if (bind != null) {
@@ -299,7 +276,12 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
                         bind.bioMoreTextViewClickable.setVisibility(View.VISIBLE);
                     }
 
-                    if (!normalizedBio.isEmpty() || lastFmUrl != null) {
+                    // No bio text: hide the section (not just a heading and "More") and
+                    // its info toggle, which would have nothing to show.
+                    ((View) bind.buttonToggleBio.getParent()).setVisibility(normalizedBio.isEmpty() ? View.GONE : View.VISIBLE);
+                    if (normalizedBio.isEmpty()) {
+                        bind.artistPageBioSector.setVisibility(View.GONE);
+                    } else {
                         View view = bind.getRoot();
 
                         Button bioToggle = view.findViewById(R.id.button_toggle_bio);
@@ -371,6 +353,7 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
 
         musicVideoAdapter = new MusicVideoCarouselAdapter(this, false);
         bind.musicVideosRecyclerView.setAdapter(musicVideoAdapter);
+        tintListRows(bind.musicVideosRecyclerView);
 
         artistPageViewModel.getMusicVideos().observe(getViewLifecycleOwner(), result -> {
             if (bind == null) return;
@@ -408,6 +391,7 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
         bind.mainAlbumsRecyclerView.setHasFixedSize(true);
         mainAlbumAdapter = new AlbumCarouselAdapter(this, false);
         bind.mainAlbumsRecyclerView.setAdapter(mainAlbumAdapter);
+        tintListRows(bind.mainAlbumsRecyclerView);
         artistPageViewModel.getMainAlbums().observe(getViewLifecycleOwner(), albums -> {
             if (bind != null) {
                 bind.artistPageMainAlbumsSector.setVisibility(albums != null && !albums.isEmpty() ? View.VISIBLE : View.GONE);
@@ -424,6 +408,7 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
         bind.epsRecyclerView.setHasFixedSize(true);
         epAdapter = new AlbumCarouselAdapter(this, false);
         bind.epsRecyclerView.setAdapter(epAdapter);
+        tintListRows(bind.epsRecyclerView);
         artistPageViewModel.getEPs().observe(getViewLifecycleOwner(), albums -> {
             if (bind != null) {
                 bind.artistPageEpsSector.setVisibility(albums != null && !albums.isEmpty() ? View.VISIBLE : View.GONE);
@@ -440,6 +425,7 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
         bind.singlesRecyclerView.setHasFixedSize(true);
         singleAdapter = new AlbumCarouselAdapter(this, false);
         bind.singlesRecyclerView.setAdapter(singleAdapter);
+        tintListRows(bind.singlesRecyclerView);
         artistPageViewModel.getSingles().observe(getViewLifecycleOwner(), albums -> {
             if (bind != null) {
                 bind.artistPageSinglesSector.setVisibility(albums != null && !albums.isEmpty() ? View.VISIBLE : View.GONE);
@@ -456,6 +442,7 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
         bind.appearsOnRecyclerView.setHasFixedSize(true);
         appearsOnAdapter = new AlbumCarouselAdapter(this, true); // Show artist name for Appears On
         bind.appearsOnRecyclerView.setAdapter(appearsOnAdapter);
+        tintListRows(bind.appearsOnRecyclerView);
         artistPageViewModel.getAppearsOn().observe(getViewLifecycleOwner(), albums -> {
             if (bind != null) {
                 bind.artistPageAppearsOnSector.setVisibility(albums != null && !albums.isEmpty() ? View.VISIBLE : View.GONE);
@@ -481,103 +468,70 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
         if (heroSecondaryColor != null) bind.artistPlayStatsTextview.setTextColor(heroSecondaryColor);
     }
 
-    /**
-     * Apple Music style: pull the artist image's colour so the artwork dissolves
-     * into a matching background below it. Falls back to the alternate cover id if
-     * the primary fetch fails.
-     */
-    private void applyArtistBackground(String primaryId, String fallbackId) {
-        if (bind == null || bind.artistContentContainer == null || primaryId == null) return;
-        CustomGlideRequest.loadAlbumArtBitmap(requireContext(), primaryId, 200,
-                new com.bumptech.glide.request.target.CustomTarget<android.graphics.Bitmap>() {
-                    @Override
-                    public void onResourceReady(@NonNull android.graphics.Bitmap resource,
-                                                @Nullable com.bumptech.glide.request.transition.Transition<? super android.graphics.Bitmap> transition) {
-                        if (bind == null) return;
-                        applyArtistColors(PlayerBackgroundUtil.dominantColor(resource));
-                    }
-
-                    @Override
-                    public void onLoadFailed(@Nullable Drawable errorDrawable) {
-                        if (bind == null || fallbackId == null) return;
-                        CustomGlideRequest.loadAlbumArtBitmap(requireContext(), fallbackId, 200,
-                                new com.bumptech.glide.request.target.CustomTarget<android.graphics.Bitmap>() {
-                                    @Override
-                                    public void onResourceReady(@NonNull android.graphics.Bitmap resource,
-                                                                @Nullable com.bumptech.glide.request.transition.Transition<? super android.graphics.Bitmap> transition) {
-                                        if (bind == null) return;
-                                        applyArtistColors(PlayerBackgroundUtil.dominantColor(resource));
-                                    }
-
-                                    @Override
-                                    public void onLoadCleared(@Nullable Drawable placeholder) {
-                                    }
-                                });
-                    }
-
-                    @Override
-                    public void onLoadCleared(@Nullable Drawable placeholder) {
-                    }
-                });
-    }
-
     private void applyArtistColors(int dominant) {
         if (bind == null || bind.artistContentContainer == null) return;
         int fadeColor = PlayerBackgroundUtil.backgroundTopColor(requireContext(), dominant);
-        int base = PlayerBackgroundUtil.baseColor(requireContext());
 
-        // The artist colour up top (where the art dissolves in) easing down to the
-        // app's base colour, matching the album page.
-        bind.artistContentContainer.setBackground(new android.graphics.drawable.GradientDrawable(
-                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{fadeColor, fadeColor,
-                        androidx.core.graphics.ColorUtils.blendARGB(dominant, base, 0.45f),
-                        androidx.core.graphics.ColorUtils.blendARGB(dominant, base, 0.85f)}));
-
-        if (bind.artistCoverBottomFade != null) {
-            bind.artistCoverBottomFade.setBackground(new android.graphics.drawable.GradientDrawable(
-                    android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-                    new int[]{android.graphics.Color.TRANSPARENT, fadeColor}));
-        }
+        // One solid colour down the whole page, as Apple Music does, so the text
+        // colour picked below stays legible everywhere (a gradient toward the theme
+        // base left light text on a light bottom half and vice versa).
+        bind.artistContentContainer.setBackgroundColor(fadeColor);
         if (bind.appbar != null) bind.appbar.setBackgroundColor(fadeColor);
+        // Cover the art's pinned strip behind the status bar once the header collapses.
+        bind.collapsingToolbar.setContentScrimColor(fadeColor);
+        bind.collapsingToolbar.setStatusBarScrimColor(fadeColor);
 
-        boolean lightArt = androidx.core.graphics.ColorUtils.calculateLuminance(fadeColor) > 0.5f;
-        int onArt = lightArt ? android.graphics.Color.BLACK : android.graphics.Color.WHITE;
-        int contrast = lightArt ? android.graphics.Color.WHITE : android.graphics.Color.BLACK;
+        int onArt = PlayerBackgroundUtil.contentColor(requireContext(), dominant);
         int secondary = androidx.core.graphics.ColorUtils.setAlphaComponent(onArt, 190);
         android.content.res.ColorStateList onArtTint = android.content.res.ColorStateList.valueOf(onArt);
+        android.content.res.ColorStateList circleTint = android.content.res.ColorStateList.valueOf(
+                androidx.core.graphics.ColorUtils.setAlphaComponent(onArt, 40));
         heroTextColor = onArt;
         heroSecondaryColor = secondary;
 
         bind.artistHeroName.setTextColor(onArt);
+
+        // Every heading, label and list item on the page; lists recolour their rows
+        // as they attach (see tintListRows), since rows bound later miss this pass.
+        tintTextViews(bind.artistContentContainer, onArt);
+        if (bind.artistPageBioSector != null) tintTextViews(bind.artistPageBioSector, secondary);
         if (bind.artistPlayStatsTextview != null) bind.artistPlayStatsTextview.setTextColor(secondary);
 
-        // Info and favourite icons; keep the play circle's own white/black look.
-        if (bind.buttonToggleBio != null) bind.buttonToggleBio.setBackgroundTintList(onArtTint);
-        if (bind.buttonFavorite != null) bind.buttonFavorite.setBackgroundTintList(onArtTint);
-
-        // Shuffle / radio: filled pills in the on-art colour, like the album Play.
-        tintPill(bind.artistPageShuffleButton, onArt, contrast);
-        tintPill(bind.artistPageRadioButton, onArt, contrast);
+        // Circle buttons: a faint on-art disc with an on-art icon; the play circle
+        // keeps its own white/black look.
+        if (bind.buttonToggleBio != null) {
+            bind.buttonToggleBio.setBackgroundTintList(onArtTint);
+            ((View) bind.buttonToggleBio.getParent()).setBackgroundTintList(circleTint);
+        }
+        if (bind.buttonFavorite != null) {
+            bind.buttonFavorite.setBackgroundTintList(onArtTint);
+            ((View) bind.buttonFavorite.getParent()).setBackgroundTintList(circleTint);
+        }
+        bind.artistPageShuffleButton.setImageTintList(onArtTint);
+        bind.artistPageShuffleButton.setBackgroundTintList(circleTint);
+        bind.artistPageRadioButton.setImageTintList(onArtTint);
+        bind.artistPageRadioButton.setBackgroundTintList(circleTint);
 
         if (bind.animToolbar != null) {
             bind.animToolbar.setNavigationIconTint(onArt);
             if (bind.animToolbar.getOverflowIcon() != null) bind.animToolbar.getOverflowIcon().setTint(onArt);
         }
 
-        // Biography text and its heading sit on the rich colour up top.
-        if (bind.artistPageBioSector != null) tintTextViews(bind.artistPageBioSector, secondary);
-
         if (songHorizontalAdapter != null) songHorizontalAdapter.setTextColorOverride(onArt, secondary);
     }
 
-    private void tintPill(android.view.View button, int fill, int content) {
-        if (button instanceof com.google.android.material.button.MaterialButton) {
-            com.google.android.material.button.MaterialButton b = (com.google.android.material.button.MaterialButton) button;
-            b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(fill));
-            b.setTextColor(content);
-            b.setIconTint(android.content.res.ColorStateList.valueOf(content));
-        }
+    /** Recolours each row's text as it attaches, for lists without a colour override. */
+    private void tintListRows(RecyclerView list) {
+        list.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
+            @Override
+            public void onChildViewAttachedToWindow(@NonNull View view) {
+                if (heroTextColor != null) tintTextViews(view, heroTextColor);
+            }
+
+            @Override
+            public void onChildViewDetachedFromWindow(@NonNull View view) {
+            }
+        });
     }
 
     private void tintTextViews(android.view.View root, int color) {
@@ -595,6 +549,7 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
 
         similarArtistAdapter = new ArtistCarouselAdapter(this);
         bind.similarArtistsRecyclerView.setAdapter(similarArtistAdapter);
+        tintListRows(bind.similarArtistsRecyclerView);
 
         artistPageViewModel.getArtistInfo(artistPageViewModel.getArtist().getId()).observe(getViewLifecycleOwner(), artist -> {
             if (artist == null) {

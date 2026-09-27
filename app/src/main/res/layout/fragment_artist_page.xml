@@ -32,14 +32,6 @@
                 android:scaleType="centerCrop"
                 app:layout_collapseMode="parallax" />
 
-            <!-- Fades the bottom of the artwork into the artist-coloured background
-                 below so the art dissolves into it (gradient set in code). -->
-            <View
-                android:id="@+id/artist_cover_bottom_fade"
-                android:layout_width="match_parent"
-                android:layout_height="220dp"
-                android:layout_gravity="bottom"
-                app:layout_collapseMode="parallax" />
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/anim_toolbar"
@@ -89,7 +81,7 @@
             android:paddingBottom="@dimen/global_padding_bottom">
 
             <!-- Apple Music style hero: the name overlays the artwork above; here a
-                 centred row of circular info / play / favourite. -->
+                 centred row of circular shuffle / info / play / favourite / radio. -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -99,10 +91,23 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
+                <ImageButton
+                    android:id="@+id/artist_page_shuffle_button"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_marginEnd="18dp"
+                    android:background="@drawable/bg_circle_button"
+                    android:contentDescription="@string/artist_page_shuffle_button"
+                    android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                    android:padding="11dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_shuffle"
+                    app:tint="?attr/colorOnSurface" />
+
                 <FrameLayout
                     android:layout_width="52dp"
                     android:layout_height="52dp"
-                    android:layout_marginEnd="28dp"
+                    android:layout_marginEnd="18dp"
                     android:background="@drawable/bg_circle_button"
                     android:foreground="?android:attr/selectableItemBackgroundBorderless">
 
@@ -138,7 +143,7 @@
                 <FrameLayout
                     android:layout_width="52dp"
                     android:layout_height="52dp"
-                    android:layout_marginStart="28dp"
+                    android:layout_marginStart="18dp"
                     android:background="@drawable/bg_circle_button"
                     android:foreground="?android:attr/selectableItemBackgroundBorderless">
 
@@ -154,59 +159,20 @@
                         android:textOff=""
                         android:textOn="" />
                 </FrameLayout>
-            </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/album_page_button_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:paddingBottom="8dp">
-
-                <Button
-                    android:id="@+id/artist_page_shuffle_button"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="6dp"
-                    android:layout_marginEnd="6dp"
-                    android:padding="10dp"
-                    android:text="@string/artist_page_shuffle_button"
-                    android:textAllCaps="false"
-                    app:icon="@drawable/ic_shuffle"
-                    app:iconGravity="textStart"
-                    app:iconPadding="18dp" />
-
-                <Button
+                <ImageButton
                     android:id="@+id/artist_page_radio_button"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="6dp"
-                    android:layout_marginEnd="6dp"
-                    android:padding="10dp"
-                    android:text="@string/artist_page_radio_button"
-                    android:textAllCaps="false"
-                    app:icon="@drawable/ic_feed"
-                    app:iconGravity="textStart"
-                    app:iconPadding="18dp" />
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="18dp"
+                    android:background="@drawable/bg_circle_button"
+                    android:contentDescription="@string/artist_page_radio_button"
+                    android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                    android:padding="11dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_feed"
+                    app:tint="?attr/colorOnSurface" />
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/artist_play_stats_textview"
-                style="@style/LabelSmall"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="18dp"
-                android:layout_marginEnd="18dp"
-                android:layout_marginBottom="12dp"
-                android:textAlignment="center"
-                android:textStyle="italic"
-                android:visibility="gone"
-                tools:visibility="visible" />
 
             <LinearLayout
                 android:id="@+id/artist_page_bio_sector"
@@ -250,6 +216,19 @@
                     android:paddingEnd="16dp"
                     android:paddingBottom="8dp" />
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/artist_play_stats_textview"
+                style="@style/LabelSmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="18dp"
+                android:layout_marginEnd="18dp"
+                android:layout_marginBottom="12dp"
+                android:textAlignment="center"
+                android:textStyle="italic"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
             <!--  Label and button  -->
             <LinearLayout

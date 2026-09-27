@@ -3,14 +3,18 @@ package com.cappielloantonio.tempo.util;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapShader;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ComposeShader;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.LinearGradient;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.Shader;
 
 import androidx.core.graphics.ColorUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Builds the Apple Music style player background: the album's colour filling the
@@ -71,60 +75,70 @@ public final class PlayerBackgroundUtil {
     }
 
     /**
-     * The most prominent, reasonably saturated colour in the artwork. Near black,
-     * near white and washed-out greys are down-weighted so the result is the
-     * colour a person would call the album's colour, not its average mud.
+     * The average colour of the artwork's bottom edge. The art fades into this
+     * (see {@link #fadeIntoColor}), so matching the last rows rather than the most
+     * vivid colour is what makes art and background read as one image. Transparent
+     * pixels (rounded corners) are skipped.
      */
-    public static int dominantColor(Bitmap source) {
+    public static int edgeColor(Bitmap source) {
         if (source == null) return Color.GRAY;
 
-        Bitmap small = Bitmap.createScaledBitmap(source, 24, 24, true);
-        int width = small.getWidth();
-        int height = small.getHeight();
-        int[] pixels = new int[width * height];
-        small.getPixels(pixels, 0, width, 0, 0, width, height);
-
-        Map<Integer, float[]> buckets = new HashMap<>();
-        float[] hsv = new float[3];
-
-        for (int color : pixels) {
-            Color.colorToHSV(color, hsv);
-            float saturation = hsv[1];
-            float value = hsv[2];
-            if (value < 0.15f || value > 0.95f) continue;
-
-            int r = Color.red(color);
-            int g = Color.green(color);
-            int b = Color.blue(color);
-            float weight = saturation * saturation * value + 0.05f;
-
-            int key = ((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4);
-            float[] acc = buckets.get(key);
-            if (acc == null) {
-                acc = new float[4];
-                buckets.put(key, acc);
-            }
-            acc[0] += weight;
-            acc[1] += r * weight;
-            acc[2] += g * weight;
-            acc[3] += b * weight;
-        }
-
-        float best = -1f;
-        int br = 128, bg = 128, bb = 128;
-        for (float[] acc : buckets.values()) {
-            if (acc[0] > best) {
-                best = acc[0];
-                br = Math.round(acc[1] / acc[0]);
-                bg = Math.round(acc[2] / acc[0]);
-                bb = Math.round(acc[3] / acc[0]);
+        int width = source.getWidth();
+        int height = source.getHeight();
+        int top = height - Math.max(1, height / 8);
+        long r = 0, g = 0, b = 0, count = 0;
+        int[] row = new int[width];
+        for (int y = top; y < height; y++) {
+            source.getPixels(row, 0, width, 0, y, width, 1);
+            for (int color : row) {
+                if (Color.alpha(color) < 255) continue;
+                r += Color.red(color);
+                g += Color.green(color);
+                b += Color.blue(color);
+                count++;
             }
         }
-
-        return Color.rgb(clamp(br), clamp(bg), clamp(bb));
+        if (count == 0) return Color.GRAY;
+        return Color.rgb((int) (r / count), (int) (g / count), (int) (b / count));
     }
 
-    private static int clamp(int v) {
-        return Math.max(0, Math.min(255, v));
+    /**
+     * Apple Music style art: the lower part of {@code art} is progressively blurred
+     * and dissolved into {@code color}, so it melts into a background of that colour
+     * with no visible edge. Returns a new bitmap; {@code art} is left untouched.
+     */
+    public static Bitmap fadeIntoColor(Bitmap art, int color) {
+        int width = art.getWidth();
+        int height = art.getHeight();
+        Bitmap out = art.copy(Bitmap.Config.ARGB_8888, true);
+        Canvas canvas = new Canvas(out);
+
+        // Cheap strong blur: shrink in two steps (to avoid aliasing) and scale back.
+        Bitmap small = Bitmap.createScaledBitmap(art, Math.max(1, width / 4), Math.max(1, height / 4), true);
+        Bitmap tiny = Bitmap.createScaledBitmap(small, Math.max(1, width / 16), Math.max(1, height / 16), true);
+        Bitmap blurred = Bitmap.createScaledBitmap(tiny, width, height, true);
+
+        // Blur ramps in over the lower part, under the colour fade.
+        Paint blurPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        blurPaint.setShader(new ComposeShader(
+                new BitmapShader(blurred, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP),
+                new LinearGradient(0, height * 0.50f, 0, height * 0.80f,
+                        Color.TRANSPARENT, Color.BLACK, Shader.TileMode.CLAMP),
+                PorterDuff.Mode.DST_IN));
+        canvas.drawRect(0, height * 0.50f, width, height, blurPaint);
+
+        // Eased colour fade (a linear one shows a visible band where it starts).
+        int clear = ColorUtils.setAlphaComponent(color, 0);
+        Paint fadePaint = new Paint();
+        fadePaint.setShader(new LinearGradient(0, height * 0.55f, 0, height,
+                new int[]{clear, ColorUtils.setAlphaComponent(color, 90),
+                        ColorUtils.setAlphaComponent(color, 200), color, color},
+                new float[]{0f, 0.35f, 0.65f, 0.9f, 1f}, Shader.TileMode.CLAMP));
+        canvas.drawRect(0, height * 0.55f, width, height, fadePaint);
+
+        small.recycle();
+        tiny.recycle();
+        blurred.recycle();
+        return out;
     }
 }

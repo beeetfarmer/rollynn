@@ -64,7 +64,6 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
     private PlaybackViewModel playbackViewModel;
     private SongHorizontalAdapter songHorizontalAdapter;
     private ListenableFuture<MediaBrowser> mediaBrowserListenableFuture;
-    private String currentCoverId;
     private Integer trackTitleColor;
     private Integer trackSubtitleColor;
 
@@ -300,6 +299,10 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
         ViewGroup.LayoutParams appbarParams = bind.appbar.getLayoutParams();
         appbarParams.height = (int) (getResources().getDisplayMetrics().heightPixels * 0.52f);
         bind.appbar.setLayoutParams(appbarParams);
+        // The collapsing layout grows by the status bar inset, pushing the art's
+        // bottom under the content; pin the art to the visible header so its
+        // faded bottom edge lines up with the background below.
+        bind.albumCoverImageView.getLayoutParams().height = appbarParams.height;
 
         // The name block is anchored centred on the header's bottom edge; shift it
         // up so it sits fully over the artwork rather than straddling the edge.
@@ -366,56 +369,37 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
     private void initBackCover() {
         albumPageViewModel.getAlbum().observe(getViewLifecycleOwner(), album -> {
             if (bind != null && album != null) {
-                CustomGlideRequest.Builder.from(requireContext(), album.getCoverArtId(), CustomGlideRequest.ResourceType.Album).build().into(bind.albumCoverImageView);
-                applyDynamicBackground(album.getCoverArtId());
+                CustomGlideRequest.loadFadedArt(requireContext(), album.getCoverArtId(),
+                        CustomGlideRequest.ResourceType.Album, bind.albumCoverImageView,
+                        this::applyDynamicBackground, null);
             }
         });
     }
 
     /**
-     * Apple Music style: pull the album's colour so the artwork dissolves into a
-     * matching background below it, and switch the overlaid name/artist to white or
-     * black for legibility against the artwork. Portrait full-bleed header only.
+     * Apple Music style: colour the background below the art with the colour its
+     * bottom edge dissolves into, and switch the overlaid name/artist to white or
+     * black for legibility against it. Portrait full-bleed header only.
      */
-    private void applyDynamicBackground(String coverId) {
-        if (bind == null || bind.albumContentContainer == null || coverId == null) return;
-        final String requested = coverId;
-        currentCoverId = coverId;
-        CustomGlideRequest.loadAlbumArtBitmap(requireContext(), coverId, 200,
-                new com.bumptech.glide.request.target.CustomTarget<android.graphics.Bitmap>() {
-                    @Override
-                    public void onResourceReady(@NonNull android.graphics.Bitmap resource,
-                                                @Nullable com.bumptech.glide.request.transition.Transition<? super android.graphics.Bitmap> transition) {
-                        if (bind == null || !requested.equals(currentCoverId)) return;
-                        int dominant = PlayerBackgroundUtil.dominantColor(resource);
-                        int fadeColor = PlayerBackgroundUtil.backgroundTopColor(requireContext(), dominant);
+    private void applyDynamicBackground(int edge) {
+        if (bind == null || bind.albumContentContainer == null) return;
+        int fadeColor = PlayerBackgroundUtil.backgroundTopColor(requireContext(), edge);
 
-                        // The album colour up top (where the art dissolves in) easing
-                        // down to the app's base colour, so on short albums the empty
-                        // lower area reads as an intentional fade, not a flat void.
-                        int base = PlayerBackgroundUtil.baseColor(requireContext());
-                        bind.albumContentContainer.setBackground(new android.graphics.drawable.GradientDrawable(
-                                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-                                new int[]{fadeColor, fadeColor,
-                                        androidx.core.graphics.ColorUtils.blendARGB(dominant, base, 0.45f),
-                                        androidx.core.graphics.ColorUtils.blendARGB(dominant, base, 0.85f)}));
+        // The album colour up top (where the art dissolves in) easing down to the
+        // app's base colour, so on short albums the empty lower area reads as an
+        // intentional fade, not a flat void.
+        int base = PlayerBackgroundUtil.baseColor(requireContext());
+        bind.albumContentContainer.setBackground(new android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{fadeColor, fadeColor,
+                        androidx.core.graphics.ColorUtils.blendARGB(edge, base, 0.45f),
+                        androidx.core.graphics.ColorUtils.blendARGB(edge, base, 0.85f)}));
 
-                        if (bind.albumCoverBottomFade != null) {
-                            bind.albumCoverBottomFade.setBackground(new android.graphics.drawable.GradientDrawable(
-                                    android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-                                    new int[]{android.graphics.Color.TRANSPARENT, fadeColor}));
-                        }
-                        // The art scrolls away to reveal this matching colour behind
-                        // the status bar and back button (instead of a black bar).
-                        if (bind.appbar != null) bind.appbar.setBackgroundColor(fadeColor);
+        // The art scrolls away to reveal this matching colour behind the status bar
+        // and back button (instead of a black bar).
+        if (bind.appbar != null) bind.appbar.setBackgroundColor(fadeColor);
 
-                        applyOnArtColors(fadeColor);
-                    }
-
-                    @Override
-                    public void onLoadCleared(@Nullable android.graphics.drawable.Drawable placeholder) {
-                    }
-                });
+        applyOnArtColors(fadeColor);
     }
 
     /**
