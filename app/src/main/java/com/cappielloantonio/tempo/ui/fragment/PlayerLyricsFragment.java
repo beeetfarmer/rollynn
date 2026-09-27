@@ -79,6 +79,15 @@ public class PlayerLyricsFragment extends Fragment {
         bind = InnerFragmentPlayerLyricsBinding.inflate(inflater, container, false);
         View view = bind.getRoot();
 
+        // The player body leaves the top unpadded (album art bleeds under the status
+        // bar), so keep the lyrics below the status bar ourselves, like the queue.
+        int basePaddingTop = view.getPaddingTop();
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
+            int statusTop = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).top;
+            v.setPadding(v.getPaddingLeft(), basePaddingTop + statusTop, v.getPaddingRight(), v.getPaddingBottom());
+            return insets;
+        });
+
         playerBottomSheetViewModel = new ViewModelProvider(requireActivity()).get(PlayerBottomSheetViewModel.class);
 
         initOverlay();
