@@ -142,6 +142,15 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
     }
 
     /** Overrides the track title/subtitle colours (e.g. for a coloured background). */
+    private static void tintIcons(View view, android.content.res.ColorStateList tint) {
+        if (view instanceof android.widget.ImageView) {
+            androidx.core.widget.ImageViewCompat.setImageTintList((android.widget.ImageView) view, tint);
+        } else if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) tintIcons(group.getChildAt(i), tint);
+        }
+    }
+
     public void setTextColorOverride(int titleColor, int subtitleColor) {
         this.titleColorOverride = titleColor;
         this.subtitleColorOverride = subtitleColor;
@@ -231,6 +240,13 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
             holder.item.searchResultSongSubtitleTextView.setTextColor(subtitleColorOverride);
             holder.item.trackNumberTextView.setTextColor(subtitleColorOverride);
             holder.item.discTitleTextView.setTextColor(subtitleColorOverride);
+            // The heart, stars, download and more icons are drawn in the theme's
+            // title colour; follow the override so they read on the same background.
+            android.content.res.ColorStateList iconTint =
+                    android.content.res.ColorStateList.valueOf(titleColorOverride);
+            tintIcons(holder.item.ratingIndicatorImageView, iconTint);
+            tintIcons(holder.item.searchResultDownloadIndicatorImageView, iconTint);
+            tintIcons(holder.item.searchResultSongMoreButton, iconTint);
         }
 
         Float progress = downloadProgressMap.get(song.getId());

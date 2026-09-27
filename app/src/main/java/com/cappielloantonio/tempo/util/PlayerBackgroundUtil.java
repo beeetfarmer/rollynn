@@ -65,13 +65,21 @@ public final class PlayerBackgroundUtil {
      */
     public static int edgeColor(Bitmap source) {
         if (source == null) return Color.GRAY;
+        return averageColor(source, source.getHeight() - Math.max(1, source.getHeight() / 8));
+    }
 
+    /** The average colour of the whole artwork (transparent pixels skipped). */
+    public static int averageColor(Bitmap source) {
+        if (source == null) return Color.GRAY;
+        return averageColor(source, 0);
+    }
+
+    private static int averageColor(Bitmap source, int fromRow) {
         int width = source.getWidth();
         int height = source.getHeight();
-        int top = height - Math.max(1, height / 8);
         long r = 0, g = 0, b = 0, count = 0;
         int[] row = new int[width];
-        for (int y = top; y < height; y++) {
+        for (int y = fromRow; y < height; y++) {
             source.getPixels(row, 0, width, 0, y, width, 1);
             for (int color : row) {
                 if (Color.alpha(color) < 255) continue;

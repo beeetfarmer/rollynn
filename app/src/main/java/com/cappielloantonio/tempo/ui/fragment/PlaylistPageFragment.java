@@ -11,9 +11,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.SearchView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -42,6 +40,7 @@ import com.cappielloantonio.tempo.util.Constants;
 import com.cappielloantonio.tempo.util.DownloadUtil;
 import com.cappielloantonio.tempo.util.MappingUtil;
 import com.cappielloantonio.tempo.util.MusicUtil;
+import com.cappielloantonio.tempo.util.PlayerBackgroundUtil;
 import com.cappielloantonio.tempo.util.ExternalAudioWriter;
 import com.cappielloantonio.tempo.util.PlaylistCoverCache;
 import com.cappielloantonio.tempo.util.Preferences;
@@ -86,26 +85,6 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.playlist_page_menu, menu);
 
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-
-        SearchView searchView = (SearchView) searchItem.getActionView();
-        searchView.setImeOptions(EditorInfo.IME_ACTION_DONE);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                searchView.clearFocus();
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                songHorizontalAdapter.getFilter().filter(newText);
-                return false;
-            }
-        });
-
-        searchView.setPadding(-32, 0, 0, 0);
-
         optionsMenu = menu;
         initMenuOption(menu);
         updateRemoveDownloadsVisibility();
@@ -125,6 +104,7 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
         initMusicButton();
         initBackCover();
         initSongsView();
+        initFilter();
 
         return view;
     }
@@ -162,12 +142,7 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_sort_playlist) {
-            View anchor = activity.findViewById(R.id.action_sort_playlist);
-            if (anchor == null) anchor = bind.animToolbar;
-            showSortPopupMenu(anchor);
-            return true;
-        } else if (item.getItemId() == R.id.action_download_playlist) {
+        if (item.getItemId() == R.id.action_download_playlist) {
             playlistPageViewModel.getPlaylistSongLiveList().observe(getViewLifecycleOwner(), songs -> {
                 if (isVisible() && getActivity() != null) {
                     Playlist downloadPlaylist = playlistPageViewModel.getPlaylist();
@@ -260,6 +235,8 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
                     activity.setBottomSheetInPeek(true);
                 });
 
+                bind.playlistPageSortButton.setOnClickListener(this::showSortPopupMenu);
+
                 bind.playlistPageShuffleButton.setOnClickListener(v -> {
                     java.util.List<com.cappielloantonio.tempo.subsonic.models.Child> shuffledSongs = new java.util.ArrayList<>(songs);
                     java.util.Collections.shuffle(shuffledSongs);
@@ -275,6 +252,8 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
             if (bind != null && songs != null && !songs.isEmpty()) {
                 java.util.List<com.cappielloantonio.tempo.subsonic.models.Child> randomSongs = new java.util.ArrayList<>(songs);
                 java.util.Collections.shuffle(randomSongs);
+
+                applyCoverColors(randomSongs.get(0).getCoverArtId());
 
                 // Pic top-left
                 CustomGlideRequest.Builder
@@ -304,6 +283,94 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
                         .transform(new GranularRoundedCorners(0, 0, CustomGlideRequest.CORNER_RADIUS, 0))
                         .into(bind.playlistCoverImageViewBottomRight);
             }
+        });
+    }
+
+    /** Colours the page from the collage's first (top-left) cover. */
+    private void applyCoverColors(String coverId) {
+        if (coverId == null) return;
+        CustomGlideRequest.loadAlbumArtBitmap(requireContext(), coverId, 200,
+                new com.bumptech.glide.request.target.CustomTarget<android.graphics.Bitmap>() {
+                    @Override
+                    public void onResourceReady(@NonNull android.graphics.Bitmap resource,
+                                                @Nullable com.bumptech.glide.request.transition.Transition<? super android.graphics.Bitmap> transition) {
+                        if (bind != null) applyPlaylistColors(PlayerBackgroundUtil.averageColor(resource));
+                    }
+
+                    @Override
+                    public void onLoadCleared(@Nullable android.graphics.drawable.Drawable placeholder) {
+                    }
+                });
+    }
+
+    /**
+     * A gradient in the cover's colour behind the whole page, with every label,
+     * button and track row in white or black to suit it. The gradient deepens
+     * away from the text colour (darker under white text, lighter under black),
+     * so contrast only improves further down the page.
+     */
+    private void applyPlaylistColors(int art) {
+        int top = PlayerBackgroundUtil.backgroundTopColor(requireContext(), art);
+        int onArt = PlayerBackgroundUtil.contentColor(requireContext(), art);
+        boolean darkText = onArt == android.graphics.Color.BLACK;
+        int bottom = androidx.core.graphics.ColorUtils.blendARGB(top,
+                darkText ? android.graphics.Color.WHITE : android.graphics.Color.BLACK, darkText ? 0.3f : 0.4f);
+        bind.getRoot().setBackground(new android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM, new int[]{top, bottom}));
+        activity.setPageStatusBarColor(top);
+
+        int secondary = androidx.core.graphics.ColorUtils.setAlphaComponent(onArt, 190);
+        android.content.res.ColorStateList onArtTint = android.content.res.ColorStateList.valueOf(onArt);
+
+        bind.playlistNameLabel.setTextColor(onArt);
+        bind.playlistSongCountLabel.setTextColor(secondary);
+        bind.playlistDurationLabel.setTextColor(secondary);
+        bind.albumBioLabel.setTextColor(secondary);
+
+        bind.animToolbar.setTitleTextColor(onArt);
+        bind.animToolbar.setNavigationIconTint(onArt);
+        if (bind.animToolbar.getOverflowIcon() != null) bind.animToolbar.getOverflowIcon().setTint(onArt);
+
+        // Play: a filled disc with a contrasting icon; shuffle, sort and the filter
+        // box: a faint disc/pill in the on-art colour.
+        android.content.res.ColorStateList faint = android.content.res.ColorStateList.valueOf(
+                androidx.core.graphics.ColorUtils.setAlphaComponent(onArt, 40));
+        bind.playlistPagePlayButton.setBackgroundTintList(onArtTint);
+        bind.playlistPagePlayButton.setImageTintList(android.content.res.ColorStateList.valueOf(
+                darkText ? android.graphics.Color.WHITE : android.graphics.Color.BLACK));
+        for (android.widget.ImageButton button : new android.widget.ImageButton[]{
+                bind.playlistPageShuffleButton, bind.playlistPageSortButton}) {
+            button.setBackgroundTintList(faint);
+            button.setImageTintList(onArtTint);
+        }
+        bind.playlistFilterEditText.setBackgroundTintList(faint);
+        bind.playlistFilterEditText.setTextColor(onArt);
+        bind.playlistFilterEditText.setHintTextColor(secondary);
+        androidx.core.widget.TextViewCompat.setCompoundDrawableTintList(bind.playlistFilterEditText,
+                android.content.res.ColorStateList.valueOf(secondary));
+
+        if (songHorizontalAdapter != null) songHorizontalAdapter.setTextColorOverride(onArt, secondary);
+    }
+
+    private void initFilter() {
+        bind.playlistFilterEditText.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence text, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence text, int start, int before, int count) {
+                songHorizontalAdapter.getFilter().filter(text);
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable text) {
+            }
+        });
+        bind.playlistFilterEditText.setOnEditorActionListener((v, actionId, event) -> {
+            hideKeyboard(v);
+            v.clearFocus();
+            return true;
         });
     }
 

@@ -120,6 +120,7 @@
     <string name="cast_expanded_controller_loading">Loading…</string>
     <string name="filter_info_selection">Select two or more filters</string>
     <string name="filter_title">Filter</string>
+    <string name="playlist_page_filter_hint">Filter playlist</string>
     <string name="filter_artist">Filter artists</string>
     <string name="filter_title_expanded">Filter Genres</string>
     <string name="music_video_list_page_title">Music Videos</string>

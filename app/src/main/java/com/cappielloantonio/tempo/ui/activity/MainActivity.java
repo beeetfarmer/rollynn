@@ -302,6 +302,9 @@ public class MainActivity extends BaseActivity {
             }
     };
 
+    // Status bar colour requested by the current page; null = default surface.
+    private Integer pageStatusBarColor;
+
     private void applyPlayerSystemBarColors(boolean playerExpanded) {
         playerBarsExpanded = playerExpanded;
         if (playerExpanded) {
@@ -310,9 +313,21 @@ public class MainActivity extends BaseActivity {
             } else {
                 applySystemBarColors(UIUtil.getPlayerBackgroundColor(this));
             }
+        } else if (pageStatusBarColor != null) {
+            applySystemBarColors(pageStatusBarColor, android.graphics.Color.TRANSPARENT);
         } else {
             applySystemBarColors();
         }
+    }
+
+    /**
+     * Lets a page colour the status bar to match its own background (for example
+     * a playlist's cover colour). Kept while the player is expanded over the page
+     * and cleared when navigating to another destination.
+     */
+    public void setPageStatusBarColor(int color) {
+        pageStatusBarColor = color;
+        if (!playerBarsExpanded) applySystemBarColors(color, android.graphics.Color.TRANSPARENT);
     }
 
     /**
@@ -491,6 +506,7 @@ public class MainActivity extends BaseActivity {
             // collapsed results list sits on the plain surface; keep the status
             // bar matching whichever is showing (driven by the SearchView's
             // transition, defaulting to the collapsed colour here).
+            pageStatusBarColor = null;
             if (!playerBarsExpanded) {
                 if (isSearch) {
                     setSearchStatusBar(false);
