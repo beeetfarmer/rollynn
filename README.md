@@ -26,6 +26,9 @@ Rollynn is an open source, native Android Subsonic client focused on practical p
   <img src="screenshots/2.png" alt="Rollynn screenshot 2" width="220">
   <img src="screenshots/3.png" alt="Rollynn screenshot 3" width="220">
   <img src="screenshots/4.png" alt="Rollynn screenshot 4" width="220">
+  <img src="screenshots/5.png" alt="Rollynn screenshot 5" width="220">
+  <img src="screenshots/6.png" alt="Rollynn screenshot 6" width="220">
+  <img src="screenshots/7.png" alt="Rollynn screenshot 7" width="220">
 </p>
 
 ## What makes Rollynn different from Tempus:
@@ -123,6 +126,8 @@ The lyrics work in Rollynn (romanization and translation) was significantly insp
 - **LRCLIB** — plain and synced (LRC) lyrics. https://lrclib.net
 - **Better Lyrics** — TTML word-by-word synced lyrics. https://github.com/boidushya/better-lyrics
 - **Last.fm** — scrobble counts and artist/album metadata. https://www.last.fm
+- **Koito** — self-hosted scrobbler and listening stats. https://github.com/gabehf/Koito
+- **AudioMuse-AI** — sonic analysis for similar tracks/artists and AI playlists. https://github.com/NeptuneHub/AudioMuse-AI
 
 ### Translation providers
 
