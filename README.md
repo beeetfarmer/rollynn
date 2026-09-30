@@ -22,13 +22,13 @@ Rollynn is an open source, native Android Subsonic client focused on practical p
 ## Screenshots
 
 <p align="center">
-  <img src="screenshots/1.png" alt="Rollynn screenshot 1" width="220">
-  <img src="screenshots/2.png" alt="Rollynn screenshot 2" width="220">
-  <img src="screenshots/3.png" alt="Rollynn screenshot 3" width="220">
-  <img src="screenshots/4.png" alt="Rollynn screenshot 4" width="220">
-  <img src="screenshots/5.png" alt="Rollynn screenshot 5" width="220">
-  <img src="screenshots/6.png" alt="Rollynn screenshot 6" width="220">
-  <img src="screenshots/7.png" alt="Rollynn screenshot 7" width="220">
+  <img src="screenshots/screenshot-1.png" alt="Rollynn screenshot 1" width="220">
+  <img src="screenshots/screenshot-2.png" alt="Rollynn screenshot 2" width="220">
+  <img src="screenshots/screenshot-3.png" alt="Rollynn screenshot 3" width="220">
+  <img src="screenshots/screenshot-4.png" alt="Rollynn screenshot 4" width="220">
+  <img src="screenshots/screenshot-5.png" alt="Rollynn screenshot 5" width="220">
+  <img src="screenshots/screenshot-6.png" alt="Rollynn screenshot 6" width="220">
+  <img src="screenshots/screenshot-7.png" alt="Rollynn screenshot 7" width="220">
 </p>
 
 ## What makes Rollynn different from Tempus:
