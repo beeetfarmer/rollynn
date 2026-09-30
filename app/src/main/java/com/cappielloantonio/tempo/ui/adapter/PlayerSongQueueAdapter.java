@@ -296,6 +296,8 @@ public class PlayerSongQueueAdapter extends RecyclerView.Adapter<PlayerSongQueue
         for (android.widget.ImageView icon : icons) {
             androidx.core.widget.ImageViewCompat.setImageTintList(icon, iconTint);
         }
+        // The heart is drawn as the view's background, so it needs the background tint.
+        holder.item.preferredIcon.setBackgroundTintList(iconTint);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
