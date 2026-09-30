@@ -199,6 +199,9 @@ class EqualizerManager {
 }
 
 /** Static equalizer capabilities used to build the settings editor without a playing session. */
+// Kept: Gson reads this reflectively, so R8 must not rename its fields or strip the
+// List<EqualizerPreset> signature (which left devicePresets full of LinkedTreeMaps).
+@androidx.annotation.Keep
 data class EqualizerCapabilities(
     val bands: Int,
     val levelRange: ShortArray,

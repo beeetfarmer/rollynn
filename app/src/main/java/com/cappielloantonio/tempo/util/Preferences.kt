@@ -963,8 +963,10 @@ object Preferences {
         val json = App.getInstance().preferences.getString(EQUALIZER_CUSTOM_PRESETS, null)
         if (json.isNullOrBlank()) return mutableListOf()
         return try {
-            val type = object : com.google.gson.reflect.TypeToken<MutableList<com.cappielloantonio.tempo.model.EqualizerPreset>>() {}.type
-            Gson().fromJson(json, type) ?: mutableListOf()
+            // Array class instead of a TypeToken: R8 strips the token's generic signature in
+            // release builds, which left the list full of LinkedTreeMaps.
+            Gson().fromJson(json, Array<com.cappielloantonio.tempo.model.EqualizerPreset>::class.java)
+                ?.toMutableList() ?: mutableListOf()
         } catch (e: Exception) {
             mutableListOf()
         }
