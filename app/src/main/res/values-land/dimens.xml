@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="player_cover_overhang">0dp</dimen>
+    <dimen name="player_cover_overhang_negative">0dp</dimen>
+</resources>

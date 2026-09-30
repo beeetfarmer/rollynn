@@ -91,9 +91,11 @@ public class PlayerCoverFragment extends Fragment {
         if (bind == null) return;
         // Blurred and dissolved into its edge colour, which the player sheet also
         // uses for the background below, so the art melts into it (Apple Music style).
+        // The cover overhangs the title, so the art stays sharp almost down to it and
+        // the fade happens behind the text.
         CustomGlideRequest.loadFadedArt(requireContext(),
                 mediaMetadata.extras != null ? mediaMetadata.extras.getString("coverArtId") : null,
                 CustomGlideRequest.ResourceType.Song, bind.nowPlayingSongCoverImageView, edge -> {
-                }, null);
+                }, null, 0.95f, getResources().getDimensionPixelSize(com.cappielloantonio.tempo.R.dimen.player_cover_overhang));
     }
 }

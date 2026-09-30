@@ -137,6 +137,16 @@ public class CustomGlideRequest {
      */
     public static void loadFadedArt(Context context, String coverId, ResourceType type, ImageView view,
                                     IntConsumer onEdgeColor, @Nullable Runnable onFailed) {
+        loadFadedArt(context, coverId, type, view, onEdgeColor, onFailed, 0.5f, 0);
+    }
+
+    /**
+     * As above, with {@code fadeStart} setting the fraction of the art's height left sharp and
+     * {@code extend} the pixels at the bottom of {@code view} that the fade runs on into.
+     */
+    public static void loadFadedArt(Context context, String coverId, ResourceType type, ImageView view,
+                                    IntConsumer onEdgeColor, @Nullable Runnable onFailed,
+                                    float fadeStart, int extend) {
         // Drop late results when the view has moved on to another cover.
         view.setTag(coverId);
         if (coverId == null) {
@@ -150,7 +160,7 @@ public class CustomGlideRequest {
                 int edge = PlayerBackgroundUtil.edgeColor(resource);
                 onEdgeColor.accept(edge);
                 Builder.from(context, coverId, type).build()
-                        .transform(new ArtFadeTransformation(PlayerBackgroundUtil.backgroundTopColor(context, edge)))
+                        .transform(new ArtFadeTransformation(PlayerBackgroundUtil.backgroundTopColor(context, edge), fadeStart, extend))
                         .into(view);
             }
 

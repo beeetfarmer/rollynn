@@ -54,6 +54,7 @@
         android:id="@+id/player_media_cover_view_pager"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="@dimen/player_cover_overhang_negative"
         app:layout_constraintBottom_toTopOf="@id/guideline"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -68,7 +69,7 @@
         android:layout_height="0dp"
         android:background="@android:color/black"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@+id/player_media_cover_view_pager"
+        app:layout_constraintBottom_toTopOf="@id/guideline"
         app:layout_constraintEnd_toEndOf="@+id/player_media_cover_view_pager"
         app:layout_constraintStart_toStartOf="@+id/player_media_cover_view_pager"
         app:layout_constraintTop_toTopOf="@+id/player_media_cover_view_pager">
