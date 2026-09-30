@@ -17,6 +17,7 @@ import com.cappielloantonio.tempo.util.Preferences;
 import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class PlaylistChooserViewModel extends AndroidViewModel {
@@ -42,8 +43,20 @@ public class PlaylistChooserViewModel extends AndroidViewModel {
     }
 
     public LiveData<List<Playlist>> getPlaylistList(LifecycleOwner owner) {
-        playlistRepository.getPlaylists(false, -1).observe(owner, playlists::postValue);
+        playlistRepository.getPlaylists(false, -1).observe(owner, list -> playlists.postValue(sortForChooser(list)));
         return playlists;
+    }
+
+    /** The playlists tracks were last added to first (most recent on top), then the rest by name. */
+    private static List<Playlist> sortForChooser(List<Playlist> list) {
+        if (list == null) return null;
+        List<String> recent = Preferences.getRecentPlaylistIds();
+        List<Playlist> sorted = new ArrayList<>(list);
+        sorted.sort(Comparator.comparingInt((Playlist p) -> {
+            int index = recent.indexOf(p.getId());
+            return index < 0 ? recent.size() : index;
+        }).thenComparing(p -> p.getName() == null ? "" : p.getName(), String.CASE_INSENSITIVE_ORDER));
+        return sorted;
     }
 
     public void addSongsToPlaylist(LifecycleOwner owner, Dialog dialog, String playlistId) {
@@ -73,6 +86,7 @@ public class PlaylistChooserViewModel extends AndroidViewModel {
                 playlistRepository.addSongToPlaylist(playlistId, new ArrayList<>(songIdsToAdd), getIsPlaylistPublic(), new com.cappielloantonio.tempo.repository.PlaylistRepository.AddToPlaylistCallback() {
                     @Override public void onSuccess() { 
                         addedToNames.add(playlistName);
+                        Preferences.addRecentPlaylistId(playlistId);
                         checkCompletion(completedRequests, totalRequests, dialog, addedToNames, skippedFromNames, failedForNames); 
                     }
                     @Override public void onFailure() { 
@@ -94,6 +108,7 @@ public class PlaylistChooserViewModel extends AndroidViewModel {
                     playlistRepository.addSongToPlaylist(playlistId, new ArrayList<>(specificSongIdsToAdd), getIsPlaylistPublic(), new com.cappielloantonio.tempo.repository.PlaylistRepository.AddToPlaylistCallback() {
                         @Override public void onSuccess() { 
                             addedToNames.add(playlistName);
+                            Preferences.addRecentPlaylistId(playlistId);
                             checkCompletion(completedRequests, totalRequests, dialog, addedToNames, skippedFromNames, failedForNames); 
                         }
                         @Override public void onFailure() { 

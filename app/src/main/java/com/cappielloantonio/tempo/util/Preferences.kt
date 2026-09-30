@@ -100,6 +100,7 @@ object Preferences {
     private const val EQUALIZER_ENABLED = "equalizer_enabled"
     private const val EQUALIZER_BAND_LEVELS = "equalizer_band_levels"
     private const val EQUALIZER_CUSTOM_PRESETS = "equalizer_custom_presets"
+    private const val RECENT_PLAYLISTS = "recent_playlists"
     private const val EQUALIZER_ACTIVE_PRESET = "equalizer_active_preset"
     private const val EQUALIZER_CAPABILITIES = "equalizer_capabilities"
     private const val EQUALIZER_AUTO_BY_GENRE = "equalizer_auto_by_genre"
@@ -975,6 +976,19 @@ object Preferences {
     @JvmStatic
     fun setCustomEqualizerPresets(presets: List<com.cappielloantonio.tempo.model.EqualizerPreset>) {
         App.getInstance().preferences.edit().putString(EQUALIZER_CUSTOM_PRESETS, Gson().toJson(presets)).apply()
+    }
+
+    /** Ids of the playlists tracks were last added to, most recent first (at most two). */
+    @JvmStatic
+    fun getRecentPlaylistIds(): List<String> {
+        return App.getInstance().preferences.getString(RECENT_PLAYLISTS, null)
+            ?.split('\n')?.filter { it.isNotEmpty() } ?: emptyList()
+    }
+
+    @JvmStatic
+    fun addRecentPlaylistId(id: String) {
+        val ids = (listOf(id) + getRecentPlaylistIds().filter { it != id }).take(2)
+        App.getInstance().preferences.edit().putString(RECENT_PLAYLISTS, ids.joinToString("\n")).apply()
     }
 
     @JvmStatic
