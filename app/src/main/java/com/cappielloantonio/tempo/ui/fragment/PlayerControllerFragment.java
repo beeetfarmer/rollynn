@@ -172,6 +172,7 @@ public class PlayerControllerFragment extends Fragment {
     private final PopinnRepository popinnRepository = new PopinnRepository();
     private PopinnVideo matchedVideo;
     private String matchQueryKey;
+    private String lastPlayCountKey;
 
     private ExoPlayer videoPlayer;
     private boolean videoMode = false;
@@ -356,6 +357,8 @@ public class PlayerControllerFragment extends Fragment {
     }
 
     private void initVideoSwitch() {
+        // A recreated view starts with the button hidden, so the match must be looked up again.
+        matchQueryKey = null;
         switchToVideoButton = bind.getRoot().findViewById(R.id.player_switch_to_video_button);
         playerVideoContainer = bind.getRoot().findViewById(R.id.player_video_container);
         playerVideoAspect = bind.getRoot().findViewById(R.id.player_video_aspect);
@@ -1018,7 +1021,12 @@ public class PlayerControllerFragment extends Fragment {
                 });
 
 
-                if (media.getPlayCount() != null && mediaBrowserListenableFuture != null && mediaBrowserListenableFuture.isDone()) {
+                // Only for a new track or play count: the same track is re-posted when it
+                // is hearted, and rebuilding the metadata then makes the rows below jump.
+                String playCountKey = media.getId() + ":" + media.getPlayCount();
+                if (media.getPlayCount() != null && mediaBrowserListenableFuture != null && mediaBrowserListenableFuture.isDone()
+                        && !playCountKey.equals(lastPlayCountKey)) {
+                    lastPlayCountKey = playCountKey;
                     MediaManager.resetPlayCountIncrement(media.getId());
                     try {
                         MediaBrowser browser = mediaBrowserListenableFuture.get();
@@ -1350,24 +1358,21 @@ public class PlayerControllerFragment extends Fragment {
     private void updateVideoMatch(Child media) {
         if (switchToVideoButton == null) return;
 
+        String artist = media != null ? media.getArtist() : null;
+        String title = media != null ? media.getTitle() : null;
+        String key = artist == null || title == null || !PopinnClient.isConfigured()
+                ? null : media.getId() + "\u0000" + artist + "\u0000" + title;
+        // The same track is re-posted when it is hearted; redoing the lookup would
+        // blink the button out and back, shifting the whole row (and stop its video).
+        if (key != null && key.equals(matchQueryKey)) return;
+
         if (videoMode) teardownVideo();
         matchedVideo = null;
         switchToVideoButton.setVisibility(View.GONE);
 
-        if (media == null || !PopinnClient.isConfigured()) {
-            matchQueryKey = null;
-            return;
-        }
-
-        String artist = media.getArtist();
-        String title = media.getTitle();
-        if (artist == null || title == null) {
-            matchQueryKey = null;
-            return;
-        }
-
-        String key = artist + "\u0000" + title;
         matchQueryKey = key;
+        if (key == null) return;
+
         popinnRepository.findVideoForSong(artist, title).observe(getViewLifecycleOwner(), video -> {
             if (switchToVideoButton == null || !key.equals(matchQueryKey)) return;
             matchedVideo = video;
