@@ -1,17 +1,17 @@
-name: Dev checks
+name: Checks
 
-# Every push to dev and every pull request into dev.
+# Every push to dev or ng-changes, and every pull request into them. Releases are built and signed locally.
 # Runner: label "docker" (see the Forgejo CI guide).
 
 on:
   push:
-    branches: [dev]
+    branches: [dev, ng-changes]
   pull_request:
-    branches: [dev]
+    branches: [dev, ng-changes]
   workflow_dispatch:
 
 concurrency:
-  group: dev-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 env:
