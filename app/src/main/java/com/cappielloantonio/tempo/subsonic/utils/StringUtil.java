@@ -13,11 +13,7 @@ public class StringUtil {
 
             StringBuilder hexString = new StringBuilder();
             for (byte aMessageDigest : messageDigest) {
-                StringBuilder h = new StringBuilder(Integer.toHexString(0xFF & aMessageDigest));
-                while (h.length() < 2) {
-                    h.insert(0, "0");
-                }
-                hexString.append(h);
+                hexString.append(String.format("%02x", aMessageDigest & 0xFF));
             }
             return hexString.toString();
         } catch (NoSuchAlgorithmException e) {

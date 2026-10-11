@@ -33,6 +33,7 @@
             android:name="androidx.car.app.TintableAttributionIcon"
             android:resource="@drawable/ic_graphic_eq" />
 
+        <!-- nosemgrep: java.android.security.exported_activity.exported_activity (launcher activity) -->
         <activity
             android:name=".ui.activity.MainActivity"
             android:exported="true"

@@ -1,0 +1,77 @@
+name: Dev checks
+
+# Every push to dev and every pull request into dev.
+# Runner: label "docker" (see the Forgejo CI guide).
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [dev]
+  workflow_dispatch:
+
+concurrency:
+  group: dev-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CHECKOUT_TOKEN: ${{ github.token }}
+
+jobs:
+  checks:
+    name: Lint, build, dependency audit
+    runs-on: docker
+    container:
+      image: ghcr.io/cirruslabs/android-sdk:35
+    env:
+      # Java otherwise tries IPv6 first and gives up with "Network is unreachable" under rootless Podman.
+      JAVA_TOOL_OPTIONS: -Djava.net.preferIPv4Stack=true
+    steps:
+      - name: Checkout
+        run: |
+          git config --global --add safe.directory "$PWD"
+          git init -q . && git remote add origin "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
+          git -c "http.extraheader=Authorization: token $CHECKOUT_TOKEN" fetch -q --depth=1 origin "$GITHUB_SHA"
+          git checkout -q FETCH_HEAD
+      - name: Lint and build
+        # Lint fails only on issues not in app/lint-baseline.xml.
+        run: ./gradlew --no-daemon :app:lintDegoogledDebug :app:assembleDebug
+      - name: Dependency audit (fail on fixable HIGH or CRITICAL)
+        # Gradle has no lockfile here, so write one for Trivy to read: only what ships in the release APKs.
+        run: |
+          echo 'allprojects { configurations.matching { it.name.endsWith("ReleaseRuntimeClasspath") }.configureEach { resolutionStrategy.activateDependencyLocking() } }' > /tmp/lock.gradle
+          ./gradlew --no-daemon -q --init-script /tmp/lock.gradle :app:dependencies --write-locks > /dev/null
+          curl -sfL -o /tmp/trivy.tgz https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-64bit.tar.gz
+          echo "2ae6fe3ee734b7fdf11335663e18c75ea12dccc76062f09f164a3b0f8be4371a  /tmp/trivy.tgz" | sha256sum -c -
+          tar -xzf /tmp/trivy.tgz -C /usr/local/bin trivy
+          trivy fs --quiet --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 app/gradle.lockfile
+
+  sast:
+    name: Semgrep
+    runs-on: docker
+    container:
+      image: docker.io/semgrep/semgrep:1.178.0
+    steps:
+      - name: Checkout
+        run: |
+          git config --global --add safe.directory "$PWD"
+          git init -q . && git remote add origin "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
+          git -c "http.extraheader=Authorization: token $CHECKOUT_TOKEN" fetch -q --depth=1 origin "$GITHUB_SHA"
+          git checkout -q FETCH_HEAD
+      - name: Scan
+        run: semgrep scan --metrics off --error --config p/default --config p/kotlin --config p/java
+
+  secrets:
+    name: Gitleaks
+    runs-on: docker
+    container:
+      image: docker.io/zricethezav/gitleaks:v8.30.1
+    steps:
+      - name: Checkout full history
+        run: |
+          git config --global --add safe.directory "$PWD"
+          git init -q . && git remote add origin "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
+          git -c "http.extraheader=Authorization: token $CHECKOUT_TOKEN" fetch -q origin "$GITHUB_SHA"
+          git checkout -q FETCH_HEAD
+      - name: Scan history
+        run: gitleaks git . --redact --exit-code 1

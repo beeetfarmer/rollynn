@@ -98,6 +98,11 @@ android {
         buildConfig true
     }
 
+    lint {
+        // Errors that predate CI; only new ones fail the build. Refresh with ./gradlew updateLintBaseline
+        baseline = file("lint-baseline.xml")
+    }
+
     packaging {
         resources {
             excludes += ['META-INF/CONTRIBUTORS.md', 'META-INF/LICENSE.md']

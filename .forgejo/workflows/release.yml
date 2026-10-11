@@ -1,0 +1,133 @@
+name: Release
+
+# main        -> every check from dev.yml again, nothing published
+# tag vX.Y.Z  -> the same checks, then signed APKs attached to a Forgejo release
+# The tag must match versionName in app/build.gradle; an existing release is never overwritten.
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  CHECKOUT_TOKEN: ${{ github.token }}
+
+jobs:
+  checks:
+    name: Lint, build, dependency audit
+    runs-on: docker
+    container:
+      image: ghcr.io/cirruslabs/android-sdk:35
+    env:
+      # Java otherwise tries IPv6 first and gives up with "Network is unreachable" under rootless Podman.
+      JAVA_TOOL_OPTIONS: -Djava.net.preferIPv4Stack=true
+    steps:
+      - name: Checkout
+        run: |
+          git config --global --add safe.directory "$PWD"
+          git init -q . && git remote add origin "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
+          git -c "http.extraheader=Authorization: token $CHECKOUT_TOKEN" fetch -q --depth=1 origin "$GITHUB_SHA"
+          git checkout -q FETCH_HEAD
+      - name: Lint and build
+        # Lint fails only on issues not in app/lint-baseline.xml.
+        run: ./gradlew --no-daemon :app:lintDegoogledDebug :app:assembleDebug
+      - name: Dependency audit (fail on fixable HIGH or CRITICAL)
+        # Gradle has no lockfile here, so write one for Trivy to read: only what ships in the release APKs.
+        run: |
+          echo 'allprojects { configurations.matching { it.name.endsWith("ReleaseRuntimeClasspath") }.configureEach { resolutionStrategy.activateDependencyLocking() } }' > /tmp/lock.gradle
+          ./gradlew --no-daemon -q --init-script /tmp/lock.gradle :app:dependencies --write-locks > /dev/null
+          curl -sfL -o /tmp/trivy.tgz https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-64bit.tar.gz
+          echo "2ae6fe3ee734b7fdf11335663e18c75ea12dccc76062f09f164a3b0f8be4371a  /tmp/trivy.tgz" | sha256sum -c -
+          tar -xzf /tmp/trivy.tgz -C /usr/local/bin trivy
+          trivy fs --quiet --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 app/gradle.lockfile
+
+  sast:
+    name: Semgrep
+    runs-on: docker
+    container:
+      image: docker.io/semgrep/semgrep:1.178.0
+    steps:
+      - name: Checkout
+        run: |
+          git config --global --add safe.directory "$PWD"
+          git init -q . && git remote add origin "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
+          git -c "http.extraheader=Authorization: token $CHECKOUT_TOKEN" fetch -q --depth=1 origin "$GITHUB_SHA"
+          git checkout -q FETCH_HEAD
+      - name: Scan
+        run: semgrep scan --metrics off --error --config p/default --config p/kotlin --config p/java
+
+  secrets:
+    name: Gitleaks
+    runs-on: docker
+    container:
+      image: docker.io/zricethezav/gitleaks:v8.30.1
+    steps:
+      - name: Checkout full history
+        run: |
+          git config --global --add safe.directory "$PWD"
+          git init -q . && git remote add origin "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
+          git -c "http.extraheader=Authorization: token $CHECKOUT_TOKEN" fetch -q origin "$GITHUB_SHA"
+          git checkout -q FETCH_HEAD
+      - name: Scan history
+        run: gitleaks git . --redact --exit-code 1
+
+  publish:
+    name: Build, sign and publish APKs
+    needs: [checks, sast, secrets]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: docker
+    container:
+      image: ghcr.io/cirruslabs/android-sdk:35
+    env:
+      JAVA_TOOL_OPTIONS: -Djava.net.preferIPv4Stack=true
+      RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+      RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+      RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+      RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+    steps:
+      - name: Checkout
+        run: |
+          git config --global --add safe.directory "$PWD"
+          git init -q . && git remote add origin "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
+          git -c "http.extraheader=Authorization: token $CHECKOUT_TOKEN" fetch -q --depth=1 origin "$GITHUB_SHA"
+          git checkout -q FETCH_HEAD
+      - name: Check configuration
+        run: |
+          for s in RELEASE_KEYSTORE_BASE64 RELEASE_STORE_PASSWORD RELEASE_KEY_ALIAS RELEASE_KEY_PASSWORD; do
+            [ -n "$(printenv $s)" ] || { echo "Set the $s secret"; exit 1; }
+          done
+          echo "$GITHUB_REF_NAME" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$' || { echo "Tag $GITHUB_REF_NAME is not vMAJOR.MINOR.PATCH"; exit 1; }
+          grep -q "versionName '$GITHUB_REF_NAME'" app/build.gradle || { echo "versionName in app/build.gradle is not $GITHUB_REF_NAME"; exit 1; }
+      - name: Build signed APKs
+        run: |
+          echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > release.keystore
+          printf 'RELEASE_STORE_FILE=release.keystore\nRELEASE_STORE_PASSWORD=%s\nRELEASE_KEY_ALIAS=%s\nRELEASE_KEY_PASSWORD=%s\n' \
+            "$RELEASE_STORE_PASSWORD" "$RELEASE_KEY_ALIAS" "$RELEASE_KEY_PASSWORD" > local.properties
+          ./gradlew --no-daemon :app:assembleRelease
+          mkdir out
+          for f in app/build/outputs/apk/*/release/*.apk; do
+            n=$(basename "$f" -release.apk); cp "$f" "out/rollynn-$GITHUB_REF_NAME-${n#app-}.apk"
+          done
+          (cd out && sha256sum *.apk > SHA256SUMS)
+          ls -l out
+      - name: Publish Forgejo release
+        run: |
+          api="$GITHUB_SERVER_URL/api/v1/repos/$GITHUB_REPOSITORY/releases"
+          auth="Authorization: token $CHECKOUT_TOKEN"
+          # Fails with 409 if the release exists, so a version is never overwritten.
+          id=$(curl -sf -H "$auth" -H "Content-Type: application/json" \
+            -d "{\"tag_name\":\"$GITHUB_REF_NAME\",\"name\":\"Rollynn $GITHUB_REF_NAME\"}" "$api" \
+            | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)
+          [ -n "$id" ] || { echo "Could not create release $GITHUB_REF_NAME (does it already exist?)"; exit 1; }
+          for f in out/*; do
+            curl -sf -o /dev/null -H "$auth" -F "attachment=@$f" "$api/$id/assets?name=$(basename "$f")"
+          done
+          echo "Published $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/$GITHUB_REF_NAME"
+      - name: Remove signing material
+        if: always()
+        run: rm -f release.keystore local.properties
