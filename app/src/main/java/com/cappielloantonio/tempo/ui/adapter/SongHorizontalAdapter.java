@@ -280,7 +280,7 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
         holder.item.trackNumberTextView.setVisibility(showCoverArt ? View.INVISIBLE : View.VISIBLE);
         holder.item.songCoverImageView.setVisibility(showCoverArt ? View.VISIBLE : View.INVISIBLE);
 
-        if (!showCoverArt &&
+        if (!showCoverArt && hasMultipleDiscs() &&
                 (position == 0 ||
                         (position > 0 && songs.get(position - 1) != null &&
                                 songs.get(position - 1).getDiscNumber() != null &&
@@ -304,6 +304,9 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
                     holder.item.discTitleTextView.setText(holder.itemView.getContext().getString(R.string.disc_titlefull, discTitle.get().getDisc().toString() , discTitle.get().getTitle()));
                 }
             }
+        } else {
+            // Rows are recycled: a row that showed a disc header must not carry it to another track.
+            holder.item.differentDiskDividerSector.setVisibility(View.GONE);
         }
 
         if (song.getStarred() == null && (song.getUserRating() == null || song.getUserRating() == 0)) {
@@ -360,6 +363,11 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
     @Override
     public int getItemCount() {
         return songs.size();
+    }
+
+    // Servers report disc 1 even for untagged single-disc albums, so headers only make sense with two or more discs.
+    private boolean hasMultipleDiscs() {
+        return songs.stream().map(Child::getDiscNumber).filter(Objects::nonNull).distinct().limit(2).count() > 1;
     }
 
     public void setItems(List<Child> songs) {
