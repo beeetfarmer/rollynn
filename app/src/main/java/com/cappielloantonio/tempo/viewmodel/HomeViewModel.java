@@ -177,7 +177,9 @@ public class HomeViewModel extends AndroidViewModel {
 
             albumRepository.getAlbums("byYear", 500, currentYear, currentYear).observe(owner, albums -> {
                 if (albums != null) {
-                    albums.sort(Comparator.comparing(AlbumID3::getCreated).reversed());
+                    // Albums with a real release date first, then the rest by date added, each newest first.
+                    albums.sort(Comparator.comparing((AlbumID3 a) -> !a.hasUsableReleaseDate())
+                            .thenComparing(Comparator.comparingLong((AlbumID3 a) -> a.releaseOrAddedDate() != null ? a.releaseOrAddedDate().getTime() : 0).reversed()));
                     newReleasedAlbum.postValue(albums.subList(0, Math.min(20, albums.size())));
                 }
             });

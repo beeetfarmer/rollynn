@@ -234,8 +234,10 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
                 });
                 // Landscape's classic layout shows these individually; guard them
                 // since the portrait hero shows a single combined line instead.
+                String albumDate = album.releaseOrAddedDateText();
+                if (albumDate == null && album.getYear() != 0) albumDate = String.valueOf(album.getYear());
                 if (bind.albumReleaseYearLabel != null) {
-                    bind.albumReleaseYearLabel.setText(album.getYear() != 0 ? String.valueOf(album.getYear()) : "");
+                    bind.albumReleaseYearLabel.setText(albumDate != null ? albumDate : "");
                     if (album.getYear() != 0) {
                         bind.albumReleaseYearLabel.setVisibility(View.VISIBLE);
                         AssetLinkUtil.applyLinkAppearance(bind.albumReleaseYearLabel);
@@ -271,7 +273,7 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
                 // Portrait hero: year · genre · N songs • M minutes on one line, over the art.
                 if (bind.albumHeroInfo != null) {
                     java.util.List<String> parts = new java.util.ArrayList<>();
-                    if (album.getYear() != 0) parts.add(String.valueOf(album.getYear()));
+                    if (albumDate != null) parts.add(albumDate);
                     if (album.getGenre() != null && !album.getGenre().isEmpty()) parts.add(album.getGenre());
                     parts.add(getString(R.string.album_page_tracks_count_and_duration, album.getSongCount(),
                             album.getDuration() != null ? album.getDuration() / 60 : 0));

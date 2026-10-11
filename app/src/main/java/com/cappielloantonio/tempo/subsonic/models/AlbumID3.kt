@@ -4,7 +4,10 @@ import android.os.Parcelable
 import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 
 @Keep
 @Parcelize
@@ -36,4 +39,18 @@ open class AlbumID3(
     var releaseDate: ItemDate? = null,
     var isCompilation: Boolean? = null,
     var discTitles: List<DiscTitle>? = null,
-) : Parcelable
+) : Parcelable {
+    // Release date when the server gives at least year and month (a bare year says nothing within
+    // the year), otherwise the date the album was added to the library.
+    fun hasUsableReleaseDate() = releaseDate?.year != null && releaseDate?.month != null
+
+    fun releaseOrAddedDate(): Date? {
+        val r = releaseDate
+        if (!hasUsableReleaseDate() || r == null) return created
+        return Calendar.getInstance().apply { clear(); set(r.year!!, r.month!! - 1, r.day ?: 1) }.time
+    }
+
+    fun releaseOrAddedDateText(): String? =
+        if (hasUsableReleaseDate()) releaseDate?.getFormattedDate()
+        else created?.let { SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).format(it) }
+}
