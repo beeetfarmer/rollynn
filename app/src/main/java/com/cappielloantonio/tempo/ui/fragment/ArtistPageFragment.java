@@ -74,6 +74,7 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
     private AlbumCarouselAdapter epAdapter;
     private AlbumCarouselAdapter singleAdapter;
     private AlbumCarouselAdapter appearsOnAdapter;
+    private static final int APPEARS_ON_CAROUSEL_SIZE = 8;
     private ArtistCarouselAdapter similarArtistAdapter;
     private MusicVideoCarouselAdapter musicVideoAdapter;
 
@@ -449,8 +450,8 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
             if (bind != null) {
                 bind.artistPageAppearsOnSector.setVisibility(albums != null && !albums.isEmpty() ? View.VISIBLE : View.GONE);
                 if (albums != null) {
-                    bind.appearsOnSeeAllTextView.setVisibility(albums.size() > 5 ? View.VISIBLE : View.GONE);
-                    appearsOnAdapter.setItems(albums);
+                    bind.appearsOnSeeAllTextView.setVisibility(albums.size() > APPEARS_ON_CAROUSEL_SIZE ? View.VISIBLE : View.GONE);
+                    appearsOnAdapter.setItems(albums.subList(0, Math.min(APPEARS_ON_CAROUSEL_SIZE, albums.size())));
                     bind.appearsOnSeeAllTextView.setOnClickListener(v -> navigateToAlbumList(getString(R.string.artist_page_title_appears_on_section), albums));
                 }
             }

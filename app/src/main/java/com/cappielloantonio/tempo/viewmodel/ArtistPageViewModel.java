@@ -109,11 +109,14 @@ public class ArtistPageViewModel extends AndroidViewModel {
                 }
 
                 List<AlbumID3> appearsOnList = fullArtist.getAppearsOn();
-                if (appearsOnList != null) {
+                if (appearsOnList != null && !appearsOnList.isEmpty()) {
                     appearsOnList.sort(Comparator.comparing(AlbumID3::getYear).reversed());
                     appearsOn.setValue(appearsOnList);
                 } else {
-                    appearsOn.setValue(new java.util.ArrayList<>());
+                    artistRepository.getAppearsOn(artist.getId(), artist.getName()).observe(owner, found -> {
+                        found.sort(Comparator.comparing(AlbumID3::getYear).reversed());
+                        appearsOn.setValue(found);
+                    });
                 }
             }
         });

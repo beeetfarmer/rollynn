@@ -288,6 +288,56 @@ public class ArtistRepository {
         return artist;
     }
 
+    /**
+     * Albums where the artist is credited on a track but is not an album artist, for servers
+     * (Navidrome) whose getArtist has no "appearsOn". Found through a song search on the name,
+     * keeping only songs whose OpenSubsonic credits carry the artist's id.
+     */
+    public MutableLiveData<List<AlbumID3>> getAppearsOn(String artistId, String artistName) {
+        MutableLiveData<List<AlbumID3>> albums = new MutableLiveData<>();
+
+        // ponytail: one search page of 500 songs; page through songOffset if prolific artists get cut short.
+        App.getSubsonicClientInstance(false)
+                .getSearchingClient()
+                .search3(artistName, 500, 0, 0)
+                .enqueue(new Callback<ApiResponse>() {
+                    @Override
+                    public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
+                        List<AlbumID3> result = new ArrayList<>();
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().getSubsonicResponse().getSearchResult3() != null
+                                && response.body().getSubsonicResponse().getSearchResult3().getSongs() != null) {
+                            java.util.Map<String, AlbumID3> byId = new java.util.LinkedHashMap<>();
+                            for (Child song : response.body().getSubsonicResponse().getSearchResult3().getSongs()) {
+                                if (song.getAlbumId() == null || byId.containsKey(song.getAlbumId())) continue;
+                                if (!credits(song.getArtists(), artistId) || credits(song.getAlbumArtists(), artistId)) continue;
+
+                                AlbumID3 album = new AlbumID3();
+                                album.setId(song.getAlbumId());
+                                album.setName(song.getAlbum());
+                                album.setArtist(song.getDisplayAlbumArtist());
+                                album.setCoverArtId(song.getCoverArtId());
+                                album.setYear(song.getYear() != null ? song.getYear() : 0);
+                                byId.put(song.getAlbumId(), album);
+                            }
+                            result.addAll(byId.values());
+                        }
+                        albums.setValue(result);
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
+                        albums.setValue(new ArrayList<>());
+                    }
+                });
+
+        return albums;
+    }
+
+    private static boolean credits(List<ArtistID3> artists, String artistId) {
+        return artists != null && artists.stream().anyMatch(a -> artistId.equals(a.getId()));
+    }
+
     public MutableLiveData<List<Child>> getInstantMix(ArtistID3 artist, int count) {
         // Delegate to the centralized SongRepository
         return new SongRepository().getInstantMix(artist.getId(), SeedType.ARTIST, count);

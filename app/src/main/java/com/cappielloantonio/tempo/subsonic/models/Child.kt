@@ -3,8 +3,10 @@ package com.cappielloantonio.tempo.subsonic.models
 import android.os.Parcelable
 import androidx.annotation.Keep
 import androidx.room.ColumnInfo
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
@@ -85,4 +87,15 @@ open class Child(
     var originalWidth: Int? = null,
     @ColumnInfo(name = "original_height")
     var originalHeight: Int? = null
-) : Parcelable
+) : Parcelable {
+    // OpenSubsonic credits, only needed in memory (e.g. "Appears On"), so not stored or parcelled.
+    @Ignore
+    @IgnoredOnParcel
+    var artists: List<ArtistID3>? = null
+    @Ignore
+    @IgnoredOnParcel
+    var albumArtists: List<ArtistID3>? = null
+    @Ignore
+    @IgnoredOnParcel
+    var displayAlbumArtist: String? = null
+}
