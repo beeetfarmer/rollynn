@@ -6,6 +6,7 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import com.cappielloantonio.tempo.subsonic.models.Playlist;
 
@@ -24,6 +25,9 @@ public interface PlaylistDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(Playlist playlist);
+
+    @Update
+    void update(Playlist playlist);
 
     @Delete
     void delete(Playlist playlist);

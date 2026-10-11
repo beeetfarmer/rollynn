@@ -381,16 +381,27 @@ public class PlaylistRepository {
                                     List<Playlist> remotes = response.body().getSubsonicResponse().getPlaylists().getPlaylists();
                                     new Thread(() -> {
                                         for (Playlist p : pinned) {
-                                            for (Playlist r : remotes) {
-                                                if (p.getId().equals(r.getId())) {
-                                                    p.setName(r.getName());
-                                                    p.setSongCount(r.getSongCount());
-                                                    p.setDuration(r.getDuration());
-                                                    p.setCoverArtId(r.getCoverArtId());
-                                                    playlistDao.insert(p);
-                                                    break;
+                                            Playlist match = null;
+                                            if (remotes != null) {
+                                                for (Playlist r : remotes) {
+                                                    if (p.getId().equals(r.getId())) {
+                                                        match = r;
+                                                        break;
+                                                    }
                                                 }
                                             }
+                                            if (match == null) {
+                                                // Gone from the server (deleted, recreated with a new id, or pinned on another
+                                                // server): it would only open as an empty page, so drop the pin.
+                                                playlistDao.delete(p);
+                                                continue;
+                                            }
+                                            p.setName(match.getName());
+                                            p.setSongCount(match.getSongCount());
+                                            p.setDuration(match.getDuration());
+                                            p.setCoverArtId(match.getCoverArtId());
+                                            // update, not insert: a pin removed while this ran must stay removed.
+                                            playlistDao.update(p);
                                         }
                                     }).start();
                                 }
