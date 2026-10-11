@@ -113,20 +113,29 @@ class NavidromeClient {
         return songs.map { it.toChild() }
     }
 
+    /**
+     * Main artists of recently played songs, most recent first. Navidrome stamps a play on every
+     * credited artist, so its own recently played artist list also holds featured artists.
+     */
     fun getRecentlyPlayedArtists(count: Int): List<ArtistID3> {
+        // ponytail: looks at the last 1000 plays; artists played only before that drop off the list.
+        val mainIds = getRecentlyPlayedSongs(1000).mapNotNull { it.artistId }.distinct()
+        if (mainIds.isEmpty()) return emptyList()
+
         val artists = executeWithAuth { token ->
             service.getArtists(
                 auth = token,
                 sort = "play_date",
                 order = "DESC",
                 start = 0,
-                end = count,
+                end = 10000,
                 recentlyPlayed = true,
                 libraryId = activeLibraryId()
             )
         } ?: return emptyList()
 
-        return artists.map { it.toArtistID3() }
+        val byId = artists.associateBy { it.id }
+        return mainIds.mapNotNull { byId[it]?.toArtistID3() }.take(count)
     }
 
     fun getTopPlayedArtists(count: Int): List<ArtistID3> {
