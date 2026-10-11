@@ -48,6 +48,11 @@ public class AlbumPageViewModel extends AndroidViewModel {
 
     private final com.cappielloantonio.tempo.koito.KoitoRepository koitoRepository = new com.cappielloantonio.tempo.koito.KoitoRepository();
 
+    /** Popinn music videos matching this album's tracks, in track order. */
+    public LiveData<List<com.cappielloantonio.tempo.popinn.PopinnVideo>> getAlbumMusicVideos(String artistName, List<String> titles) {
+        return new com.cappielloantonio.tempo.popinn.PopinnRepository().findVideosForTracks(artistName, titles);
+    }
+
     public LiveData<com.cappielloantonio.tempo.koito.KoitoStats> getKoitoAlbumStats(String mbid, String title, String artistName) {
         return koitoRepository.getAlbumStats(mbid, title, artistName);
     }

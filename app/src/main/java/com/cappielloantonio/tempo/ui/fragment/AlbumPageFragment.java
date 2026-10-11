@@ -23,6 +23,7 @@ import androidx.media3.session.MediaBrowser;
 import androidx.media3.session.SessionToken;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.databinding.FragmentAlbumPageBinding;
@@ -34,6 +35,8 @@ import com.cappielloantonio.tempo.subsonic.models.Child;
 import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.service.MediaService;
 import com.cappielloantonio.tempo.ui.activity.MainActivity;
+import com.cappielloantonio.tempo.ui.activity.MusicVideoPlayerActivity;
+import com.cappielloantonio.tempo.ui.adapter.MusicVideoCarouselAdapter;
 import com.cappielloantonio.tempo.ui.adapter.SongHorizontalAdapter;
 import com.cappielloantonio.tempo.ui.dialog.PlaylistChooserDialog;
 import com.cappielloantonio.tempo.ui.dialog.RatingDialog;
@@ -63,6 +66,7 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
     private AlbumPageViewModel albumPageViewModel;
     private PlaybackViewModel playbackViewModel;
     private SongHorizontalAdapter songHorizontalAdapter;
+    private MusicVideoCarouselAdapter musicVideoAdapter;
     private ListenableFuture<MediaBrowser> mediaBrowserListenableFuture;
     private Integer trackTitleColor;
     private Integer trackSubtitleColor;
@@ -136,6 +140,7 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
     public void onDestroyView() {
         super.onDestroyView();
         bind = null;
+        musicVideoAdapter = null;
     }
 
     /** @noinspection deprecation*/
@@ -456,6 +461,8 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
         if (songHorizontalAdapter != null && trackTitleColor != null) {
             songHorizontalAdapter.setTextColorOverride(trackTitleColor, trackSubtitleColor);
         }
+        // The videos may have loaded before the album colour was ready.
+        if (bind != null && trackTitleColor != null) tintTextViews(bind.albumPageMusicVideosSector, trackTitleColor);
     }
 
     private void bindAlbumPlayStats(AlbumID3 album) {
@@ -507,9 +514,60 @@ public class AlbumPageFragment extends Fragment implements ClickCallback {
                     songHorizontalAdapter.setItems(songs);
                     reapplyPlayback();
                     bindKoitoTrackCounts(album, songs);
+                    bindMusicVideos(album, songs);
                 });
             }
         });
+    }
+
+    /** A carousel of the Popinn videos matching this album's tracks; hidden when there are none. */
+    private void bindMusicVideos(AlbumID3 album, List<Child> songs) {
+        if (songs == null || songs.isEmpty()) return;
+        // Match on the main album artist: a joined "A • B" credit would find no Popinn artist.
+        String artistName = album.getArtists() != null && !album.getArtists().isEmpty()
+                ? album.getArtists().get(0).getName() : album.getArtist();
+        List<String> titles = new ArrayList<>();
+        for (Child s : songs) if (s.getTitle() != null) titles.add(s.getTitle());
+
+        albumPageViewModel.getAlbumMusicVideos(artistName, titles).observe(getViewLifecycleOwner(), videos -> {
+            if (bind == null) return;
+            boolean hasVideos = videos != null && !videos.isEmpty();
+            bind.albumPageMusicVideosSector.setVisibility(hasVideos ? View.VISIBLE : View.GONE);
+            if (!hasVideos) return;
+
+            if (musicVideoAdapter == null) {
+                bind.albumMusicVideosRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+                musicVideoAdapter = new MusicVideoCarouselAdapter(this, false);
+                bind.albumMusicVideosRecyclerView.setAdapter(musicVideoAdapter);
+                // Video titles sit on the album's colour like the track rows; recolour each card as it attaches.
+                bind.albumMusicVideosRecyclerView.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
+                    @Override
+                    public void onChildViewAttachedToWindow(@NonNull View view) {
+                        if (trackTitleColor != null) tintTextViews(view, trackTitleColor);
+                    }
+
+                    @Override
+                    public void onChildViewDetachedFromWindow(@NonNull View view) {
+                    }
+                });
+            }
+            musicVideoAdapter.setItems(videos);
+            if (trackTitleColor != null) bind.albumMusicVideosTitleTextView.setTextColor(trackTitleColor);
+        });
+    }
+
+    private static void tintTextViews(View root, int color) {
+        if (root instanceof android.widget.TextView) {
+            ((android.widget.TextView) root).setTextColor(color);
+        } else if (root instanceof android.view.ViewGroup) {
+            android.view.ViewGroup group = (android.view.ViewGroup) root;
+            for (int i = 0; i < group.getChildCount(); i++) tintTextViews(group.getChildAt(i), color);
+        }
+    }
+
+    @Override
+    public void onMusicVideoClick(Bundle bundle) {
+        MusicVideoPlayerActivity.start(requireContext(), bundle.getParcelable(Constants.MUSIC_VIDEO_OBJECT));
     }
 
     private void bindKoitoTrackCounts(AlbumID3 album, List<Child> songs) {

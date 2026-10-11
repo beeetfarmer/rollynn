@@ -85,57 +85,84 @@ class PopinnRepository {
             return result
         }
 
-        val cachedId = artistIdCache[normalize(artistName)]
-        when {
-            cachedId == NO_MATCH -> result.value = null
-            cachedId != null -> fetchAndMatch(api, cachedId, title, result)
-            else -> api.searchArtists(artistName, ARTIST_SEARCH_LIMIT)
-                .enqueue(object : Callback<List<PopinnArtist>> {
-                    override fun onResponse(call: Call<List<PopinnArtist>>, response: Response<List<PopinnArtist>>) {
-                        val matchedId = if (response.isSuccessful) bestMatch(response.body(), artistName)?.id else null
-                        if (matchedId == null) {
-                            if (response.isSuccessful) artistIdCache[normalize(artistName)] = NO_MATCH
-                            result.postValue(null)
-                            return
-                        }
-                        artistIdCache[normalize(artistName)] = matchedId
-                        fetchAndMatch(api, matchedId, title, result)
-                    }
-
-                    override fun onFailure(call: Call<List<PopinnArtist>>, throwable: Throwable) {
-                        Log.w(TAG, "Artist lookup for video match failed", throwable)
-                        result.postValue(null)
-                    }
-                })
+        resolveArtistId(api, artistName) { artistId ->
+            if (artistId == null) result.postValue(null)
+            else fetchArtistVideos(api, artistId) { videos -> result.postValue(matchTitle(videos, title)) }
         }
 
         return result
     }
 
-    private fun fetchAndMatch(
-        api: PopinnApi,
-        artistId: String,
-        title: String,
-        result: MutableLiveData<PopinnVideo?>
-    ) {
+    /**
+     * The videos matching an album's tracks, in track order and without repeats, or an empty
+     * list when there are none. Same artist lookup and title matching as [findVideoForSong],
+     * with the artist's videos fetched once for the whole album.
+     */
+    fun findVideosForTracks(artistName: String?, titles: List<String>): LiveData<List<PopinnVideo>> {
+        val result = MutableLiveData<List<PopinnVideo>>()
+
+        val api = if (artistName.isNullOrBlank() || titles.isEmpty() || !PopinnClient.isConfigured()) null else PopinnClient.getApi()
+        if (api == null) {
+            result.value = emptyList()
+            return result
+        }
+
+        resolveArtistId(api, artistName!!) { artistId ->
+            if (artistId == null) result.postValue(emptyList())
+            else fetchArtistVideos(api, artistId) { videos ->
+                result.postValue(titles.mapNotNull { matchTitle(videos, it) }.distinctBy { it.id })
+            }
+        }
+
+        return result
+    }
+
+    /** The Popinn id for a Subsonic artist name, or null; misses are cached like hits. */
+    private fun resolveArtistId(api: PopinnApi, artistName: String, onResolved: (String?) -> Unit) {
+        val cachedId = artistIdCache[normalize(artistName)]
+        when {
+            cachedId == NO_MATCH -> onResolved(null)
+            cachedId != null -> onResolved(cachedId)
+            else -> api.searchArtists(artistName, ARTIST_SEARCH_LIMIT)
+                .enqueue(object : Callback<List<PopinnArtist>> {
+                    override fun onResponse(call: Call<List<PopinnArtist>>, response: Response<List<PopinnArtist>>) {
+                        val matchedId = if (response.isSuccessful) bestMatch(response.body(), artistName)?.id else null
+                        if (response.isSuccessful) artistIdCache[normalize(artistName)] = matchedId ?: NO_MATCH
+                        onResolved(matchedId)
+                    }
+
+                    override fun onFailure(call: Call<List<PopinnArtist>>, throwable: Throwable) {
+                        Log.w(TAG, "Artist lookup for video match failed", throwable)
+                        onResolved(null)
+                    }
+                })
+        }
+    }
+
+    /** One page (the server maximum) of an artist's videos, newest first; empty on failure. */
+    private fun fetchArtistVideos(api: PopinnApi, artistId: String, onFetched: (List<PopinnVideo>) -> Unit) {
         api.getVideos(artistId, null, PopinnClient.SORT_LATEST, PopinnClient.SORT_ORDER_DESC, 0, PopinnClient.MAX_PAGE_SIZE)
             .enqueue(object : Callback<PopinnVideoPage> {
                 override fun onResponse(call: Call<PopinnVideoPage>, response: Response<PopinnVideoPage>) {
-                    val videos = if (response.isSuccessful) response.body()?.items ?: emptyList() else emptyList()
-                    val target = normalize(title)
-                    val match = videos.firstOrNull { normalize(it.title ?: "") == target }
-                        ?: videos.firstOrNull {
-                            val vt = normalize(it.title ?: "")
-                            vt.isNotEmpty() && (vt.contains(target) || target.contains(vt))
-                        }
-                    result.postValue(match)
+                    onFetched(if (response.isSuccessful) response.body()?.items ?: emptyList() else emptyList())
                 }
 
                 override fun onFailure(call: Call<PopinnVideoPage>, throwable: Throwable) {
                     Log.w(TAG, "Video match fetch failed", throwable)
-                    result.postValue(null)
+                    onFetched(emptyList())
                 }
             })
+    }
+
+    /** An exact normalized title match first, then a loose containment either way ("Song (Official Video)"). */
+    private fun matchTitle(videos: List<PopinnVideo>, title: String): PopinnVideo? {
+        val target = normalize(title)
+        if (target.isEmpty()) return null
+        return videos.firstOrNull { normalize(it.title ?: "") == target }
+            ?: videos.firstOrNull {
+                val vt = normalize(it.title ?: "")
+                vt.isNotEmpty() && (vt.contains(target) || target.contains(vt))
+            }
     }
 
     /** One page of videos for an already resolved Popinn artist id. */
