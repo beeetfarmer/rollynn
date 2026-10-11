@@ -1,0 +1,64 @@
+name: Copy release to GitHub
+
+# When a release is published on Forgejo, create the same release on the GitHub mirror and upload
+# the same files. The push mirror only carries git data (branches, tags), never releases or assets.
+# Safe to re-run: an existing GitHub release is reused and files already there are skipped.
+#
+# Needs the GH_RELEASE_TOKEN secret: a GitHub fine-grained token for beeetfarmer/rollynn with
+# "Contents: Read and write".
+
+on:
+  release:
+    types: [published]
+
+env:
+  GITHUB_REPO: beeetfarmer/rollynn
+
+jobs:
+  github:
+    name: Create GitHub release
+    runs-on: docker
+    container:
+      image: docker.io/library/alpine:3.22
+    env:
+      FORGEJO_TOKEN: ${{ github.token }}
+      GH_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
+      TAG: ${{ github.event.release.tag_name }}
+    steps:
+      - name: Install tools
+        run: apk add --no-cache curl jq
+
+      - name: Copy release and files
+        run: |
+          set -eu
+          [ -n "$GH_TOKEN" ] || { echo "Set the GH_RELEASE_TOKEN secret"; exit 1; }
+          gh_api() { curl -sS -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "$@"; }
+
+          # The Forgejo release as published, with its files.
+          curl -sSf -H "Authorization: token $FORGEJO_TOKEN" \
+            "$GITHUB_SERVER_URL/api/v1/repos/$GITHUB_REPOSITORY/releases/tags/$TAG" > forgejo.json
+          echo "Forgejo release $TAG has $(jq '.assets | length' forgejo.json) file(s)"
+
+          # Reuse the GitHub release if a previous run made it, otherwise create it. target_commitish
+          # makes GitHub create the tag itself if the mirror hasn't pushed it yet.
+          gh_api "https://api.github.com/repos/$GITHUB_REPO/releases/tags/$TAG" > github.json
+          if [ "$(jq -r '.id // empty' github.json)" = "" ]; then
+            jq -n --arg tag "$TAG" --arg sha "$GITHUB_SHA" --slurpfile f forgejo.json \
+              '{tag_name: $tag, target_commitish: $sha, name: ($f[0].name // $tag),
+                body: ($f[0].body // ""), prerelease: $f[0].prerelease}' > new.json
+            gh_api -X POST --data @new.json "https://api.github.com/repos/$GITHUB_REPO/releases" > github.json
+          fi
+          id=$(jq -r '.id // empty' github.json)
+          [ -n "$id" ] || { echo "Could not create the GitHub release:"; cat github.json; exit 1; }
+          echo "GitHub release: $(jq -r .html_url github.json)"
+
+          # Upload each Forgejo file the GitHub release doesn't have yet.
+          jq -r '.assets[] | [.name, .browser_download_url] | @tsv' forgejo.json | while IFS="$(printf '\t')" read -r name url; do
+            if jq -e --arg n "$name" '.assets[]? | select(.name == $n)' github.json > /dev/null; then
+              echo "Already on GitHub: $name"; continue
+            fi
+            curl -sSfL -H "Authorization: token $FORGEJO_TOKEN" -o asset.bin "$url"
+            gh_api -f -X POST -H "Content-Type: application/octet-stream" --data-binary @asset.bin \
+              "https://uploads.github.com/repos/$GITHUB_REPO/releases/$id/assets?name=$(jq -rn --arg n "$name" '$n|@uri')" > /dev/null
+            echo "Uploaded: $name"
+          done
