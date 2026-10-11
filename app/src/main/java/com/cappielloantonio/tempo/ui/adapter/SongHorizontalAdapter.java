@@ -145,6 +145,8 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
     private static void tintIcons(View view, android.content.res.ColorStateList tint) {
         if (view instanceof android.widget.ImageView) {
             androidx.core.widget.ImageViewCompat.setImageTintList((android.widget.ImageView) view, tint);
+            // The heart and more icons are set as the view's background, not its image.
+            androidx.core.view.ViewCompat.setBackgroundTintList(view, tint);
         } else if (view instanceof ViewGroup) {
             ViewGroup group = (ViewGroup) view;
             for (int i = 0; i < group.getChildCount(); i++) tintIcons(group.getChildAt(i), tint);
