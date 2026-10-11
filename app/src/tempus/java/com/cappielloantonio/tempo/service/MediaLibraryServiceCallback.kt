@@ -182,20 +182,12 @@ open class MediaLibrarySessionCallback(
     private fun buildCustomLayout(player: Player, isRatingPending: Boolean = false): ImmutableList<CommandButton> {
         val customLayout = mutableListOf<CommandButton>()
 
-        val showShuffle = Preferences.showShuffleInsteadOfHeart()
-
-        if (!showShuffle) {
-            if (player.currentMediaItem != null && !isRatingPending) {
-                if ((player.mediaMetadata.userRating as HeartRating?)?.isHeart == true) {
-                    customLayout.add(customCommandToggleHeartOn)
-                } else {
-                    customLayout.add(customCommandToggleHeartOff)
-                }
+        if (player.currentMediaItem != null && !isRatingPending) {
+            if ((player.mediaMetadata.userRating as HeartRating?)?.isHeart == true) {
+                customLayout.add(customCommandToggleHeartOn)
+            } else {
+                customLayout.add(customCommandToggleHeartOff)
             }
-        } else {
-            customLayout.add(
-                if (player.shuffleModeEnabled) customCommandToggleShuffleModeOff else customCommandToggleShuffleModeOn
-            )
         }
 
         // Add repeat button
