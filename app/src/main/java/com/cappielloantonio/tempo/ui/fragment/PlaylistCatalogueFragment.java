@@ -65,6 +65,8 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
     private List<String> folderPlaylistIds = null;
     private Set<String> allAssignedIds = new HashSet<>();
     private List<PlaylistFolder> currentFolders = new ArrayList<>();
+    // Every child folder, before the offline filter drops those without downloads.
+    private List<PlaylistFolder> allFolders;
     private String filterQuery = "";
 
     private boolean selectionMode = false;
@@ -144,11 +146,17 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
                 if (playlists != null) {
                     allPlaylists = playlists;
                     filterPlaylistsForCurrentFolder();
+                    // Offline, which folders show depends on these playlists, and the
+                    // folders may have loaded first, against an empty list.
+                    if (allFolders != null && NetworkUtil.isServerUnreachable()) {
+                        filterAndShowFoldersOffline(allFolders);
+                    }
                 }
             });
 
             folderViewModel.getChildFoldersLive().observe(getViewLifecycleOwner(), folders -> {
                 if (folders != null) {
+                    allFolders = folders;
                     if (NetworkUtil.isServerUnreachable()) {
                         filterAndShowFoldersOffline(folders);
                     } else {
@@ -292,6 +300,8 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
                 .map(Playlist::getId)
                 .collect(Collectors.toSet());
 
+        // The app context, since the fragment may be gone by the time this runs.
+        android.content.Context context = requireContext().getApplicationContext();
         new Thread(() -> {
             PlaylistFolderRepository repo = new PlaylistFolderRepository();
             List<PlaylistFolder> visible = new ArrayList<>();
@@ -303,11 +313,11 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
                     String subtitle;
                     int subCount = repo.getChildFolderCount(folder.getId());
                     if (downloadedCount > 0 && subCount > 0) {
-                        subtitle = getString(R.string.playlist_folder_subtitle_items, downloadedCount, subCount);
+                        subtitle = context.getString(R.string.playlist_folder_subtitle_items, downloadedCount, subCount);
                     } else if (downloadedCount > 0) {
-                        subtitle = getString(R.string.playlist_folder_subtitle_playlists_only, downloadedCount);
+                        subtitle = context.getString(R.string.playlist_folder_subtitle_playlists_only, downloadedCount);
                     } else {
-                        subtitle = getString(R.string.playlist_folder_subtitle_folders_only, subCount);
+                        subtitle = context.getString(R.string.playlist_folder_subtitle_folders_only, subCount);
                     }
                     folderAdapter.setSubtitle(folder.getId(), subtitle);
                 }
