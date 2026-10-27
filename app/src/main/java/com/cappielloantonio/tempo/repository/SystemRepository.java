@@ -20,6 +20,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class SystemRepository {
+    private static final int PING_TIMEOUT_SECONDS = 6;
+
     public void checkUserCredential(SystemCallback callback) {
         App.getSubsonicClientInstance(false)
                 .getSystemClient()
@@ -53,24 +55,27 @@ public class SystemRepository {
     public MutableLiveData<SubsonicResponse> ping() {
         MutableLiveData<SubsonicResponse> pingResult = new MutableLiveData<>();
 
-        App.getSubsonicClientInstance(false)
+        Call<ApiResponse> call = App.getSubsonicClientInstance(false)
                 .getSystemClient()
-                .ping()
-                .enqueue(new Callback<ApiResponse>() {
-                    @Override
-                    public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            pingResult.postValue(response.body().getSubsonicResponse());
-                        } else {
-                            pingResult.postValue(null);
-                        }
-                    }
+                .ping();
+        // The app treats the server as reachable until this fails, so an unreachable one
+        // would stall every screen for the full 20s connect timeout; a ping is tiny.
+        call.timeout().timeout(PING_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+        call.enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    pingResult.postValue(response.body().getSubsonicResponse());
+                } else {
+                    pingResult.postValue(null);
+                }
+            }
 
-                    @Override
-                    public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
-                        pingResult.postValue(null);
-                    }
-                });
+            @Override
+            public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
+                pingResult.postValue(null);
+            }
+        });
 
         return pingResult;
     }
