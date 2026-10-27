@@ -614,6 +614,9 @@
     <string name="playlist_folder_rename">Rinomina</string>
     <string name="playlist_move_to_folder">Sposta nella cartella</string>
     <string name="playlist_remove_downloads">Rimuovi download</string>
+    <string name="playlist_sync_downloads">Sincronizza download</string>
+    <string name="playlist_sync_downloads_started">Sincronizzazione dei download con il server</string>
+    <string name="playlist_sync_downloads_unreachable">Impossibile raggiungere il server per sincronizzare</string>
     <string name="playlist_select_mode">Seleziona</string>
     <string name="rewind_title">Riepilogo</string>
     <string name="search_sort_title">Ordina le ricerche recenti per data</string>

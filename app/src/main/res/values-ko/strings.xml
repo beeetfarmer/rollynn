@@ -499,6 +499,9 @@
     <string name="playlist_move_to_folder">폴더로 이동</string>
     <string name="playlist_pin">고정</string>
     <string name="playlist_remove_downloads">다운로드 제거</string>
+    <string name="playlist_sync_downloads">다운로드 동기화</string>
+    <string name="playlist_sync_downloads_started">서버와 다운로드를 동기화하는 중</string>
+    <string name="playlist_sync_downloads_unreachable">동기화할 서버에 연결할 수 없음</string>
     <string name="playlist_select_mode">선택</string>
     <string name="rewind_title">돌아보기</string>
     <string name="search_sort_title">최근 검색을 시간순으로 정렬</string>

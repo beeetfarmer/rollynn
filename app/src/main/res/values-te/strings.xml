@@ -185,6 +185,9 @@
     <string name="playlist_move_to_folder">ఫోల్డర్‌కు తరలించండి</string>
     <string name="playlist_pin">పిన్ చేయండి</string>
     <string name="playlist_remove_downloads">డౌన్‌లోడ్‌లను తీసివేయండి</string>
+    <string name="playlist_sync_downloads">డౌన్‌లోడ్‌లను సింక్ చేయి</string>
+    <string name="playlist_sync_downloads_started">సర్వర్‌తో డౌన్‌లోడ్‌లు సింక్ అవుతున్నాయి</string>
+    <string name="playlist_sync_downloads_unreachable">సింక్ చేయడానికి సర్వర్‌ను చేరుకోలేకపోయాం</string>
     <string name="playlist_select_mode">ఎంచుకోండి</string>
     <string name="podcast_channel_catalogue_title">ఛానెల్‌లు</string>
     <string name="podcast_channel_catalogue_title_expanded">ఛానెల్‌లను బ్రౌజ్ చేయండి</string>

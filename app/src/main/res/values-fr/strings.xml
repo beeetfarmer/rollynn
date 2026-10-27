@@ -622,6 +622,9 @@
     <string name="playlist_move_to_folder">Déplacer vers un dossier</string>
     <string name="playlist_pin">Épingler</string>
     <string name="playlist_remove_downloads">Supprimer les téléchargements</string>
+    <string name="playlist_sync_downloads">Synchroniser les téléchargements</string>
+    <string name="playlist_sync_downloads_started">Synchronisation des téléchargements avec le serveur</string>
+    <string name="playlist_sync_downloads_unreachable">Impossible de joindre le serveur pour synchroniser</string>
     <string name="playlist_select_mode">Sélectionner</string>
     <string name="rewind_title">Rétrospective</string>
     <string name="search_title_music_video">Clips vidéo</string>

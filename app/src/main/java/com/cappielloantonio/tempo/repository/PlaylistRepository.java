@@ -330,6 +330,7 @@ public class PlaylistRepository {
                 });
     }
 
+    @androidx.media3.common.util.UnstableApi
     private void updateLocalPinnedPlaylistName(String id, String newName) {
         new Thread(() -> {
             List<Playlist> pinned = playlistDao.getAllSync();

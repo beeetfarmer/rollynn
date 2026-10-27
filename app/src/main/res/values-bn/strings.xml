@@ -185,6 +185,9 @@
     <string name="playlist_move_to_folder">ফোল্ডারে সরান</string>
     <string name="playlist_pin">পিন করুন</string>
     <string name="playlist_remove_downloads">ডাউনলোড সরান</string>
+    <string name="playlist_sync_downloads">ডাউনলোড সিঙ্ক করুন</string>
+    <string name="playlist_sync_downloads_started">সার্ভারের সাথে ডাউনলোড সিঙ্ক হচ্ছে</string>
+    <string name="playlist_sync_downloads_unreachable">সিঙ্ক করতে সার্ভারে পৌঁছানো যাচ্ছে না</string>
     <string name="playlist_select_mode">বাছুন</string>
     <string name="podcast_channel_catalogue_title">চ্যানেল</string>
     <string name="podcast_channel_catalogue_title_expanded">চ্যানেল ব্রাউজ করুন</string>

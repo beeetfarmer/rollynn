@@ -616,6 +616,9 @@
     <string name="playlist_move_to_folder">移动到文件夹</string>
     <string name="playlist_pin">固定</string>
     <string name="playlist_remove_downloads">移除下载</string>
+    <string name="playlist_sync_downloads">同步下载</string>
+    <string name="playlist_sync_downloads_started">正在与服务器同步下载</string>
+    <string name="playlist_sync_downloads_unreachable">无法连接服务器进行同步</string>
     <string name="playlist_select_mode">选择</string>
     <string name="rewind_title">回顾</string>
     <string name="search_title_music_video">音乐视频</string>

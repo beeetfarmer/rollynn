@@ -604,6 +604,9 @@
     <string name="playlist_move_to_folder">Mou a una carpeta</string>
     <string name="playlist_pin">Fixa</string>
     <string name="playlist_remove_downloads">Suprimeix les baixades</string>
+    <string name="playlist_sync_downloads">Sincronitza les baixades</string>
+    <string name="playlist_sync_downloads_started">S\'estan sincronitzant les baixades amb el servidor</string>
+    <string name="playlist_sync_downloads_unreachable">No es pot connectar amb el servidor per sincronitzar</string>
     <string name="playlist_select_mode">Selecciona</string>
     <string name="rewind_title">Resum</string>
     <string name="search_sort_title">Ordena les cerques recents per data</string>

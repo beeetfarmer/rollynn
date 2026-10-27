@@ -524,6 +524,9 @@
     <string name="playlist_move_to_folder">Переместить в папку</string>
     <string name="playlist_pin">Закрепить</string>
     <string name="playlist_remove_downloads">Удалить загрузки</string>
+    <string name="playlist_sync_downloads">Синхронизировать загрузки</string>
+    <string name="playlist_sync_downloads_started">Синхронизация загрузок с сервером</string>
+    <string name="playlist_sync_downloads_unreachable">Не удаётся подключиться к серверу для синхронизации</string>
     <string name="playlist_select_mode">Выбрать</string>
     <string name="rewind_title">Итоги</string>
     <string name="search_sort_title">Сортировать недавние поиски по времени</string>

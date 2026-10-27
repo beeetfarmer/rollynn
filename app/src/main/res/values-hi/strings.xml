@@ -185,6 +185,9 @@
     <string name="playlist_move_to_folder">फ़ोल्डर में ले जाएँ</string>
     <string name="playlist_pin">पिन करें</string>
     <string name="playlist_remove_downloads">डाउनलोड हटाएँ</string>
+    <string name="playlist_sync_downloads">डाउनलोड सिंक करें</string>
+    <string name="playlist_sync_downloads_started">सर्वर के साथ डाउनलोड सिंक हो रहे हैं</string>
+    <string name="playlist_sync_downloads_unreachable">सिंक करने के लिए सर्वर तक नहीं पहुँच सके</string>
     <string name="playlist_select_mode">चुनें</string>
     <string name="podcast_channel_catalogue_title">चैनल</string>
     <string name="podcast_channel_catalogue_title_expanded">चैनल ब्राउज़ करें</string>

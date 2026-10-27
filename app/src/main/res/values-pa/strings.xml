@@ -185,6 +185,9 @@
     <string name="playlist_move_to_folder">ਫੋਲਡਰ ਵਿੱਚ ਭੇਜੋ</string>
     <string name="playlist_pin">ਪਿੰਨ ਕਰੋ</string>
     <string name="playlist_remove_downloads">ਡਾਊਨਲੋਡ ਹਟਾਓ</string>
+    <string name="playlist_sync_downloads">ਡਾਊਨਲੋਡ ਸਿੰਕ ਕਰੋ</string>
+    <string name="playlist_sync_downloads_started">ਸਰਵਰ ਨਾਲ ਡਾਊਨਲੋਡ ਸਿੰਕ ਹੋ ਰਹੇ ਹਨ</string>
+    <string name="playlist_sync_downloads_unreachable">ਸਿੰਕ ਕਰਨ ਲਈ ਸਰਵਰ ਤੱਕ ਨਹੀਂ ਪਹੁੰਚ ਸਕੇ</string>
     <string name="playlist_select_mode">ਚੁਣੋ</string>
     <string name="podcast_channel_catalogue_title">ਚੈਨਲ</string>
     <string name="podcast_channel_catalogue_title_expanded">ਚੈਨਲ ਬ੍ਰਾਊਜ਼ ਕਰੋ</string>

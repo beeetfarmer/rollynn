@@ -624,6 +624,9 @@
     <string name="playlist_move_to_folder">Mută în dosar</string>
     <string name="playlist_pin">Fixează</string>
     <string name="playlist_remove_downloads">Elimină descărcările</string>
+    <string name="playlist_sync_downloads">Sincronizează descărcările</string>
+    <string name="playlist_sync_downloads_started">Se sincronizează descărcările cu serverul</string>
+    <string name="playlist_sync_downloads_unreachable">Serverul nu poate fi accesat pentru sincronizare</string>
     <string name="playlist_select_mode">Selectează</string>
     <string name="rewind_title">Retrospectivă</string>
     <string name="search_title_music_video">Videoclipuri</string>

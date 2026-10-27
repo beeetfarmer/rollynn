@@ -185,6 +185,9 @@
     <string name="playlist_move_to_folder">கோப்புறைக்கு நகர்த்து</string>
     <string name="playlist_pin">பின் செய்</string>
     <string name="playlist_remove_downloads">பதிவிறக்கங்களை அகற்று</string>
+    <string name="playlist_sync_downloads">பதிவிறக்கங்களை ஒத்திசை</string>
+    <string name="playlist_sync_downloads_started">சேவையகத்துடன் பதிவிறக்கங்கள் ஒத்திசைக்கப்படுகின்றன</string>
+    <string name="playlist_sync_downloads_unreachable">ஒத்திசைக்க சேவையகத்தை அடைய முடியவில்லை</string>
     <string name="playlist_select_mode">தேர்ந்தெடு</string>
     <string name="podcast_channel_catalogue_title">சேனல்கள்</string>
     <string name="podcast_channel_catalogue_title_expanded">சேனல்களை உலாவுக</string>

@@ -185,6 +185,9 @@
     <string name="playlist_move_to_folder">ഫോൾഡറിലേക്ക് നീക്കുക</string>
     <string name="playlist_pin">പിൻ ചെയ്യുക</string>
     <string name="playlist_remove_downloads">ഡൗൺലോഡുകൾ നീക്കുക</string>
+    <string name="playlist_sync_downloads">ഡൗൺലോഡുകൾ സിങ്ക് ചെയ്യുക</string>
+    <string name="playlist_sync_downloads_started">സെർവറുമായി ഡൗൺലോഡുകൾ സിങ്ക് ചെയ്യുന്നു</string>
+    <string name="playlist_sync_downloads_unreachable">സിങ്ക് ചെയ്യാൻ സെർവറിൽ എത്താനാകുന്നില്ല</string>
     <string name="playlist_select_mode">തിരഞ്ഞെടുക്കുക</string>
     <string name="podcast_channel_catalogue_title">ചാനലുകൾ</string>
     <string name="podcast_channel_catalogue_title_expanded">ചാനലുകൾ ബ്രൗസ് ചെയ്യുക</string>

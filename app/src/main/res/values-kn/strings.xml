@@ -185,6 +185,9 @@
     <string name="playlist_move_to_folder">ಫೋಲ್ಡರ್‌ಗೆ ಸರಿಸಿ</string>
     <string name="playlist_pin">ಪಿನ್ ಮಾಡಿ</string>
     <string name="playlist_remove_downloads">ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ತೆಗೆದುಹಾಕಿ</string>
+    <string name="playlist_sync_downloads">ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಿ</string>
+    <string name="playlist_sync_downloads_started">ಸರ್ವರ್‌ನೊಂದಿಗೆ ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತಿದೆ</string>
+    <string name="playlist_sync_downloads_unreachable">ಸಿಂಕ್ ಮಾಡಲು ಸರ್ವರ್ ತಲುಪಲಾಗುತ್ತಿಲ್ಲ</string>
     <string name="playlist_select_mode">ಆಯ್ಕೆಮಾಡಿ</string>
     <string name="podcast_channel_catalogue_title">ಚಾನೆಲ್‌ಗಳು</string>
     <string name="podcast_channel_catalogue_title_expanded">ಚಾನೆಲ್‌ಗಳನ್ನು ಬ್ರೌಸ್ ಮಾಡಿ</string>

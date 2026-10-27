@@ -462,6 +462,9 @@
     <string name="playlist_move_to_folder">Mover para pasta</string>
     <string name="playlist_pin">Fixar</string>
     <string name="playlist_remove_downloads">Remover downloads</string>
+    <string name="playlist_sync_downloads">Sincronizar transferências</string>
+    <string name="playlist_sync_downloads_started">A sincronizar transferências com o servidor</string>
+    <string name="playlist_sync_downloads_unreachable">Não é possível contactar o servidor para sincronizar</string>
     <string name="playlist_select_mode">Selecionar</string>
     <string name="rewind_title">Retrospectiva</string>
     <string name="search_sort_title">Ordenar pesquisas recentes por data</string>

@@ -604,6 +604,9 @@
     <string name="playlist_move_to_folder">Mover a carpeta</string>
     <string name="playlist_pin">Fijar</string>
     <string name="playlist_remove_downloads">Eliminar descargas</string>
+    <string name="playlist_sync_downloads">Sincronizar descargas</string>
+    <string name="playlist_sync_downloads_started">Sincronizando descargas con el servidor</string>
+    <string name="playlist_sync_downloads_unreachable">No se puede conectar con el servidor para sincronizar</string>
     <string name="playlist_select_mode">Seleccionar</string>
     <string name="rewind_title">Resumen</string>
     <string name="search_title_music_video">Videoclips</string>

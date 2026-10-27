@@ -497,6 +497,9 @@
     <string name="playlist_move_to_folder">In Ordner verschieben</string>
     <string name="playlist_pin">Anheften</string>
     <string name="playlist_remove_downloads">Downloads entfernen</string>
+    <string name="playlist_sync_downloads">Downloads synchronisieren</string>
+    <string name="playlist_sync_downloads_started">Downloads werden mit dem Server synchronisiert</string>
+    <string name="playlist_sync_downloads_unreachable">Server zum Synchronisieren nicht erreichbar</string>
     <string name="playlist_select_mode">Auswählen</string>
     <string name="rewind_title">Rückblick</string>
     <string name="search_sort_title">Letzte Suchen chronologisch sortieren</string>

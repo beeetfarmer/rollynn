@@ -528,6 +528,9 @@
     <string name="playlist_move_to_folder">Klasöre taşı</string>
     <string name="playlist_pin">Sabitle</string>
     <string name="playlist_remove_downloads">İndirmeleri kaldır</string>
+    <string name="playlist_sync_downloads">İndirmeleri eşitle</string>
+    <string name="playlist_sync_downloads_started">İndirmeler sunucuyla eşitleniyor</string>
+    <string name="playlist_sync_downloads_unreachable">Eşitlemek için sunucuya ulaşılamıyor</string>
     <string name="playlist_select_mode">Seç</string>
     <string name="rewind_title">Özet</string>
     <string name="search_sort_title">Son aramaları tarihe göre sırala</string>
