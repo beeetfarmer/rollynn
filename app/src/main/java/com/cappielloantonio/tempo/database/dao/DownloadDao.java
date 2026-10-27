@@ -5,8 +5,10 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Transaction;
 
 import com.cappielloantonio.tempo.model.Download;
+import com.cappielloantonio.tempo.model.DownloadPlaylistEntry;
 
 import java.util.List;
 
@@ -42,18 +44,47 @@ public interface DownloadDao {
     @Query("DELETE FROM download")
     void deleteAll();
 
-    @Query("SELECT * FROM download WHERE playlist_id = :playlistId AND download_state = 1 ORDER BY CASE WHEN playlist_position < 0 THEN 1 ELSE 0 END, playlist_position ASC, disc_number, track ASC")
+    @Query("SELECT d.* FROM download d JOIN download_playlist p ON p.download_id = d.id WHERE p.playlist_id = :playlistId AND d.download_state = 1 ORDER BY CASE WHEN p.position < 0 THEN 1 ELSE 0 END, p.position ASC, d.disc_number, d.track ASC")
     List<Download> getByPlaylistIdSync(String playlistId);
 
-    @Query("SELECT playlist_id, playlist_name, COUNT(*) as song_count, MIN(cover_art_id) as cover_art_id, COALESCE(SUM(duration), 0) as total_duration FROM download WHERE playlist_id IS NOT NULL AND download_state = 1 GROUP BY playlist_id, playlist_name")
+    /** Downloads in the playlist that no other downloaded playlist holds. */
+    @Query("SELECT d.* FROM download d JOIN download_playlist p ON p.download_id = d.id WHERE p.playlist_id = :playlistId AND NOT EXISTS (SELECT 1 FROM download_playlist o WHERE o.download_id = d.id AND o.playlist_id != :playlistId)")
+    List<Download> getOnlyInPlaylistSync(String playlistId);
+
+    @Query("SELECT p.playlist_id, MAX(p.playlist_name) as playlist_name, COUNT(*) as song_count, MIN(d.cover_art_id) as cover_art_id, COALESCE(SUM(d.duration), 0) as total_duration FROM download_playlist p JOIN download d ON d.id = p.download_id WHERE d.download_state = 1 GROUP BY p.playlist_id")
     List<DownloadedPlaylistInfo> getDownloadedPlaylistsSync();
 
     @Query("SELECT * FROM download WHERE download_state = 1 AND (title LIKE '%' || :query || '%' OR artist LIKE '%' || :query || '%' OR album LIKE '%' || :query || '%') ORDER BY artist, album, disc_number, track ASC")
     List<Download> searchSync(String query);
 
-    @Query("SELECT COUNT(*) FROM download WHERE playlist_id = :playlistId AND download_state = 1")
+    @Query("SELECT COUNT(*) FROM download_playlist p JOIN download d ON d.id = p.download_id WHERE p.playlist_id = :playlistId AND d.download_state = 1")
     int getDownloadCountForPlaylist(String playlistId);
 
-    @Query("SELECT DISTINCT playlist_id FROM download WHERE playlist_id IS NOT NULL AND download_state = 1")
+    @Query("SELECT DISTINCT p.playlist_id FROM download_playlist p JOIN download d ON d.id = p.download_id WHERE d.download_state = 1")
     List<String> getDownloadedPlaylistIds();
+
+    @Query("SELECT playlist_id FROM download_playlist WHERE download_id = :downloadId")
+    List<String> getPlaylistIdsFor(String downloadId);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertPlaylistEntries(List<DownloadPlaylistEntry> entries);
+
+    @Query("DELETE FROM download_playlist WHERE playlist_id = :playlistId")
+    void deletePlaylistEntries(String playlistId);
+
+    @Query("DELETE FROM download_playlist WHERE download_id = :downloadId")
+    void deletePlaylistEntriesForDownload(String downloadId);
+
+    @Query("DELETE FROM download_playlist WHERE download_id IN (:downloadIds)")
+    void deletePlaylistEntriesForDownloads(List<String> downloadIds);
+
+    @Query("DELETE FROM download_playlist")
+    void deleteAllPlaylistEntries();
+
+    /** Makes the playlist's downloaded tracks exactly {@code entries}. */
+    @Transaction
+    default void replacePlaylistEntries(String playlistId, List<DownloadPlaylistEntry> entries) {
+        deletePlaylistEntries(playlistId);
+        insertPlaylistEntries(entries);
+    }
 }

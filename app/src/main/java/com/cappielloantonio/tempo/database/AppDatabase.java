@@ -22,6 +22,7 @@ import com.cappielloantonio.tempo.database.dao.ServerDao;
 import com.cappielloantonio.tempo.database.dao.SessionMediaItemDao;
 import com.cappielloantonio.tempo.model.Chronology;
 import com.cappielloantonio.tempo.model.Download;
+import com.cappielloantonio.tempo.model.DownloadPlaylistEntry;
 import com.cappielloantonio.tempo.model.Favorite;
 import com.cappielloantonio.tempo.model.LyricsCache;
 import com.cappielloantonio.tempo.model.Queue;
@@ -39,8 +40,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 @UnstableApi
 @Database(
-        version = 19,
-        entities = {Queue.class, Server.class, RecentSearch.class, Download.class, Chronology.class, Favorite.class, SessionMediaItem.class, Playlist.class, LyricsCache.class, Scrobble.class, PlaylistFolder.class, PlaylistFolderEntry.class},
+        version = 20,
+        entities = {Queue.class, Server.class, RecentSearch.class, Download.class, Chronology.class, Favorite.class, SessionMediaItem.class, Playlist.class, LyricsCache.class, Scrobble.class, PlaylistFolder.class, PlaylistFolderEntry.class, DownloadPlaylistEntry.class},
         autoMigrations = {@AutoMigration(from = 10, to = 11), @AutoMigration(from = 11, to = 12)}
 )
 @TypeConverters({DateConverters.class})
@@ -96,10 +97,26 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    // Playlist membership moves out of the download row so a track can belong to several playlists.
+    static final Migration MIGRATION_19_20 = new Migration(19, 20) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS `download_playlist` (" +
+                    "`download_id` TEXT NOT NULL, " +
+                    "`playlist_id` TEXT NOT NULL, " +
+                    "`playlist_name` TEXT, " +
+                    "`position` INTEGER NOT NULL DEFAULT -1, " +
+                    "PRIMARY KEY(`download_id`, `playlist_id`))");
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_download_playlist_playlist_id` ON `download_playlist` (`playlist_id`)");
+            db.execSQL("INSERT OR IGNORE INTO `download_playlist` (`download_id`, `playlist_id`, `playlist_name`, `position`) " +
+                    "SELECT `id`, `playlist_id`, `playlist_name`, `playlist_position` FROM `download` WHERE `playlist_id` IS NOT NULL");
+        }
+    };
+
     public static synchronized AppDatabase getInstance() {
         if (instance == null) {
             instance = Room.databaseBuilder(App.getContext(), AppDatabase.class, DB_NAME)
-                    .addMigrations(MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19)
+                    .addMigrations(MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20)
                     .fallbackToDestructiveMigration()
                     .build();
         }

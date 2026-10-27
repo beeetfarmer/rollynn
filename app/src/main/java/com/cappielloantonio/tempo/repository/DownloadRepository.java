@@ -166,6 +166,7 @@ public class DownloadRepository {
         @Override
         public void run() {
             downloadDao.deleteAll();
+            downloadDao.deleteAllPlaylistEntries();
         }
     }
 
@@ -193,6 +194,7 @@ public class DownloadRepository {
         @Override
         public void run() {
             downloadDao.delete(id);
+            downloadDao.deletePlaylistEntriesForDownload(id);
         }
     }
 
@@ -208,6 +210,7 @@ public class DownloadRepository {
         @Override
         public void run() {
             downloadDao.deleteByIds(ids);
+            downloadDao.deletePlaylistEntriesForDownloads(ids);
         }
     }
 }

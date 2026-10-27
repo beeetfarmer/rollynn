@@ -143,29 +143,35 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_download_playlist) {
-            playlistPageViewModel.getPlaylistSongLiveList().observe(getViewLifecycleOwner(), songs -> {
-                if (isVisible() && getActivity() != null) {
-                    Playlist downloadPlaylist = playlistPageViewModel.getPlaylist();
-                    PlaylistCoverCache.save(downloadPlaylist.getId(), downloadPlaylist.getCoverArtId());
-                    if (Preferences.getDownloadDirectoryUri() == null) {
-                        downloadTotalCount = (int) songs.stream().map(song -> song.getId()).distinct().count();
-                        playlistPageViewModel.setDownloadInProgress(downloadPlaylist.getId(), downloadTotalCount);
-                        showDownloadProgress(0, downloadTotalCount);
-                        List<Download> toDownloadList = new ArrayList<>();
-                        for (int position = 0; position < songs.size(); position++) {
-                            Download toDownload = new Download(songs.get(position));
-                            toDownload.setPlaylistId(downloadPlaylist.getId());
-                            toDownload.setPlaylistName(downloadPlaylist.getName());
-                            toDownload.setPlaylistPosition(position);
-                            toDownloadList.add(toDownload);
+            // One shot: a later refresh of the song list must not start the download again.
+            playlistPageViewModel.getPlaylistSongLiveList().observe(getViewLifecycleOwner(), new androidx.lifecycle.Observer<List<com.cappielloantonio.tempo.subsonic.models.Child>>() {
+                @Override
+                public void onChanged(List<com.cappielloantonio.tempo.subsonic.models.Child> songs) {
+                    if (songs == null) return;
+                    playlistPageViewModel.getPlaylistSongLiveList().removeObserver(this);
+                    if (isVisible() && getActivity() != null) {
+                        Playlist downloadPlaylist = playlistPageViewModel.getPlaylist();
+                        PlaylistCoverCache.save(downloadPlaylist.getId(), downloadPlaylist.getCoverArtId());
+                        if (Preferences.getDownloadDirectoryUri() == null) {
+                            downloadTotalCount = (int) songs.stream().map(song -> song.getId()).distinct().count();
+                            playlistPageViewModel.setDownloadInProgress(downloadPlaylist.getId(), downloadTotalCount);
+                            showDownloadProgress(0, downloadTotalCount);
+                            List<Download> toDownloadList = new ArrayList<>();
+                            for (int position = 0; position < songs.size(); position++) {
+                                Download toDownload = new Download(songs.get(position));
+                                toDownload.setPlaylistId(downloadPlaylist.getId());
+                                toDownload.setPlaylistName(downloadPlaylist.getName());
+                                toDownload.setPlaylistPosition(position);
+                                toDownloadList.add(toDownload);
+                            }
+                            DownloadUtil.getDownloadTracker(requireContext()).download(
+                                MappingUtil.mapDownloads(songs),
+                                toDownloadList
+                            );
+                            startTrackingDownloadProgress();
+                        } else {
+                            songs.forEach(child -> ExternalAudioWriter.downloadToUserDirectory(requireContext(), child));
                         }
-                        DownloadUtil.getDownloadTracker(requireContext()).download(
-                            MappingUtil.mapDownloads(songs),
-                            toDownloadList
-                        );
-                        startTrackingDownloadProgress();
-                    } else {
-                        songs.forEach(child -> ExternalAudioWriter.downloadToUserDirectory(requireContext(), child));
                     }
                 }
             });
@@ -483,18 +489,20 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
         String playlistId = playlistPageViewModel.getPlaylist().getId();
         new Thread(() -> {
             DownloadDao downloadDao = AppDatabase.getInstance().downloadDao();
-            List<Download> downloads = new ArrayList<>(downloadDao.getByPlaylistIdSync(playlistId));
-            if (!downloads.isEmpty()) {
-                List<androidx.media3.common.MediaItem> mediaItems = downloads.stream()
-                        .map(MappingUtil::mapDownload)
-                        .collect(Collectors.toList());
-                if (getActivity() != null) {
-                    requireActivity().runOnUiThread(() -> {
+            // Tracks another downloaded playlist still holds stay on the device.
+            List<Download> downloads = new ArrayList<>(downloadDao.getOnlyInPlaylistSync(playlistId));
+            downloadDao.deletePlaylistEntries(playlistId);
+            List<androidx.media3.common.MediaItem> mediaItems = downloads.stream()
+                    .map(MappingUtil::mapDownload)
+                    .collect(Collectors.toList());
+            if (getActivity() != null) {
+                requireActivity().runOnUiThread(() -> {
+                    if (!downloads.isEmpty()) {
                         DownloadUtil.getDownloadTracker(requireContext()).remove(mediaItems, downloads);
-                        PlaylistCoverCache.remove(playlistId);
-                        updateRemoveDownloadsVisibility();
-                    });
-                }
+                    }
+                    PlaylistCoverCache.remove(playlistId);
+                    updateRemoveDownloadsVisibility();
+                });
             }
         }).start();
     }

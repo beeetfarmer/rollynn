@@ -18,12 +18,19 @@ import androidx.media3.exoplayer.offline.DownloadManager;
 import androidx.media3.exoplayer.offline.DownloadRequest;
 import androidx.media3.exoplayer.offline.DownloadService;
 
+import com.cappielloantonio.tempo.database.AppDatabase;
+import com.cappielloantonio.tempo.database.dao.DownloadDao;
+import com.cappielloantonio.tempo.model.DownloadPlaylistEntry;
 import com.cappielloantonio.tempo.repository.DownloadRepository;
 import com.cappielloantonio.tempo.util.DownloadUtil;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @UnstableApi
 public class DownloaderManager {
@@ -33,13 +40,16 @@ public class DownloaderManager {
     private final DataSource.Factory dataSourceFactory;
     private final DownloadIndex downloadIndex;
 
-    private static HashMap<String, Download> downloads;
+    // Read from workers as well as the main thread.
+    private static Map<String, Download> downloads;
+    // One thread, so a row's insert always lands before its completion update.
+    private static final ExecutorService dbExecutor = Executors.newSingleThreadExecutor();
 
     public DownloaderManager(Context context, DataSource.Factory dataSourceFactory, DownloadManager downloadManager) {
         this.context = context.getApplicationContext();
         this.dataSourceFactory = dataSourceFactory;
 
-        downloads = new HashMap<>();
+        downloads = new ConcurrentHashMap<>();
         downloadIndex = downloadManager.getDownloadIndex();
 
         loadDownloads();
@@ -70,6 +80,25 @@ public class DownloaderManager {
     }
 
     public void download(MediaItem mediaItem, com.cappielloantonio.tempo.model.Download download) {
+        if (download.getPlaylistId() != null) {
+            DownloadPlaylistEntry entry = new DownloadPlaylistEntry(download.getId(), download.getPlaylistId(), download.getPlaylistName(), download.getPlaylistPosition());
+            dbExecutor.execute(() -> getDownloadDao().insertPlaylistEntries(Collections.singletonList(entry)));
+        }
+
+        @Nullable Download existing = downloads.get(mediaItem.mediaId);
+        if (existing != null && existing.state == Download.STATE_COMPLETED) {
+            // Already on the device: refresh its details from the server rather than
+            // fetching it again, which would also hide it until the refetch finished.
+            dbExecutor.execute(() -> {
+                com.cappielloantonio.tempo.model.Download row = getDownloadDao().getOne(download.getId());
+                download.setDownloadUri(row != null ? row.getDownloadUri() : mediaItem.requestMetadata.mediaUri.toString());
+                download.setDownloadState(1);
+                getDownloadDao().insert(download);
+            });
+            com.cappielloantonio.tempo.glide.CoverArtCache.cacheInBackground(download.getCoverArtId());
+            return;
+        }
+
         download.setDownloadUri(mediaItem.requestMetadata.mediaUri.toString());
 
         DownloadService.sendAddDownload(context, DownloaderService.class, buildDownloadRequest(mediaItem), false);
@@ -131,8 +160,12 @@ public class DownloaderManager {
         return new DownloadRepository();
     }
 
+    private static DownloadDao getDownloadDao() {
+        return AppDatabase.getInstance().downloadDao();
+    }
+
     private static void insertDatabase(com.cappielloantonio.tempo.model.Download download) {
-        getDownloadRepository().insert(download);
+        dbExecutor.execute(() -> getDownloadDao().insert(download));
     }
 
     private static void deleteDatabase(String id) {
@@ -144,6 +177,6 @@ public class DownloaderManager {
     }
 
     private static void updateDatabase(String id) {
-        getDownloadRepository().update(id);
+        dbExecutor.execute(() -> getDownloadDao().update(id));
     }
 }
