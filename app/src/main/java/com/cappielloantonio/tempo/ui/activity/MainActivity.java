@@ -59,7 +59,9 @@ import com.google.common.util.concurrent.MoreExecutors;
 
 import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
@@ -897,6 +899,14 @@ public class MainActivity extends BaseActivity {
                 "playlist_sync",
                 ExistingPeriodicWorkPolicy.KEEP,
                 syncRequest);
+
+        // KEEP leaves the hourly timer where it was, so also sync now that the server answered.
+        WorkManager.getInstance(this).enqueueUniqueWork(
+                "playlist_sync_now",
+                ExistingWorkPolicy.KEEP,
+                new OneTimeWorkRequest.Builder(PlaylistSyncWorker.class)
+                        .setConstraints(constraints)
+                        .build());
     }
 
     private void resetView() {
