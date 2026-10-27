@@ -115,23 +115,16 @@ public class CustomGlideRequest {
         return uri.toString();
     }
 
-    /**
-     * What to load a cover from. Offline that is the copy saved for downloads (or the art
-     * embedded in the file), since a server request would only stall until it times out.
-     */
-    private static Object source(String coverId, int size) {
-        if (NetworkUtil.isServerUnreachable()) return new EmbeddedCoverArtModel(coverId);
-        return createUrl(coverId, size);
-    }
-
     public static void loadAlbumArtBitmap(Context context,
                                           String coverId,
                                           int size,
                                           CustomTarget<Bitmap> target) {
         Glide.with(context)
                 .asBitmap()
-                .load(source(coverId, size))
+                .load(createUrl(coverId, size))
                 .apply(createRequestOptions(context, coverId, ResourceType.Album))
+                // Offline, only what Glide already cached: a request would stall until it times out.
+                .onlyRetrieveFromCache(NetworkUtil.isServerUnreachable())
                 .error(Glide.with(context).asBitmap().load(new EmbeddedCoverArtModel(coverId)))
                 .into(target);
     }
@@ -187,14 +180,14 @@ public class CustomGlideRequest {
     public static class Builder {
         private final RequestManager requestManager;
         private final String coverArtId;
-        private Object item;
+        private String item;
 
         private Builder(Context context, String item, ResourceType type) {
             this.coverArtId = item;
             this.requestManager = Glide.with(context);
 
             if (item != null && !Preferences.isDataSavingMode()) {
-                this.item = source(item, Preferences.getImageSize());
+                this.item = createUrl(item, Preferences.getImageSize());
             }
 
             requestManager.applyDefaultRequestOptions(createRequestOptions(context, item, type));
@@ -210,6 +203,9 @@ public class CustomGlideRequest {
                     .transition(DrawableTransitionOptions.withCrossFade());
 
             if (coverArtId != null) {
+                // Offline, only what Glide already cached, then the art saved for downloads:
+                // a server request would stall until it times out.
+                request = request.onlyRetrieveFromCache(NetworkUtil.isServerUnreachable());
                 request = request.error(
                         requestManager.load(new EmbeddedCoverArtModel(coverArtId))
                 );

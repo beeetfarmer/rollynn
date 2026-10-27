@@ -153,6 +153,8 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
                     if (isVisible() && getActivity() != null) {
                         Playlist downloadPlaylist = playlistPageViewModel.getPlaylist();
                         PlaylistCoverCache.save(downloadPlaylist.getId(), downloadPlaylist.getCoverArtId());
+                        // Keep the playlist's own cover on the device too, for the playlist list offline.
+                        com.cappielloantonio.tempo.glide.CoverArtCache.cacheInBackground(downloadPlaylist.getCoverArtId());
                         if (Preferences.getDownloadDirectoryUri() == null) {
                             downloadTotalCount = (int) songs.stream().map(song -> song.getId()).distinct().count();
                             playlistPageViewModel.setDownloadInProgress(downloadPlaylist.getId(), downloadTotalCount);
