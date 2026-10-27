@@ -24,6 +24,7 @@ import com.bumptech.glide.request.transition.Transition;
 import com.bumptech.glide.signature.ObjectKey;
 import com.cappielloantonio.tempo.App;
 import com.cappielloantonio.tempo.R;
+import com.cappielloantonio.tempo.util.NetworkUtil;
 import com.cappielloantonio.tempo.util.PlayerBackgroundUtil;
 import com.cappielloantonio.tempo.util.Preferences;
 import com.cappielloantonio.tempo.util.Util;
@@ -117,15 +118,24 @@ public class CustomGlideRequest {
         return uri.toString();
     }
 
+    /**
+     * What to load a cover from. Offline that is the copy saved for downloads (or the art
+     * embedded in the file), since a server request would only stall until it times out.
+     */
+    private static Object source(String coverId, int size) {
+        if (NetworkUtil.isServerUnreachable()) return new EmbeddedCoverArtModel(coverId);
+        return createUrl(coverId, size);
+    }
+
     public static void loadAlbumArtBitmap(Context context,
                                           String coverId,
                                           int size,
                                           CustomTarget<Bitmap> target) {
-        String url = createUrl(coverId, size);
         Glide.with(context)
                 .asBitmap()
-                .load(url)
+                .load(source(coverId, size))
                 .apply(createRequestOptions(context, coverId, ResourceType.Album))
+                .error(Glide.with(context).asBitmap().load(new EmbeddedCoverArtModel(coverId)))
                 .into(target);
     }
 
@@ -180,14 +190,14 @@ public class CustomGlideRequest {
     public static class Builder {
         private final RequestManager requestManager;
         private final String coverArtId;
-        private String item;
+        private Object item;
 
         private Builder(Context context, String item, ResourceType type) {
             this.coverArtId = item;
             this.requestManager = Glide.with(context);
 
             if (item != null && !Preferences.isDataSavingMode()) {
-                this.item = createUrl(item, Preferences.getImageSize());
+                this.item = source(item, Preferences.getImageSize());
             }
 
             requestManager.applyDefaultRequestOptions(createRequestOptions(context, item, type));

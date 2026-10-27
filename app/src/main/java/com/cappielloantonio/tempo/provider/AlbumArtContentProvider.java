@@ -15,7 +15,9 @@ import androidx.annotation.Nullable;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.cappielloantonio.tempo.BuildConfig;
+import com.cappielloantonio.tempo.glide.CoverArtCache;
 import com.cappielloantonio.tempo.glide.CustomGlideRequest;
+import com.cappielloantonio.tempo.util.NetworkUtil;
 import com.cappielloantonio.tempo.util.Preferences;
 
 import java.io.File;
@@ -74,13 +76,22 @@ public class AlbumArtContentProvider extends ContentProvider {
             executor.execute(() -> {
                 try (OutputStream out = new ParcelFileDescriptor.AutoCloseOutputStream(writeSide)) {
 
-                    // request artwork from API using Glide
-                    File file = Glide.with(context)
-                            .asFile()
-                            .load(artworkUri)
-                            .diskCacheStrategy(DiskCacheStrategy.DATA)
-                            .submit()
-                            .get();
+                    // Offline, use the copy saved for downloads rather than wait on a request bound to time out.
+                    File file = NetworkUtil.isServerUnreachable() ? CoverArtCache.getCachedFile(albumId) : null;
+                    if (file == null) {
+                        try {
+                            // request artwork from API using Glide
+                            file = Glide.with(context)
+                                    .asFile()
+                                    .load(artworkUri)
+                                    .diskCacheStrategy(DiskCacheStrategy.DATA)
+                                    .submit()
+                                    .get();
+                        } catch (Exception e) {
+                            file = CoverArtCache.getCachedFile(albumId);
+                            if (file == null) throw e;
+                        }
+                    }
 
                     // copy artwork down pipe returned by ContentProvider
                     try (InputStream in = new FileInputStream(file)) {

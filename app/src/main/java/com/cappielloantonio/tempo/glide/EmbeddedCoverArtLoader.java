@@ -90,6 +90,9 @@ public class EmbeddedCoverArtLoader implements ModelLoader<EmbeddedCoverArtModel
             MediaMetadataRetriever retriever = new MediaMetadataRetriever();
             try {
                 Uri uri = Uri.parse(uriString);
+                // A stream URL means the file lives in the player's download cache, which
+                // this can't read; reading the URL would go to the server instead.
+                if (uri.getScheme() != null && uri.getScheme().startsWith("http")) return null;
                 if ("content".equals(uri.getScheme())) {
                     retriever.setDataSource(context, uri);
                 } else {
