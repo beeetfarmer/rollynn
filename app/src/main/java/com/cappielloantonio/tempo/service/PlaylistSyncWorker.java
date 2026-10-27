@@ -4,6 +4,12 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.media3.common.util.UnstableApi;
+import androidx.work.Constraints;
+import androidx.work.Data;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
@@ -37,6 +43,19 @@ import retrofit2.Response;
 public class PlaylistSyncWorker extends Worker {
     // Subsonic "requested data was not found".
     private static final int ERROR_NOT_FOUND = 70;
+    // When set, only this playlist is synced.
+    private static final String KEY_PLAYLIST_ID = "playlist_id";
+
+    /** Syncs one downloaded playlist now, as asked from its page. */
+    public static void syncPlaylistNow(Context context, String playlistId) {
+        WorkManager.getInstance(context).enqueueUniqueWork(
+                "playlist_sync_" + playlistId,
+                ExistingWorkPolicy.KEEP,
+                new OneTimeWorkRequest.Builder(PlaylistSyncWorker.class)
+                        .setConstraints(new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+                        .setInputData(new Data.Builder().putString(KEY_PLAYLIST_ID, playlistId).build())
+                        .build());
+    }
 
     public PlaylistSyncWorker(@NonNull Context context, @NonNull WorkerParameters params) {
         super(context, params);
@@ -53,6 +72,12 @@ public class PlaylistSyncWorker extends Worker {
             DownloadDao downloadDao = AppDatabase.getInstance().downloadDao();
             DownloaderManager tracker = DownloadUtil.getDownloadTracker(getApplicationContext());
             Set<String> refreshed = new HashSet<>();
+
+            String onlyPlaylistId = getInputData().getString(KEY_PLAYLIST_ID);
+            if (onlyPlaylistId != null) {
+                syncPlaylist(onlyPlaylistId, downloadDao, tracker, refreshed);
+                return Result.success();
+            }
 
             for (String playlistId : downloadDao.getDownloadedPlaylistIds()) {
                 syncPlaylist(playlistId, downloadDao, tracker, refreshed);

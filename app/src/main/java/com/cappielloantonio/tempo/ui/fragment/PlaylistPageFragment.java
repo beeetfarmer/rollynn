@@ -179,6 +179,14 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
                 }
             });
             return true;
+        } else if (item.getItemId() == R.id.action_sync_downloads) {
+            if (com.cappielloantonio.tempo.util.NetworkUtil.isServerUnreachable()) {
+                android.widget.Toast.makeText(requireContext(), R.string.playlist_sync_downloads_unreachable, android.widget.Toast.LENGTH_SHORT).show();
+            } else {
+                com.cappielloantonio.tempo.service.PlaylistSyncWorker.syncPlaylistNow(requireContext(), playlistPageViewModel.getPlaylist().getId());
+                android.widget.Toast.makeText(requireContext(), R.string.playlist_sync_downloads_started, android.widget.Toast.LENGTH_SHORT).show();
+            }
+            return true;
         } else if (item.getItemId() == R.id.action_remove_downloads) {
             new MaterialAlertDialogBuilder(requireContext())
                     .setTitle(R.string.playlist_remove_downloads)
@@ -482,6 +490,8 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
                     if (optionsMenu != null) {
                         MenuItem removeItem = optionsMenu.findItem(R.id.action_remove_downloads);
                         if (removeItem != null) removeItem.setVisible(count > 0);
+                        MenuItem syncItem = optionsMenu.findItem(R.id.action_sync_downloads);
+                        if (syncItem != null) syncItem.setVisible(count > 0);
                     }
                 });
             }

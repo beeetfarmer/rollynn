@@ -348,6 +348,9 @@
     <string name="playlist_page_shuffle_button">Shuffle</string>
     <string name="playlist_song_count">Playlist  •  %1$d songs</string>
     <string name="playlist_remove_downloads">Remove downloads</string>
+    <string name="playlist_sync_downloads">Sync downloads</string>
+    <string name="playlist_sync_downloads_started">Syncing downloads with the server</string>
+    <string name="playlist_sync_downloads_unreachable">Can\'t reach the server to sync</string>
     <string name="playlist_remove_downloads_confirm">Remove all downloaded tracks from this playlist?</string>
     <string name="playlist_downloading_progress">Downloading %1$d of %2$d</string>
     <string name="playlist_download_complete">Download complete</string>
