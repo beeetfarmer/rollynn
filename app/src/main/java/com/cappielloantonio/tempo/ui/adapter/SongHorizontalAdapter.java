@@ -251,28 +251,7 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
             tintIcons(holder.item.searchResultSongMoreButton, iconTint);
         }
 
-        Float progress = downloadProgressMap.get(song.getId());
-        if (progress != null && progress < 1.0f) {
-            holder.item.downloadProgressIndicator.setVisibility(View.VISIBLE);
-            holder.item.downloadProgressIndicator.setMax(100);
-            holder.item.downloadProgressIndicator.setProgress((int) (progress * 100));
-            holder.item.searchResultDownloadIndicatorImageView.setVisibility(View.GONE);
-        } else {
-            holder.item.downloadProgressIndicator.setVisibility(View.GONE);
-            if (Preferences.getDownloadDirectoryUri() == null) {
-                if (downloadTracker != null && downloadTracker.isDownloaded(song.getId())) {
-                    holder.item.searchResultDownloadIndicatorImageView.setVisibility(View.VISIBLE);
-                } else {
-                    holder.item.searchResultDownloadIndicatorImageView.setVisibility(View.GONE);
-                }
-            } else {
-                if (ExternalAudioReader.getUri(song) != null) {
-                    holder.item.searchResultDownloadIndicatorImageView.setVisibility(View.VISIBLE);
-                } else {
-                    holder.item.searchResultDownloadIndicatorImageView.setVisibility(View.GONE);
-                }
-            }
-        }
+        bindDownloadState(holder, song);
 
         if (showCoverArt) CustomGlideRequest.Builder
                 .from(holder.itemView.getContext(), song.getCoverArtId(), CustomGlideRequest.ResourceType.Song)
@@ -548,6 +527,21 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
     public void updateDownloadProgress(Map<String, Float> progressMap) {
         this.downloadProgressMap = progressMap != null ? progressMap : new HashMap<>();
         notifyDataSetChanged();
+    }
+
+    private void bindDownloadState(ViewHolder holder, Child song) {
+        Float progress = downloadProgressMap.get(song.getId());
+        boolean inProgress = progress != null && progress < 1.0f;
+        boolean downloaded;
+        if (Preferences.getDownloadDirectoryUri() == null) {
+            downloaded = downloadTracker != null && downloadTracker.isDownloaded(song.getId());
+        } else {
+            downloaded = ExternalAudioReader.getUri(song) != null;
+        }
+        holder.item.searchResultDownloadIndicatorImageView.setVisibility(inProgress || downloaded ? View.VISIBLE : View.GONE);
+        holder.item.downloadIcon.setVisibility(inProgress ? View.GONE : View.VISIBLE);
+        holder.item.downloadProgressIndicator.setVisibility(inProgress ? View.VISIBLE : View.GONE);
+        if (inProgress) holder.item.downloadProgressIndicator.setProgress((int) (progress * 100));
     }
 
     private static class SongDiffCallback extends DiffUtil.Callback {
