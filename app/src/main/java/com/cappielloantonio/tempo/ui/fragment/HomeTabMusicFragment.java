@@ -1268,17 +1268,45 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         playlistHorizontalAdapter = new PlaylistHorizontalAdapter(this);
         bind.pinnedPlaylistsRecyclerView.setAdapter(playlistHorizontalAdapter);
         homeViewModel.getPinnedPlaylists(getViewLifecycleOwner()).observe(getViewLifecycleOwner(), playlists -> {
-            if (playlists == null) {
-                if (bind != null) bind.pinnedPlaylistsSector.setVisibility(View.GONE);
-            } else {
-                if (bind != null)
-                    bind.pinnedPlaylistsSector.setVisibility(!playlists.isEmpty() ? View.VISIBLE : View.GONE);
-
-                playlistHorizontalAdapter.setItems(playlists);
-                java.util.List<String> ids = playlists.stream().map(com.cappielloantonio.tempo.subsonic.models.Playlist::getId).collect(java.util.stream.Collectors.toList());
-                playlistHorizontalAdapter.setPinnedIds(ids);
-            }
+            pinnedPlaylists = playlists;
+            showPinnedPlaylists();
         });
+        // Going on or offline changes which pinned playlists can be opened.
+        activity.getServerReachable().observe(getViewLifecycleOwner(), reachable -> showPinnedPlaylists());
+    }
+
+    private List<com.cappielloantonio.tempo.subsonic.models.Playlist> pinnedPlaylists;
+
+    /** Pinned playlists, only the downloaded ones while the server is out of reach. */
+    private void showPinnedPlaylists() {
+        List<com.cappielloantonio.tempo.subsonic.models.Playlist> playlists = pinnedPlaylists;
+        if (playlists == null) {
+            if (bind != null) bind.pinnedPlaylistsSector.setVisibility(View.GONE);
+            return;
+        }
+        if (!NetworkUtil.isServerUnreachable()) {
+            setPinnedPlaylists(playlists);
+            return;
+        }
+        new Thread(() -> {
+            java.util.Set<String> downloaded = new java.util.HashSet<>(
+                    com.cappielloantonio.tempo.database.AppDatabase.getInstance().downloadDao().getDownloadedPlaylistIds());
+            List<com.cappielloantonio.tempo.subsonic.models.Playlist> available = playlists.stream()
+                    .filter(p -> downloaded.contains(p.getId()))
+                    .collect(java.util.stream.Collectors.toList());
+            if (getActivity() != null) getActivity().runOnUiThread(() -> {
+                // Skip if the pins changed meanwhile; that change shows itself.
+                if (playlists == pinnedPlaylists) setPinnedPlaylists(available);
+            });
+        }).start();
+    }
+
+    private void setPinnedPlaylists(List<com.cappielloantonio.tempo.subsonic.models.Playlist> playlists) {
+        if (bind == null) return;
+        bind.pinnedPlaylistsSector.setVisibility(!playlists.isEmpty() ? View.VISIBLE : View.GONE);
+        playlistHorizontalAdapter.setItems(playlists);
+        List<String> ids = playlists.stream().map(com.cappielloantonio.tempo.subsonic.models.Playlist::getId).collect(java.util.stream.Collectors.toList());
+        playlistHorizontalAdapter.setPinnedIds(ids);
     }
 
     private void initSharesView() {
