@@ -343,6 +343,9 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
         bind.playlistSongCountLabel.setTextColor(secondary);
         bind.playlistDurationLabel.setTextColor(secondary);
         bind.albumBioLabel.setTextColor(secondary);
+        bind.downloadProgressText.setTextColor(secondary);
+        bind.downloadProgressBar.setIndicatorColor(onArt);
+        bind.downloadProgressBar.setTrackColor(androidx.core.graphics.ColorUtils.setAlphaComponent(onArt, 50));
 
         bind.animToolbar.setTitleTextColor(onArt);
         bind.animToolbar.setNavigationIconTint(onArt);

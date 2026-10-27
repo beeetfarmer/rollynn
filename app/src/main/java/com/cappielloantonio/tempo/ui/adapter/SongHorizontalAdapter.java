@@ -250,6 +250,9 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
             tintIcons(holder.item.ratingIndicatorImageView, iconTint);
             tintIcons(holder.item.searchResultDownloadIndicatorImageView, iconTint);
             tintIcons(holder.item.searchResultSongMoreButton, iconTint);
+            holder.item.downloadProgressIndicator.setIndicatorColor(titleColorOverride);
+            holder.item.downloadProgressIndicator.setTrackColor(
+                    androidx.core.graphics.ColorUtils.setAlphaComponent(titleColorOverride, 50));
         }
 
         bindDownloadState(holder, song);
