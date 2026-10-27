@@ -114,11 +114,8 @@ public class PlayerSongQueueAdapter extends RecyclerView.Adapter<PlayerSongQueue
             isDownloaded = ExternalAudioReader.getUri(song) != null;
         }
 
-        if (isDownloaded) {
-            holder.item.downloadIndicatorIcon.setVisibility(View.VISIBLE);
-        } else {
-            holder.item.downloadIndicatorIcon.setVisibility(View.GONE);
-        }
+        // Invisible rather than gone, so the heart and stars line up whether or not a track is downloaded.
+        holder.item.downloadIndicatorIcon.setVisibility(isDownloaded ? View.VISIBLE : View.INVISIBLE);
 
         if (song.getStarred() == null && (song.getUserRating() == null || song.getUserRating() == 0)) {
             holder.item.ratingIndicatorImageView.setVisibility(View.GONE);
