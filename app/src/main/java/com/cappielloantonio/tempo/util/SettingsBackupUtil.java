@@ -252,6 +252,6 @@ public final class SettingsBackupUtil {
 
     /** Suggested file name, dated so successive backups do not collide. */
     public static String suggestedFileName() {
-        return "tempus-settings-" + DateFormat.format("yyyy-MM-dd", new Date()) + ".json";
+        return "rollynn-settings-" + DateFormat.format("yyyy-MM-dd", new Date()) + ".json";
     }
 }
