@@ -21,7 +21,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.MediaSource
-import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.session.*
 import androidx.media3.session.MediaSession.ControllerInfo
 import androidx.media3.extractor.metadata.icy.IcyInfo
@@ -230,8 +229,7 @@ open class BaseMediaService : MediaLibraryService() {
                             shuffledList[0] = shuffledList[index]
                             shuffledList[index] = tmp
                         }
-                        player.shuffleOrder =
-                            DefaultShuffleOrder(shuffledList, kotlin.random.Random.nextLong())
+                        player.shuffleOrder = PlayNextShuffleOrder(shuffledList)
                     }
                 }
             }
@@ -520,6 +518,8 @@ open class BaseMediaService : MediaLibraryService() {
             .setLoadControl(initializeLoadControl())
             .build()
 
+        // Keeps "Play next" tracks next with shuffle on; the default order scatters them.
+        exoplayer.setShuffleOrder(PlayNextShuffleOrder())
         exoplayer.shuffleModeEnabled = Preferences.isShuffleModeEnabled()
         exoplayer.repeatMode = Preferences.getRepeatMode()
     }

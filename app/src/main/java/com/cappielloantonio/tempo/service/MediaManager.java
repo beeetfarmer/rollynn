@@ -363,17 +363,20 @@ public class MediaManager {
                     if (mediaBrowserListenableFuture.isDone()) {
                         Log.e(TAG, "enqueue");
                         MediaBrowser browser = mediaBrowserListenableFuture.get();
+                        // Insert straight after the current track: with shuffle on the "next"
+                        // index can be anywhere in the queue, and with repeat-one it is the
+                        // current track itself.
                         if (playImmediatelyAfter && browser.getNextMediaItemIndex() != -1) {
                             int insertIndex;
                             if (Preferences.getPlayNextBehavior().equals(Preferences.PLAY_NEXT_BEHAVIOR_SEQUENTIAL)) {
                                 if (lastPlayNextInsertedIndex == -1) {
-                                    insertIndex = browser.getNextMediaItemIndex();
+                                    insertIndex = browser.getCurrentMediaItemIndex() + 1;
                                 } else {
                                     insertIndex = Math.min(lastPlayNextInsertedIndex, browser.getMediaItemCount());
                                 }
                                 lastPlayNextInsertedIndex = insertIndex + media.size();
                             } else {
-                                insertIndex = browser.getNextMediaItemIndex();
+                                insertIndex = browser.getCurrentMediaItemIndex() + 1;
                                 lastPlayNextInsertedIndex = insertIndex + media.size();
                             }
                             enqueueDatabase(media, false, insertIndex);
@@ -397,17 +400,20 @@ public class MediaManager {
                     if (mediaBrowserListenableFuture.isDone()) {
                         Log.e(TAG, "enqueue");
                         MediaBrowser browser = mediaBrowserListenableFuture.get();
+                        // Insert straight after the current track: with shuffle on the "next"
+                        // index can be anywhere in the queue, and with repeat-one it is the
+                        // current track itself.
                         if (playImmediatelyAfter && browser.getNextMediaItemIndex() != -1) {
                             int insertIndex;
                             if (Preferences.getPlayNextBehavior().equals(Preferences.PLAY_NEXT_BEHAVIOR_SEQUENTIAL)) {
                                 if (lastPlayNextInsertedIndex == -1) {
-                                    insertIndex = browser.getNextMediaItemIndex();
+                                    insertIndex = browser.getCurrentMediaItemIndex() + 1;
                                 } else {
                                     insertIndex = Math.min(lastPlayNextInsertedIndex, browser.getMediaItemCount());
                                 }
                                 lastPlayNextInsertedIndex = insertIndex + 1;
                             } else {
-                                insertIndex = browser.getNextMediaItemIndex();
+                                insertIndex = browser.getCurrentMediaItemIndex() + 1;
                                 lastPlayNextInsertedIndex = insertIndex + 1;
                             }
                             enqueueDatabase(media, false, insertIndex);
