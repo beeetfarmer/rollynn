@@ -3,6 +3,7 @@ package com.cappielloantonio.tempo.repository;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -22,6 +23,7 @@ import com.cappielloantonio.tempo.util.PlaylistCoverCache;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -50,8 +52,15 @@ public class PlaylistRepository {
 
     public void refreshAllPlaylists() {
         if (NetworkUtil.isServerUnreachable()) {
-            loadPlaylistsFromDownloads();
+            loadPlaylistsFromDownloads(null);
             return;
+        }
+
+        // Until the first ping fails, an unreachable server looks reachable and the request
+        // below takes its full connect timeout (20s) to fail, so show downloads meanwhile.
+        AtomicBoolean serverAnswered = new AtomicBoolean(false);
+        if (allPlaylistsLiveData.getValue() == null) {
+            loadPlaylistsFromDownloads(serverAnswered);
         }
 
         App.getSubsonicClientInstance(false)
@@ -66,21 +75,22 @@ public class PlaylistRepository {
                             for (Playlist p : playlists) {
                                 PlaylistCoverCache.save(p.getId(), p.getCoverArtId());
                             }
+                            serverAnswered.set(true);
                             allPlaylistsLiveData.postValue(playlists);
                         } else {
-                            loadPlaylistsFromDownloads();
+                            loadPlaylistsFromDownloads(null);
                         }
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
-                        loadPlaylistsFromDownloads();
+                        loadPlaylistsFromDownloads(null);
                     }
                 });
     }
 
     @androidx.media3.common.util.UnstableApi
-    private void loadPlaylistsFromDownloads() {
+    private void loadPlaylistsFromDownloads(@Nullable AtomicBoolean unlessServerAnswered) {
         new Thread(() -> {
             DownloadDao downloadDao = AppDatabase.getInstance().downloadDao();
             List<DownloadedPlaylistInfo> infos = downloadDao.getDownloadedPlaylistsSync();
@@ -102,6 +112,7 @@ public class PlaylistRepository {
                 Playlist p = new Playlist(info.playlistId, info.playlistName, info.totalDuration, info.songCount, coverArtId);
                 playlists.add(p);
             }
+            if (unlessServerAnswered != null && unlessServerAnswered.get()) return;
             allPlaylistsLiveData.postValue(playlists);
         }).start();
     }
