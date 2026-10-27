@@ -201,8 +201,9 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull List<Object> payloads) {
-        if (!payloads.isEmpty() && payloads.contains("payload_playback")) {
-            bindPlaybackState(holder, songs.get(position));
+        if (!payloads.isEmpty() && (payloads.contains("payload_playback") || payloads.contains("payload_download"))) {
+            if (payloads.contains("payload_playback")) bindPlaybackState(holder, songs.get(position));
+            if (payloads.contains("payload_download")) bindDownloadState(holder, songs.get(position));
         } else {
             super.onBindViewHolder(holder, position, payloads);
         }
@@ -524,9 +525,16 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
         this.mediaBrowserListenableFuture = mediaBrowserListenableFuture;
     }
 
+    /** Redraws only the download slot of rows whose progress changed, not every row and its cover. */
     public void updateDownloadProgress(Map<String, Float> progressMap) {
-        this.downloadProgressMap = progressMap != null ? progressMap : new HashMap<>();
-        notifyDataSetChanged();
+        Map<String, Float> old = downloadProgressMap;
+        downloadProgressMap = progressMap != null ? progressMap : new HashMap<>();
+        for (int i = 0; i < songs.size(); i++) {
+            String id = songs.get(i).getId();
+            if (!java.util.Objects.equals(old.get(id), downloadProgressMap.get(id))) {
+                notifyItemChanged(i, "payload_download");
+            }
+        }
     }
 
     private void bindDownloadState(ViewHolder holder, Child song) {
