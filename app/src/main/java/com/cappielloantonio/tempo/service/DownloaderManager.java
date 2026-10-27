@@ -165,7 +165,13 @@ public class DownloaderManager {
     }
 
     private static void insertDatabase(com.cappielloantonio.tempo.model.Download download) {
-        dbExecutor.execute(() -> getDownloadDao().insert(download));
+        dbExecutor.execute(() -> {
+            // A re-queued track can finish before this runs; its completion update has then
+            // already been applied, and inserting it as pending would undo it for good.
+            @Nullable Download done = downloads.get(download.getId());
+            if (done != null && done.state == Download.STATE_COMPLETED) download.setDownloadState(1);
+            getDownloadDao().insert(download);
+        });
     }
 
     private static void deleteDatabase(String id) {
