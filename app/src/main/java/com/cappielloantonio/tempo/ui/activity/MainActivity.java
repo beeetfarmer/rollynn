@@ -164,8 +164,11 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (bottomSheetBehavior != null && bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
-            applyPlayerSystemBarColors(true);
+        // BaseActivity has just reset the bars to the default (e.g. after unlocking the
+        // screen); put back the expanded player's colour or the current page's.
+        boolean playerExpanded = bottomSheetBehavior != null && bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED;
+        if (playerExpanded || pageStatusBarColor != null) {
+            applyPlayerSystemBarColors(playerExpanded);
         }
     }
 
