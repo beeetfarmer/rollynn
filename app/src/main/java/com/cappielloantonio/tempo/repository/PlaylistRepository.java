@@ -178,6 +178,14 @@ public class PlaylistRepository {
         return listLivePlaylistSongs;
     }
 
+    /** The playlist's downloaded tracks only, never waiting on the server. */
+    @androidx.media3.common.util.UnstableApi
+    public MutableLiveData<List<Child>> getDownloadedPlaylistSongs(String id) {
+        MutableLiveData<List<Child>> songs = new MutableLiveData<>();
+        loadPlaylistFromDownloads(id, songs);
+        return songs;
+    }
+
     @androidx.media3.common.util.UnstableApi
     private void loadPlaylistFromDownloads(String playlistId, MutableLiveData<List<Child>> target) {
         new Thread(() -> {

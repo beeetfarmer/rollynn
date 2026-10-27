@@ -43,16 +43,40 @@ public class PlaylistPageViewModel extends AndroidViewModel {
         return songLiveList;
     }
 
+    @androidx.annotation.OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)
     private void refreshSongs() {
         if (playlist == null) return;
+        // Both observers run on the main thread, so the flag can't change between check and set.
+        boolean[] serverAnswered = {false};
+
+        // Downloaded tracks first: until the first ping fails, an unreachable server looks
+        // reachable and its answer only comes once the 20s connect timeout runs out.
+        LiveData<List<Child>> localData = playlistRepository.getDownloadedPlaylistSongs(playlist.getId());
+        localData.observeForever(new androidx.lifecycle.Observer<List<Child>>() {
+            @Override
+            public void onChanged(List<Child> songs) {
+                localData.removeObserver(this);
+                if (!serverAnswered[0] && songs != null && !songs.isEmpty()) songLiveList.setValue(songs);
+            }
+        });
+
         LiveData<List<Child>> remoteData = playlistRepository.getPlaylistSongs(playlist.getId());
         remoteData.observeForever(new androidx.lifecycle.Observer<List<Child>>() {
             @Override
             public void onChanged(List<Child> songs) {
-                songLiveList.postValue(songs);
                 remoteData.removeObserver(this);
+                serverAnswered[0] = true;
+                songLiveList.setValue(songs);
             }
         });
+    }
+
+    /**
+     * The full track list for downloading, straight from the server (or the downloaded
+     * tracks offline), never the early downloaded-only list the page may be showing.
+     */
+    public LiveData<List<Child>> fetchSongsForDownload() {
+        return playlistRepository.getPlaylistSongs(playlist.getId());
     }
 
     public Playlist getPlaylist() {

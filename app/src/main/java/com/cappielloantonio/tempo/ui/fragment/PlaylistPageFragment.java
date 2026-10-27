@@ -144,11 +144,12 @@ public class PlaylistPageFragment extends Fragment implements ClickCallback {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_download_playlist) {
             // One shot: a later refresh of the song list must not start the download again.
-            playlistPageViewModel.getPlaylistSongLiveList().observe(getViewLifecycleOwner(), new androidx.lifecycle.Observer<List<com.cappielloantonio.tempo.subsonic.models.Child>>() {
+            androidx.lifecycle.LiveData<List<com.cappielloantonio.tempo.subsonic.models.Child>> toDownload = playlistPageViewModel.fetchSongsForDownload();
+            toDownload.observe(getViewLifecycleOwner(), new androidx.lifecycle.Observer<List<com.cappielloantonio.tempo.subsonic.models.Child>>() {
                 @Override
                 public void onChanged(List<com.cappielloantonio.tempo.subsonic.models.Child> songs) {
                     if (songs == null) return;
-                    playlistPageViewModel.getPlaylistSongLiveList().removeObserver(this);
+                    toDownload.removeObserver(this);
                     if (isVisible() && getActivity() != null) {
                         Playlist downloadPlaylist = playlistPageViewModel.getPlaylist();
                         PlaylistCoverCache.save(downloadPlaylist.getId(), downloadPlaylist.getCoverArtId());
