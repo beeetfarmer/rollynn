@@ -100,18 +100,18 @@ public class PlayerBottomSheetFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        initializeMediaBrowser();
-        bindMediaController();
-    }
-
-    @Override
-    public void onStop() {
-        releaseMediaBrowser();
-        super.onStop();
+        // Stays connected while the app is in the background (released with the view),
+        // so a track change there updates the player before the app is reopened.
+        if (mediaBrowserListenableFuture == null) {
+            initializeMediaBrowser();
+            bindMediaController();
+        }
     }
 
     @Override
     public void onDestroyView() {
+        releaseMediaBrowser();
+        mediaBrowserListenableFuture = null;
         super.onDestroyView();
         bind = null;
     }

@@ -119,14 +119,31 @@ public class CustomGlideRequest {
                                           String coverId,
                                           int size,
                                           CustomTarget<Bitmap> target) {
-        Glide.with(context)
-                .asBitmap()
+        // The application's Glide, which keeps loading while the app is in the background,
+        // so the player's colours are ready for the next track before the app is reopened.
+        RequestManager glide = Glide.with(context.getApplicationContext());
+        glide.asBitmap()
                 .load(createUrl(coverId, size))
                 .apply(createRequestOptions(context, coverId, ResourceType.Album))
                 // Offline, only what Glide already cached: a request would stall until it times out.
                 .onlyRetrieveFromCache(NetworkUtil.isServerUnreachable())
-                .error(Glide.with(context).asBitmap().load(new EmbeddedCoverArtModel(coverId)))
+                .error(glide.asBitmap().load(new EmbeddedCoverArtModel(coverId)))
                 .into(target);
+    }
+
+    /**
+     * A cover load on the application's Glide, so it finishes while the app is in the
+     * background, with {@code transformation} applied to the fallback art too.
+     */
+    private static RequestBuilder<Drawable> backgroundRequest(Context context, String coverId, ResourceType type,
+                                                             com.bumptech.glide.load.Transformation<Bitmap> transformation) {
+        RequestManager glide = Glide.with(context.getApplicationContext());
+        RequestOptions options = createRequestOptions(context, coverId, type).transform(transformation);
+        return glide.load(Preferences.isDataSavingMode() ? null : createUrl(coverId, Preferences.getImageSize()))
+                .apply(options)
+                .onlyRetrieveFromCache(NetworkUtil.isServerUnreachable())
+                .error(glide.load(new EmbeddedCoverArtModel(coverId)).apply(options))
+                .transition(DrawableTransitionOptions.withCrossFade());
     }
 
     /**
@@ -159,8 +176,8 @@ public class CustomGlideRequest {
                 if (!Objects.equals(coverId, view.getTag())) return;
                 int edge = PlayerBackgroundUtil.edgeColor(resource);
                 onEdgeColor.accept(edge);
-                Builder.from(context, coverId, type).build()
-                        .transform(new ArtFadeTransformation(PlayerBackgroundUtil.backgroundTopColor(context, edge), fadeStart, extend))
+                backgroundRequest(context, coverId, type,
+                        new ArtFadeTransformation(PlayerBackgroundUtil.backgroundTopColor(context, edge), fadeStart, extend))
                         .into(view);
             }
 

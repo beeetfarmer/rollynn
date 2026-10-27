@@ -41,18 +41,18 @@ public class PlayerCoverFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        initializeBrowser();
-        bindMediaController();
-    }
-
-    @Override
-    public void onStop() {
-        releaseBrowser();
-        super.onStop();
+        // Stays connected while the app is in the background (released with the view),
+        // so a track change there loads the new cover before the app is reopened.
+        if (mediaBrowserListenableFuture == null) {
+            initializeBrowser();
+            bindMediaController();
+        }
     }
 
     @Override
     public void onDestroyView() {
+        releaseBrowser();
+        mediaBrowserListenableFuture = null;
         super.onDestroyView();
         bind = null;
     }
