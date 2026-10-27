@@ -72,7 +72,12 @@ public class HomeFragment extends Fragment {
         tabLayout = bind.homeTabLayout;
 
         android.widget.ImageButton libraryFilter = bind.getRoot().findViewById(R.id.home_library_filter);
-        if (libraryFilter != null) libraryFilter.setOnClickListener(v -> showLibraryFilterDialog());
+        if (libraryFilter != null) {
+            libraryFilter.setOnClickListener(v -> showLibraryFilterDialog());
+            // Picking a library needs the server, so hide it while the server is out of reach.
+            activity.getServerReachable().observe(getViewLifecycleOwner(), reachable ->
+                    libraryFilter.setVisibility(Boolean.FALSE.equals(reachable) ? View.GONE : View.VISIBLE));
+        }
     }
 
     /**
