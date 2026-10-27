@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -35,7 +34,6 @@ import java.util.Objects;
 import java.util.function.IntConsumer;
 
 public class CustomGlideRequest {
-    private static final String TAG = "CustomGlideRequest";
 
     public static final int CORNER_RADIUS = Preferences.isCornerRoundingEnabled() ? Preferences.getRoundedCornerSize() : 1;
 
@@ -113,7 +111,6 @@ public class CustomGlideRequest {
 
         uri.append("&id=").append(item);
 
-        Log.d(TAG, "createUrl() " + uri);
 
         return uri.toString();
     }

@@ -67,8 +67,6 @@ public class MusicUtil {
 
         uri.append("&id=").append(id);
 
-        Log.d(TAG, "getStreamUri: " + uri);
-
         return Uri.parse(uri.toString());
     }
 
@@ -133,8 +131,6 @@ public class MusicUtil {
             uri.append(download.getDownloadUri());
         }
 
-        Log.d(TAG, "getDownloadUri: " + uri);
-
         return Uri.parse(uri.toString());
     }
 
@@ -165,8 +161,6 @@ public class MusicUtil {
             uri.append("&format=").append(getTranscodingFormatPreferenceForDownload());
 
         uri.append("&id=").append(id);
-
-        Log.d(TAG, "getTranscodedDownloadUri: " + uri);
 
         return Uri.parse(uri.toString());
     }
