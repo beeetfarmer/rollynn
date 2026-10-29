@@ -141,6 +141,8 @@ dependencies {
     implementation 'androidx.media3:media3-exoplayer:1.8.0'
     implementation 'androidx.media3:media3-ui:1.8.0'
     implementation 'androidx.media3:media3-exoplayer-hls:1.8.0'
+    // Media3 pulls in Guava 33.3.1, hit by CVE-2026-102554; pin the fixed release.
+    implementation 'com.google.guava:guava:33.7.2-android'
     tempusImplementation 'androidx.media3:media3-cast:1.8.0'
 
 
