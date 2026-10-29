@@ -25,6 +25,7 @@ import android.widget.ToggleButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.MediaItem;
@@ -470,6 +471,10 @@ public class PlayerControllerFragment extends Fragment {
             return;
         }
 
+        // Year/genre and plays/scrobbles share a line each, at the first one's position.
+        PairedLine yearGenre = new PairedLine();
+        PairedLine counts = new PairedLine();
+
         for (String field : enabledFields) {
             switch (field) {
                 case Constants.METADATA_TITLE:
@@ -497,21 +502,15 @@ public class PlayerControllerFragment extends Fragment {
                     break;
                 case Constants.METADATA_YEAR:
                     if (mediaMetadata.releaseYear != null) {
-                        TextView yearView = createMetadataView(String.valueOf(mediaMetadata.releaseYear), R.style.PlayerMetadataSecondary);
-                        yearView.setTextColor(getPlayerTextColor());
-                        playerMetadataContainer.addView(yearView);
+                        yearGenre.set(0, String.valueOf(mediaMetadata.releaseYear));
                     } else if (mediaMetadata.extras != null && mediaMetadata.extras.containsKey("year")) {
-                        TextView yearView = createMetadataView(String.valueOf(mediaMetadata.extras.getInt("year")), R.style.PlayerMetadataSecondary);
-                        yearView.setTextColor(getPlayerTextColor());
-                        playerMetadataContainer.addView(yearView);
+                        yearGenre.set(0, String.valueOf(mediaMetadata.extras.getInt("year")));
+                    } else {
+                        yearGenre.set(0, null);
                     }
                     break;
                 case Constants.METADATA_GENRE:
-                    if (mediaMetadata.genre != null) {
-                        TextView genreView = createMetadataView(String.valueOf(mediaMetadata.genre), R.style.PlayerMetadataSecondary);
-                        genreView.setTextColor(getPlayerTextColor());
-                        playerMetadataContainer.addView(genreView);
-                    }
+                    yearGenre.set(1, mediaMetadata.genre != null ? String.valueOf(mediaMetadata.genre) : null);
                     break;
                 case Constants.METADATA_BITRATE:
                     if (mediaMetadata.extras != null) {
@@ -539,14 +538,7 @@ public class PlayerControllerFragment extends Fragment {
                         long basePlayCount = mediaMetadata.extras.getLong("playCount", 0);
                         long effectivePlayCount = basePlayCount + MediaManager.getPlayCountIncrement(currentSongId);
 
-                        TextView playCountView = createMetadataView("", R.style.PlayerMetadataSecondary);
-                        playCountView.setTextColor(getPlayerTextColor());
-                        if (effectivePlayCount != 0) {
-                            playCountView.setText(effectivePlayCount + " plays");
-                        } else {
-                            playCountView.setVisibility(View.GONE);
-                        }
-                        playerMetadataContainer.addView(playCountView);
+                        counts.set(0, effectivePlayCount != 0 ? effectivePlayCount + " plays" : null);
 
                         // Koito, when configured and matched, is authoritative; block server increments then.
                         final boolean[] koitoOverridden = {false};
@@ -558,8 +550,7 @@ public class PlayerControllerFragment extends Fragment {
                             lastSeenVersion[0] = currentVersion;
                             if (currentSongId != null && currentSongId.equals(scrobbledId)) {
                                 long updated = basePlayCount + MediaManager.getPlayCountIncrement(currentSongId);
-                                playCountView.setText(updated + " plays");
-                                playCountView.setVisibility(View.VISIBLE);
+                                counts.set(0, updated + " plays");
                             }
                         });
 
@@ -570,29 +561,20 @@ public class PlayerControllerFragment extends Fragment {
                             playerBottomSheetViewModel.getKoitoTrackCount(kArtist, kTitle, kAlbum).observe(getViewLifecycleOwner(), koitoCount -> {
                                 if (koitoCount != null && koitoCount > 0) {
                                     koitoOverridden[0] = true;
-                                    playCountView.setText(koitoCount + " plays");
-                                    playCountView.setVisibility(View.VISIBLE);
+                                    counts.set(0, koitoCount + " plays");
                                 }
                             });
                         }
                     }
                     break;
                 case Constants.METADATA_SCROBBLES:
-                    TextView scrobbleView = createMetadataView("", R.style.PlayerMetadataSecondary);
-                    scrobbleView.setTextColor(getPlayerTextColor());
-                    scrobbleView.setVisibility(View.GONE);
-                    playerMetadataContainer.addView(scrobbleView);
+                    counts.set(1, null);
 
                     String artist = mediaMetadata.artist != null ? String.valueOf(mediaMetadata.artist) : null;
                     String title = mediaMetadata.title != null ? String.valueOf(mediaMetadata.title) : null;
                     playerBottomSheetViewModel.fetchLastFmScrobbleCount(artist, title);
                     playerBottomSheetViewModel.getLastFmScrobbleCount().observe(getViewLifecycleOwner(), count -> {
-                        if (count != null && count > 0) {
-                            scrobbleView.setText(count + " scrobbles");
-                            scrobbleView.setVisibility(View.VISIBLE);
-                        } else {
-                            scrobbleView.setVisibility(View.GONE);
-                        }
+                        counts.set(1, count != null && count > 0 ? count + " scrobbles" : null);
                     });
                     break;
             }
@@ -625,6 +607,28 @@ public class PlayerControllerFragment extends Fragment {
         TextView stationView = createMetadataView(stationName, R.style.TitleMedium);
         stationView.setTextColor(getPlayerTextColor());
         playerMetadataContainer.addView(stationView);
+    }
+
+    /** One metadata line for two fields joined with " • "; hidden while both are empty. */
+    private final class PairedLine {
+        private final String[] parts = new String[2];
+        private TextView view;
+
+        void set(int index, @Nullable String text) {
+            parts[index] = text;
+            if (view == null) {
+                view = createMetadataView("", R.style.PlayerMetadataSecondary);
+                playerMetadataContainer.addView(view);
+            }
+            StringBuilder line = new StringBuilder();
+            for (String part : parts) {
+                if (TextUtils.isEmpty(part)) continue;
+                if (line.length() > 0) line.append(" • ");
+                line.append(part);
+            }
+            view.setText(line);
+            view.setVisibility(line.length() > 0 ? View.VISIBLE : View.GONE);
+        }
     }
 
     private TextView createMetadataView(String text, int styleRes) {
