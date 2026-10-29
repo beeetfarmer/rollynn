@@ -4,6 +4,9 @@
         android:id="@+id/menu_add_to_playlist"
         android:title="@string/song_bottom_sheet_add_to_playlist" />
     <item
+        android:id="@+id/menu_sleep_timer"
+        android:title="@string/sleep_timer_title" />
+    <item
         android:id="@+id/menu_go_to_album"
         android:title="@string/song_bottom_sheet_go_to_album" />
     <item

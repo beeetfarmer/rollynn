@@ -139,7 +139,6 @@ public class PlayerControllerFragment extends Fragment {
     private View ratingContainer;
     private ImageButton equalizerButton;
     private ImageButton addToPlaylistButton;
-    private ImageButton sleepTimerButton;
     // White or black picked from the album-coloured background; null = theme default.
     private Integer playerContentColor;
     private ImageButton overflowMenuButton;
@@ -324,11 +323,6 @@ public class PlayerControllerFragment extends Fragment {
         addToPlaylistButton = bind.getRoot().findViewById(R.id.button_add_to_playlist);
         if (addToPlaylistButton != null) {
             addToPlaylistButton.setOnClickListener(v -> launchPlaylistChooser());
-        }
-        sleepTimerButton = bind.getRoot().findViewById(R.id.button_sleep_timer);
-        if (sleepTimerButton != null) {
-            sleepTimerButton.setOnClickListener(v -> showSleepTimerDialog());
-            updateSleepTimerButton();
         }
         overflowMenuButton = bind.getRoot().findViewById(R.id.button_overflow_menu);
         lyricsButton = bind.getRoot().findViewById(R.id.player_open_lyrics_button);
@@ -686,8 +680,7 @@ public class PlayerControllerFragment extends Fragment {
             if (label instanceof TextView) ((TextView) label).setTextColor(secondary);
         }
 
-        // These show an active state in the accent colour; let them re-apply it.
-        updateSleepTimerButton();
+        // Shows an active state in the accent colour; let it re-apply it.
         setSwitchButtonActive(videoMode);
     }
 
@@ -1198,16 +1191,6 @@ public class PlayerControllerFragment extends Fragment {
                 minutes == 0 ? getString(R.string.sleep_timer_cancelled)
                         : getString(R.string.sleep_timer_set, minutes),
                 Toast.LENGTH_SHORT).show();
-        sleepTimerButton.postDelayed(this::updateSleepTimerButton, 100);
-    }
-
-    private void updateSleepTimerButton() {
-        if (sleepTimerButton == null) return;
-        boolean active = Preferences.getSleepTimerEnd() > System.currentTimeMillis();
-        int color = UIUtil.getThemeColor(requireContext(),
-                com.google.android.material.R.attr.colorPrimary);
-        if (!active) color = contentColor();
-        sleepTimerButton.setBackgroundTintList(android.content.res.ColorStateList.valueOf(color));
     }
 
     private void initOverflowMenu() {
@@ -1215,10 +1198,18 @@ public class PlayerControllerFragment extends Fragment {
         overflowMenuButton.setOnClickListener(v -> {
             PopupMenu popup = new PopupMenu(requireContext(), v);
             popup.getMenuInflater().inflate(R.menu.menu_now_playing_overflow, popup.getMenu());
+            long sleepLeftMs = Preferences.getSleepTimerEnd() - System.currentTimeMillis();
+            if (sleepLeftMs > 0) {
+                popup.getMenu().findItem(R.id.menu_sleep_timer).setTitle(
+                        getString(R.string.sleep_timer_title_active, (int) Math.ceil(sleepLeftMs / 60000.0)));
+            }
             popup.setOnMenuItemClickListener(item -> {
                 int id = item.getItemId();
                 if (id == R.id.menu_add_to_playlist) {
                     launchPlaylistChooser();
+                    return true;
+                } else if (id == R.id.menu_sleep_timer) {
+                    showSleepTimerDialog();
                     return true;
                 } else if (id == R.id.menu_go_to_album) {
                     playerBottomSheetViewModel.getLiveAlbum().observe(getViewLifecycleOwner(), album -> {
