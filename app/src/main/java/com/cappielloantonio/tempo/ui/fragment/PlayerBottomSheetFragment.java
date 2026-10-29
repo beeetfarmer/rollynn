@@ -162,7 +162,8 @@ public class PlayerBottomSheetFragment extends Fragment {
     }
 
     private void releaseMediaBrowser() {
-        MediaController.releaseFuture(mediaBrowserListenableFuture);
+        // The view can be destroyed before onStart ever connected (cold start on some OEMs).
+        if (mediaBrowserListenableFuture != null) MediaController.releaseFuture(mediaBrowserListenableFuture);
     }
 
     private void bindMediaController() {
