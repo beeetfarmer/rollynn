@@ -320,6 +320,9 @@ public class MainActivity extends BaseActivity {
             }
         } else if (pageStatusBarColor != null) {
             applySystemBarColors(pageStatusBarColor, android.graphics.Color.TRANSPARENT);
+        } else if (immersiveBars) {
+            // Collapsing the player over a full-bleed page (album/artist) keeps its see-through bars.
+            applySystemBarColors(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT);
         } else {
             applySystemBarColors();
         }
