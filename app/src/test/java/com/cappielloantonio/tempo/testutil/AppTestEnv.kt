@@ -94,7 +94,7 @@ object AppTestEnv {
     fun apiResponse(json: String): ApiResponse =
         gson.fromJson("""{"subsonic-response":$json}""", ApiResponse::class.java)
 
-    private fun setStatic(owner: Class<*>, field: String, value: Any?) {
+    fun setStatic(owner: Class<*>, field: String, value: Any?) {
         owner.getDeclaredField(field).apply { isAccessible = true }.set(null, value)
     }
 }
