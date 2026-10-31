@@ -260,7 +260,7 @@ public class PlaylistRepository {
         indexes.add(index);
         App.getSubsonicClientInstance(false)
                 .getPlaylistClient()
-                .updatePlaylist(playlistId, null, true, null, indexes)
+                .updatePlaylist(playlistId, null, null, null, indexes)
                 .enqueue(new Callback<ApiResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
@@ -307,7 +307,7 @@ public class PlaylistRepository {
     public void updatePlaylist(String playlistId, String name, ArrayList<String> songsId) {
         App.getSubsonicClientInstance(false)
                 .getPlaylistClient()
-                .updatePlaylist(playlistId, name, true, null, null)
+                .updatePlaylist(playlistId, name, null, null, null)
                 .enqueue(new Callback<ApiResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {

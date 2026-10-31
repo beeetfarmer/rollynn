@@ -21,7 +21,6 @@ import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.ArgumentMatchers.isNull
@@ -256,12 +255,12 @@ class PlaylistRepositoryTest {
         repository.addSongToPlaylist("p1", arrayListOf(), true, recorder)
 
         assertEquals(listOf("skipped"), recorder.events)
-        verify(client, never()).updatePlaylist(any(), any(), anyBoolean(), any(), any())
+        verify(client, never()).updatePlaylist(any(), any(), any(), any(), any())
     }
 
     @Test
     fun addingSongsSendsThemAndRefreshes() {
-        `when`(client.updatePlaylist(any(), any(), anyBoolean(), any(), any())).thenAnswerOk()
+        `when`(client.updatePlaylist(any(), any(), any(), any(), any())).thenAnswerOk()
         val recorder = Recorder()
 
         repository.addSongToPlaylist("p1", arrayListOf("a"), false, recorder)
@@ -273,7 +272,7 @@ class PlaylistRepositoryTest {
 
     @Test
     fun addingSongsWithoutACallbackDoesNotCrash() {
-        `when`(client.updatePlaylist(any(), any(), anyBoolean(), any(), any())).thenAnswerOk()
+        `when`(client.updatePlaylist(any(), any(), any(), any(), any())).thenAnswerOk()
 
         repository.addSongToPlaylist("p1", arrayListOf("a"), true)
 
@@ -283,7 +282,7 @@ class PlaylistRepositoryTest {
     @Ignore("Known bug: an HTTP error still calls onSuccess")
     @Test
     fun addingSongsReportsAServerError() {
-        `when`(client.updatePlaylist(any(), any(), anyBoolean(), any(), any())).thenAnswerHttpError()
+        `when`(client.updatePlaylist(any(), any(), any(), any(), any())).thenAnswerHttpError()
         val recorder = Recorder()
 
         repository.addSongToPlaylist("p1", arrayListOf("a"), true, recorder)
@@ -293,7 +292,7 @@ class PlaylistRepositoryTest {
 
     @Test
     fun addingSongsReportsANetworkFailure() {
-        `when`(client.updatePlaylist(any(), any(), anyBoolean(), any(), any())).thenAnswerNetworkFailure()
+        `when`(client.updatePlaylist(any(), any(), any(), any(), any())).thenAnswerNetworkFailure()
         val recorder = Recorder()
 
         repository.addSongToPlaylist("p1", arrayListOf("a"), true, recorder)
@@ -305,19 +304,19 @@ class PlaylistRepositoryTest {
 
     @Test
     fun removingASongSendsItsIndexAndRefreshes() {
-        `when`(client.updatePlaylist(any(), any(), anyBoolean(), any(), any())).thenAnswerOk()
+        `when`(client.updatePlaylist(any(), any(), any(), any(), any())).thenAnswerOk()
         val recorder = Recorder()
 
         repository.removeSongFromPlaylist("p1", 4, recorder)
 
         assertEquals(listOf("success"), recorder.events)
-        verify(client).updatePlaylist(eq("p1"), isNull(), anyBoolean(), isNull(), eq(arrayListOf(4)))
+        verify(client).updatePlaylist(eq("p1"), isNull(), any(), isNull(), eq(arrayListOf(4)))
         verify(client, atLeastOnce()).getPlaylists()
     }
 
     @Test
     fun removingASongReportsErrorsAndFailures() {
-        `when`(client.updatePlaylist(any(), any(), anyBoolean(), any(), any()))
+        `when`(client.updatePlaylist(any(), any(), any(), any(), any()))
             .thenAnswerHttpError()
             .thenAnswerNetworkFailure()
         val recorder = Recorder()
@@ -328,14 +327,13 @@ class PlaylistRepositoryTest {
         assertEquals(listOf("failure", "failure"), recorder.events)
     }
 
-    @Ignore("Known bug: always sends public=true, making private playlists public")
     @Test
     fun removingASongLeavesThePlaylistVisibilityAlone() {
-        `when`(client.updatePlaylist(any(), any(), anyBoolean(), any(), any())).thenAnswerOk()
+        `when`(client.updatePlaylist(any(), any(), any(), any(), any())).thenAnswerOk()
 
         repository.removeSongFromPlaylist("p1", 0, null)
 
-        verify(client, never()).updatePlaylist(any(), any(), eq(true), any(), any())
+        verify(client).updatePlaylist("p1", null, null, null, arrayListOf(0))
     }
 
     // createPlaylist
@@ -369,7 +367,7 @@ class PlaylistRepositoryTest {
     @Test
     fun renamingUpdatesThePinnedCopy() {
         db.playlistDao().insert(Playlist("p1", name = "Old"))
-        `when`(client.updatePlaylist(any(), any(), anyBoolean(), any(), any())).thenAnswerOk()
+        `when`(client.updatePlaylist(any(), any(), any(), any(), any())).thenAnswerOk()
 
         repository.updatePlaylist("p1", "New", arrayListOf())
         settle()
@@ -381,7 +379,7 @@ class PlaylistRepositoryTest {
     @Test
     fun aFailedRenameKeepsThePinnedName() {
         db.playlistDao().insert(Playlist("p1", name = "Old"))
-        `when`(client.updatePlaylist(any(), any(), anyBoolean(), any(), any())).thenAnswerHttpError()
+        `when`(client.updatePlaylist(any(), any(), any(), any(), any())).thenAnswerHttpError()
 
         repository.updatePlaylist("p1", "New", arrayListOf())
         settle()
@@ -389,15 +387,14 @@ class PlaylistRepositoryTest {
         assertEquals("Old", db.playlistDao().getAllSync().single().name)
     }
 
-    @Ignore("Known bug: always sends public=true, making private playlists public")
     @Test
     fun renamingLeavesThePlaylistVisibilityAlone() {
-        `when`(client.updatePlaylist(any(), any(), anyBoolean(), any(), any())).thenAnswerOk()
+        `when`(client.updatePlaylist(any(), any(), any(), any(), any())).thenAnswerOk()
 
         repository.updatePlaylist("p1", "New", arrayListOf())
         settle()
 
-        verify(client, never()).updatePlaylist(any(), any(), eq(true), any(), any())
+        verify(client).updatePlaylist("p1", "New", null, null, null)
     }
 
     // deletePlaylist
