@@ -9,7 +9,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -100,12 +99,17 @@ class SettingsBackupUtilTest {
         assertTrue(settings.has("theme"))
     }
 
-    @Ignore("Known bug: koito_api_key is missing from the excluded keys")
     @Test
     fun theKoitoApiKeyIsNeverExported() {
         preferences.edit().putString("koito_api_key", "sensitive").commit()
 
         assertFalse(export().getJSONObject("settings").has("koito_api_key"))
+    }
+
+    @Test
+    fun theKoitoApiKeyIsNeverRestored() {
+        assertEquals(0, restore(backupOf("koito_api_key" to string("sensitive"))))
+        assertNull(preferences.getString("koito_api_key", null))
     }
 
     @Test

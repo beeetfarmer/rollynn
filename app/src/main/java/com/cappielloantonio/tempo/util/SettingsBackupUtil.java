@@ -73,6 +73,7 @@ public final class SettingsBackupUtil {
             "translation_api_key",
             "popinn_password",
             "audiomuse_api_token",
+            "koito_api_key",
             // Session identity
             "server",
             "user",
