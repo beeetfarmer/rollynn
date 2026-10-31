@@ -17,7 +17,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
@@ -287,7 +286,6 @@ class SongRepositoryTest {
         assertEquals(listOf("1", "2"), received!!.map { it.id })
     }
 
-    @Ignore("Known bug: the callback only fires once the full count is reached")
     @Test
     fun theMixCallbackGetsAShortMixToo() {
         `when`(browsing.getAlbum("a")).thenAnswerOk("""{"album":{"id":"a","song":${songs("1", "2")}}}""")

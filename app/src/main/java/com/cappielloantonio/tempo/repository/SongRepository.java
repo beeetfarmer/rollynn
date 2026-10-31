@@ -137,19 +137,16 @@ public class SongRepository {
                 return;
             }
 
-            int added = 0;
             for (Child song : batch) {
                 if (!trackIds.contains(song.getId()) && accumulatedSongs.size() < targetCount) {
                     trackIds.add(song.getId());
                     accumulatedSongs.add(song);
-                    added++;
                 }
             }
-            
-            if (accumulatedSongs.size() >= targetCount) {
-                originalCallback.onSongsAvailable(new ArrayList<>(accumulatedSongs));
-                isComplete = true;
-            }
+
+            // Every mix source answers once, so a short batch is all there will be.
+            originalCallback.onSongsAvailable(new ArrayList<>(accumulatedSongs));
+            isComplete = true;
         }
 
     }
