@@ -605,9 +605,7 @@ public class MediaManager {
     }
 
     private static void removeRangeDatabase(List<Child> media, int fromItem, int toItem) {
-        List<Child> toRemove = media.subList(fromItem, toItem);
-
-        media.removeAll(toRemove);
+        media.subList(fromItem, toItem).clear();
 
         getQueueRepository().insertAll(media, true, 0);
     }

@@ -24,7 +24,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
@@ -281,7 +280,6 @@ class MediaManagerTest {
         assertEquals(listOf("a", "d"), queueIds())
     }
 
-    @Ignore("Known bug: removeAll also drops the same object outside the range")
     @Test
     fun removingARangeKeepsTheSameTrackElsewhereInTheQueue() {
         val repeated = song("r")
