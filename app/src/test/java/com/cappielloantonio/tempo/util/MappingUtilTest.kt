@@ -17,7 +17,6 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -234,7 +233,6 @@ class MappingUtilTest {
         assertTrue(uri(item), uri(item).endsWith("&id=st1"))
     }
 
-    @Ignore("Known bug: a missing cover becomes an albumArt/null URI")
     @Test
     fun aPodcastEpisodeWithoutCoverArtHasNoArtwork() {
         val item = MappingUtil.mapMediaItem(PodcastEpisode(id = "e1", streamId = "st1"))

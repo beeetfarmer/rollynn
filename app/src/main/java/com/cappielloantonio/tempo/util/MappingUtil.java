@@ -239,7 +239,7 @@ public class MappingUtil {
 
     public static MediaItem mapMediaItem(PodcastEpisode podcastEpisode) {
         Uri uri = getUri(podcastEpisode);
-        Uri artworkUri = AlbumArtContentProvider.contentUri(podcastEpisode.getCoverArtId());
+        Uri artworkUri = podcastEpisode.getCoverArtId() != null ? AlbumArtContentProvider.contentUri(podcastEpisode.getCoverArtId()) : null;
 
         Bundle bundle = new Bundle();
         bundle.putString("id", podcastEpisode.getId());
