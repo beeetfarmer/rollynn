@@ -15,7 +15,6 @@ import com.cappielloantonio.tempo.testutil.AppTestEnv
 import com.google.common.collect.ImmutableList
 import org.junit.Assert.assertEquals
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
@@ -178,7 +177,6 @@ class ReplayGainUtilTest {
     }
 
     // R128 gains are stored as Q7.8 fixed point, so -512 means -2 dB.
-    @Ignore("Known bug: the digits of the tag name R128 stay in the parsed number")
     @Test
     fun readsNegativeR128TrackGain() {
         mode("track")
@@ -186,7 +184,6 @@ class ReplayGainUtilTest {
         assertVolume(volumeFor(-2f))
     }
 
-    @Ignore("Known bug: the digits of the tag name R128 stay in the parsed number")
     @Test
     fun readsNegativeR128AlbumGain() {
         mode("album")
@@ -194,7 +191,6 @@ class ReplayGainUtilTest {
         assertVolume(volumeFor(-3f))
     }
 
-    @Ignore("Known bug: the digits of the tag name R128 stay in the parsed number")
     @Test
     fun readsPositiveR128TrackGain() {
         mode("track")

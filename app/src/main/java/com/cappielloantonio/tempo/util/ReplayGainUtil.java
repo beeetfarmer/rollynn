@@ -110,7 +110,8 @@ public class ReplayGainUtil {
 
     private static Float parseReplayGainTag(String entry) {
         try {
-            return Float.parseFloat(entry.toString().replaceAll("[^\\d.-]", ""));
+            // The R128 tag names hold digits of their own.
+            return Float.parseFloat(entry.replace(tags[2], "").replace(tags[3], "").replaceAll("[^\\d.-]", ""));
         } catch (NumberFormatException exception) {
             return 0f;
         }
