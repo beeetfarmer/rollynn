@@ -98,6 +98,13 @@ android {
         buildConfig true
     }
 
+    testOptions {
+        unitTests {
+            // Robolectric reads the merged manifest and resources, and starts the real App.
+            includeAndroidResources = true
+        }
+    }
+
     lint {
         // Errors that predate CI; only new ones fail the build. Refresh with ./gradlew updateLintBaseline
         baseline = file("lint-baseline.xml")
@@ -151,12 +158,17 @@ dependencies {
 
     // Retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.11.0'
-    testImplementation 'junit:junit:4.13.2'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
 
     // Lyrics romanization
     implementation 'com.atilika.kuromoji:kuromoji-ipadic:0.9.0'
+
+    // Tests
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.14.1'
+    testImplementation 'org.mockito:mockito-core:5.14.2'
+    testImplementation 'com.squareup.retrofit2:retrofit-mock:2.11.0'
 }
 java {
     toolchain {
