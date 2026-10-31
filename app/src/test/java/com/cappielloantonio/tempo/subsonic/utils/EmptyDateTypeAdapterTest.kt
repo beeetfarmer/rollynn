@@ -51,11 +51,15 @@ class EmptyDateTypeAdapterTest {
     }
 
     // Go servers such as Navidrome write up to nine fractional digits.
-    @Ignore("Known bug: SSS reads all nine digits as milliseconds, moving the date by about 34 hours")
     @Test
     fun parsesNanosecondPrecisionTimestamps() {
         val parsed = parse("2024-01-02T03:04:05.123456789Z")
         assertEquals(date("2024-01-02T03:04:05.123Z"), parsed)
+    }
+
+    @Test
+    fun readsAShortFractionAsPartOfASecond() {
+        assertEquals(date("2024-01-02T03:04:05.500Z"), parse("2024-01-02T03:04:05.5Z"))
     }
 
     @Ignore("Known bug: the zoneless format stops before the offset, so it is ignored")

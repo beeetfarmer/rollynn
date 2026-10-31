@@ -21,9 +21,12 @@ class EmptyDateTypeAdapter : JsonDeserializer<Date> {
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply { timeZone = TimeZone.getTimeZone("UTC") }
     )
 
+    // SSS would read every fractional digit as milliseconds, and Go servers send up to nine.
+    private val fraction = Regex("\\.(\\d+)")
+
     @Throws(JsonParseException::class)
     override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Date? {
-        val jsonString = json.asString.trim()
+        val jsonString = fraction.replace(json.asString.trim()) { "." + it.groupValues[1].padEnd(3, '0').take(3) }
 
         if (jsonString.isEmpty()) {
             return null
