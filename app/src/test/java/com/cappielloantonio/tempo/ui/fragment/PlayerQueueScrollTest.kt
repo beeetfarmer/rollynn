@@ -2,7 +2,6 @@ package com.cappielloantonio.tempo.ui.fragment
 
 import android.content.ComponentName
 import android.os.Looper
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,7 +19,10 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
+import org.robolectric.annotation.Config
 
+// Sized like a phone so the list gets a real layout, with room for 12 rows.
+@Config(qualifiers = "w360dp-h800dp")
 @RunWith(RobolectricTestRunner::class)
 class PlayerQueueScrollTest {
 
@@ -65,14 +67,8 @@ class PlayerQueueScrollTest {
     }
 
     private fun topTrack(): Int {
-        val list = list()
-        list.measure(
-            View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
-            View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY),
-        )
-        list.layout(0, 0, 1080, 1920)
         idle()
-        return (list.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+        return (list().layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
     }
 
     @Test
@@ -91,6 +87,33 @@ class PlayerQueueScrollTest {
         loadQueue(60)
 
         assertEquals(30, topTrack())
+    }
+
+    @Test
+    fun aTrackNearTheEndOfTheQueueStillReachesTheTop() {
+        loadQueue(20)
+
+        fragment.scrollToTrack(16)
+
+        assertEquals(16, topTrack())
+    }
+
+    @Test
+    fun theLastTrackReachesTheTop() {
+        loadQueue(20)
+
+        fragment.scrollToTrack(19)
+
+        assertEquals(19, topTrack())
+    }
+
+    @Test
+    fun aShortQueueThatStartsOnItsLastTrackStillReachesTheTop() {
+        fragment.scrollToTrack(2)
+
+        loadQueue(3)
+
+        assertEquals(2, topTrack())
     }
 
     @Test

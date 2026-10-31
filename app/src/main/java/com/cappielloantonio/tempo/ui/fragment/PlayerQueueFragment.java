@@ -1,6 +1,7 @@
 package com.cappielloantonio.tempo.ui.fragment;
 
 import android.content.ComponentName;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -37,6 +38,7 @@ import com.cappielloantonio.tempo.util.ExternalAudioReader;
 import com.cappielloantonio.tempo.util.ExternalAudioWriter;
 import com.cappielloantonio.tempo.util.MappingUtil;
 import com.cappielloantonio.tempo.util.Preferences;
+import com.cappielloantonio.tempo.util.UIUtil;
 import com.cappielloantonio.tempo.viewmodel.PlaybackViewModel;
 import com.cappielloantonio.tempo.viewmodel.PlayerBottomSheetViewModel;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -64,6 +66,7 @@ public class PlayerQueueFragment extends Fragment implements ClickCallback {
     private boolean isMenuOpen = false;
     private final int ANIMATION_DURATION = 250; 
     private final float FAB_VERTICAL_SPACING_DP = 70f;
+    private static final int QUEUE_ROW_HEIGHT_DP = 62;
 
     private PlayerBottomSheetViewModel playerBottomSheetViewModel;
     private PlaybackViewModel playbackViewModel;
@@ -178,6 +181,17 @@ public class PlayerQueueFragment extends Fragment implements ClickCallback {
             int statusTop = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).top;
             v.setPadding(v.getPaddingLeft(), basePaddingTop + statusTop, v.getPaddingRight(), v.getPaddingBottom());
             return insets;
+        });
+
+        // Space below the last row, or a track near the end of the queue can't reach the top.
+        int rowHeight = UIUtil.dpToPx(requireContext(), QUEUE_ROW_HEIGHT_DP);
+        bind.playerQueueRecyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+                if (parent.getChildAdapterPosition(view) == state.getItemCount() - 1) {
+                    outRect.bottom = Math.max(0, parent.getHeight() - parent.getPaddingTop() - rowHeight);
+                }
+            }
         });
 
         playerSongQueueAdapter = new PlayerSongQueueAdapter(this);
