@@ -110,6 +110,7 @@ public class PlayerBottomSheetFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
+        if (progressBarHandler != null) progressBarHandler.removeCallbacks(progressBarRunnable);
         releaseMediaBrowser();
         mediaBrowserListenableFuture = null;
         super.onDestroyView();
@@ -186,6 +187,7 @@ public class PlayerBottomSheetFragment extends Fragment {
         setMediaControllerUI(mediaBrowser);
         setMetadata(mediaBrowser.getMediaMetadata());
         setContentDuration(mediaBrowser.getContentDuration());
+        setProgress(mediaBrowser);
         setPlayingState(mediaBrowser.isPlaying());
         setHeaderMediaController(mediaBrowser);
         setHeaderNextButtonState(mediaBrowser.hasNextMediaItem());
@@ -211,6 +213,10 @@ public class PlayerBottomSheetFragment extends Fragment {
             @Override
             public void onEvents(Player player, Player.Events events) {
                 setHeaderNextButtonState(mediaBrowser.hasNextMediaItem());
+                // The length is often unknown when the track changes, and the
+                // ticker doesn't run while paused.
+                setContentDuration(mediaBrowser.getContentDuration());
+                setProgress(mediaBrowser);
             }
 
             @Override
@@ -357,7 +363,12 @@ public class PlayerBottomSheetFragment extends Fragment {
     }
 
     private void setContentDuration(long duration) {
-        bind.playerHeaderLayout.playerHeaderProgressBar.setMax((int) (duration / 1000));
+        bind.playerHeaderLayout.playerHeaderProgressBar.setMax(durationSeconds(duration));
+    }
+
+    static int durationSeconds(long durationMs) {
+        // C.TIME_UNSET is negative, but truncated to an int it is a huge positive max.
+        return durationMs > 0 ? (int) (durationMs / 1000) : 0;
     }
 
     private void setProgress(MediaBrowser mediaBrowser) {
@@ -465,11 +476,8 @@ public class PlayerBottomSheetFragment extends Fragment {
     }
 
     private void runProgressBarHandler(boolean isPlaying) {
-        if (isPlaying) {
-            progressBarHandler.postDelayed(progressBarRunnable, 1000);
-        } else {
-            progressBarHandler.removeCallbacks(progressBarRunnable);
-        }
+        progressBarHandler.removeCallbacks(progressBarRunnable);
+        if (isPlaying) progressBarHandler.postDelayed(progressBarRunnable, 1000);
     }
 
     private void setHeaderBookmarksButton() {
