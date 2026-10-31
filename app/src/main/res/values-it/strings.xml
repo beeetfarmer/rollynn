@@ -658,4 +658,12 @@
     <string name="settings_restore_keys_title">Ripristinare le chiavi API?</string>
     <string name="settings_restore_keys_message">Questo backup contiene chiavi API cifrate. Inserisci la password per ripristinarle, oppure saltale per ripristinare solo le impostazioni.</string>
     <string name="settings_restore_keys_wrong_password">Password errata</string>
+    <string name="settings_export_logs_title">Esporta i log</string>
+    <string name="settings_export_logs_summary">Copia o salva i log dell\'app per segnalare un problema</string>
+    <string name="settings_export_logs_message">Password, chiavi API e indirizzi dei server vengono rimossi. I log possono comunque mostrare i nomi dei brani, quindi controllali prima di condividerli pubblicamente.</string>
+    <string name="settings_export_logs_copy">Copia</string>
+    <string name="settings_export_logs_save">Salva</string>
+    <string name="settings_export_logs_copied">Log copiati negli appunti</string>
+    <string name="settings_export_logs_saved">Log salvati</string>
+    <string name="settings_export_logs_failure">Impossibile esportare i log</string>
 </resources>

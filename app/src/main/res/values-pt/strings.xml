@@ -515,4 +515,12 @@
     <string name="settings_restore_keys_title">Restaurar as chaves de API?</string>
     <string name="settings_restore_keys_message">Esta cópia de segurança contém chaves de API encriptadas. Introduza a palavra-passe para as restaurar, ou ignore-as para restaurar apenas as definições.</string>
     <string name="settings_restore_keys_wrong_password">Palavra-passe incorreta</string>
+    <string name="settings_export_logs_title">Exportar registos</string>
+    <string name="settings_export_logs_summary">Copiar ou guardar os registos da aplicação para comunicar um problema</string>
+    <string name="settings_export_logs_message">As palavras-passe, as chaves de API e os endereços de servidor são removidos. Os registos ainda podem mostrar nomes de faixas, por isso verifique-os antes de os partilhar publicamente.</string>
+    <string name="settings_export_logs_copy">Copiar</string>
+    <string name="settings_export_logs_save">Guardar</string>
+    <string name="settings_export_logs_copied">Registos copiados para a área de transferência</string>
+    <string name="settings_export_logs_saved">Registos guardados</string>
+    <string name="settings_export_logs_failure">Não foi possível exportar os registos</string>
 </resources>

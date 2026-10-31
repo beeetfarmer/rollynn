@@ -289,4 +289,12 @@
     <string name="settings_restore_keys_title">API కీలను పునరుద్ధరించాలా?</string>
     <string name="settings_restore_keys_message">ఈ బ్యాకప్‌లో ఎన్‌క్రిప్ట్ చేసిన API కీలు ఉన్నాయి. వాటిని పునరుద్ధరించడానికి పాస్‌వర్డ్ నమోదు చేయండి, లేదా వాటిని దాటవేసి మీ సెట్టింగ్‌లను మాత్రమే పునరుద్ధరించండి.</string>
     <string name="settings_restore_keys_wrong_password">తప్పు పాస్‌వర్డ్</string>
+    <string name="settings_export_logs_title">లాగ్‌లను ఎగుమతి చేయండి</string>
+    <string name="settings_export_logs_summary">సమస్యను నివేదించడానికి యాప్ లాగ్‌లను కాపీ చేయండి లేదా సేవ్ చేయండి</string>
+    <string name="settings_export_logs_message">పాస్‌వర్డ్‌లు, API కీలు మరియు సర్వర్ చిరునామాలు తీసివేయబడతాయి. లాగ్‌లలో ట్రాక్ పేర్లు ఇంకా కనిపించవచ్చు, కాబట్టి బహిరంగంగా పంచుకునే ముందు తనిఖీ చేయండి.</string>
+    <string name="settings_export_logs_copy">కాపీ చేయండి</string>
+    <string name="settings_export_logs_save">సేవ్ చేయండి</string>
+    <string name="settings_export_logs_copied">లాగ్‌లు క్లిప్‌బోర్డ్‌కు కాపీ అయ్యాయి</string>
+    <string name="settings_export_logs_saved">లాగ్‌లు సేవ్ అయ్యాయి</string>
+    <string name="settings_export_logs_failure">లాగ్‌లను ఎగుమతి చేయడం సాధ్యపడలేదు</string>
 </resources>

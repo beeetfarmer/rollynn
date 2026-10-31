@@ -289,4 +289,12 @@
     <string name="settings_restore_keys_title">API কী পুনরুদ্ধার করবেন?</string>
     <string name="settings_restore_keys_message">এই ব্যাকআপে এনক্রিপ্ট করা API কী আছে। সেগুলো পুনরুদ্ধার করতে পাসওয়ার্ড দিন, অথবা বাদ দিয়ে শুধু আপনার সেটিংস পুনরুদ্ধার করুন।</string>
     <string name="settings_restore_keys_wrong_password">ভুল পাসওয়ার্ড</string>
+    <string name="settings_export_logs_title">লগ এক্সপোর্ট করুন</string>
+    <string name="settings_export_logs_summary">সমস্যা জানাতে অ্যাপের লগ কপি বা সেভ করুন</string>
+    <string name="settings_export_logs_message">পাসওয়ার্ড, API কী এবং সার্ভারের ঠিকানা সরিয়ে দেওয়া হয়। লগে তবুও ট্র্যাকের নাম থাকতে পারে, তাই প্রকাশ্যে শেয়ার করার আগে দেখে নিন।</string>
+    <string name="settings_export_logs_copy">কপি করুন</string>
+    <string name="settings_export_logs_save">সেভ করুন</string>
+    <string name="settings_export_logs_copied">লগ ক্লিপবোর্ডে কপি হয়েছে</string>
+    <string name="settings_export_logs_saved">লগ সেভ হয়েছে</string>
+    <string name="settings_export_logs_failure">লগ এক্সপোর্ট করা যায়নি</string>
 </resources>

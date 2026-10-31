@@ -646,4 +646,12 @@
     <string name="settings_restore_keys_title">¿Restaurar las claves API?</string>
     <string name="settings_restore_keys_message">Esta copia de seguridad contiene claves API cifradas. Introduce su contraseña para restaurarlas, u omítelas para restaurar solo tus ajustes.</string>
     <string name="settings_restore_keys_wrong_password">Contraseña incorrecta</string>
+    <string name="settings_export_logs_title">Exportar registros</string>
+    <string name="settings_export_logs_summary">Copia o guarda los registros de la aplicación para informar de un problema</string>
+    <string name="settings_export_logs_message">Se eliminan las contraseñas, las claves de API y las direcciones de servidor. Los registros aún pueden mostrar nombres de pistas, así que revísalos antes de compartirlos públicamente.</string>
+    <string name="settings_export_logs_copy">Copiar</string>
+    <string name="settings_export_logs_save">Guardar</string>
+    <string name="settings_export_logs_copied">Registros copiados al portapapeles</string>
+    <string name="settings_export_logs_saved">Registros guardados</string>
+    <string name="settings_export_logs_failure">No se han podido exportar los registros</string>
 </resources>

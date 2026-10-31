@@ -289,4 +289,12 @@
     <string name="settings_restore_keys_title">API விசைகளை மீட்டமைக்கவா?</string>
     <string name="settings_restore_keys_message">இந்தக் காப்புப்பிரதியில் குறியாக்கம் செய்யப்பட்ட API விசைகள் உள்ளன. அவற்றை மீட்டமைக்க கடவுச்சொல்லை உள்ளிடவும், அல்லது அவற்றைத் தவிர்த்து உங்கள் அமைப்புகளை மட்டும் மீட்டமைக்கவும்.</string>
     <string name="settings_restore_keys_wrong_password">தவறான கடவுச்சொல்</string>
+    <string name="settings_export_logs_title">பதிவுகளை ஏற்றுமதி செய்</string>
+    <string name="settings_export_logs_summary">சிக்கலைப் புகாரளிக்க பயன்பாட்டின் பதிவுகளை நகலெடுக்கவும் அல்லது சேமிக்கவும்</string>
+    <string name="settings_export_logs_message">கடவுச்சொற்கள், API விசைகள் மற்றும் சேவையக முகவரிகள் நீக்கப்படும். பதிவுகளில் பாடல் பெயர்கள் இன்னும் தெரியலாம், எனவே பொதுவில் பகிரும் முன் சரிபார்க்கவும்.</string>
+    <string name="settings_export_logs_copy">நகலெடு</string>
+    <string name="settings_export_logs_save">சேமி</string>
+    <string name="settings_export_logs_copied">பதிவுகள் கிளிப்போர்டுக்கு நகலெடுக்கப்பட்டன</string>
+    <string name="settings_export_logs_saved">பதிவுகள் சேமிக்கப்பட்டன</string>
+    <string name="settings_export_logs_failure">பதிவுகளை ஏற்றுமதி செய்ய முடியவில்லை</string>
 </resources>

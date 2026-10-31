@@ -547,4 +547,12 @@
     <string name="settings_restore_keys_title">API-Schlüssel wiederherstellen?</string>
     <string name="settings_restore_keys_message">Diese Sicherung enthält verschlüsselte API-Schlüssel. Gib das Passwort ein, um sie wiederherzustellen, oder überspringe sie, um nur deine Einstellungen wiederherzustellen.</string>
     <string name="settings_restore_keys_wrong_password">Falsches Passwort</string>
+    <string name="settings_export_logs_title">Protokolle exportieren</string>
+    <string name="settings_export_logs_summary">Protokolle der App kopieren oder speichern, um ein Problem zu melden</string>
+    <string name="settings_export_logs_message">Passwörter, API-Schlüssel und Serveradressen werden entfernt. Protokolle können weiterhin Titelnamen enthalten, prüfe sie daher, bevor du sie öffentlich teilst.</string>
+    <string name="settings_export_logs_copy">Kopieren</string>
+    <string name="settings_export_logs_save">Speichern</string>
+    <string name="settings_export_logs_copied">Protokolle in die Zwischenablage kopiert</string>
+    <string name="settings_export_logs_saved">Protokolle gespeichert</string>
+    <string name="settings_export_logs_failure">Protokolle konnten nicht exportiert werden</string>
 </resources>

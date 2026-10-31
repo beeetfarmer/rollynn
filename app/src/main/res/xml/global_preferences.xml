@@ -688,6 +688,12 @@
             </Preference>
 
             <Preference
+                android:key="export_logs"
+                android:title="@string/settings_export_logs_title"
+                android:summary="@string/settings_export_logs_summary"
+                app:icon="@drawable/ic_download" />
+
+            <Preference
                 android:key="version"
                 app:summary="@string/settings_version_summary"
                 app:title="@string/settings_version_title"

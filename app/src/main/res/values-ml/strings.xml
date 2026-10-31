@@ -289,4 +289,12 @@
     <string name="settings_restore_keys_title">API കീകൾ പുനഃസ്ഥാപിക്കണോ?</string>
     <string name="settings_restore_keys_message">ഈ ബാക്കപ്പിൽ എൻക്രിപ്റ്റ് ചെയ്ത API കീകളുണ്ട്. അവ പുനഃസ്ഥാപിക്കാൻ പാസ്‌വേഡ് നൽകുക, അല്ലെങ്കിൽ അവ ഒഴിവാക്കി നിങ്ങളുടെ ക്രമീകരണങ്ങൾ മാത്രം പുനഃസ്ഥാപിക്കുക.</string>
     <string name="settings_restore_keys_wrong_password">തെറ്റായ പാസ്‌വേഡ്</string>
+    <string name="settings_export_logs_title">ലോഗുകൾ എക്സ്പോർട്ട് ചെയ്യുക</string>
+    <string name="settings_export_logs_summary">പ്രശ്നം റിപ്പോർട്ട് ചെയ്യാൻ ആപ്പ് ലോഗുകൾ പകർത്തുകയോ സേവ് ചെയ്യുകയോ ചെയ്യുക</string>
+    <string name="settings_export_logs_message">പാസ്‌വേഡുകൾ, API കീകൾ, സെർവർ വിലാസങ്ങൾ എന്നിവ നീക്കം ചെയ്യും. ലോഗുകളിൽ ട്രാക്ക് പേരുകൾ ഇപ്പോഴും കാണാം, അതിനാൽ പരസ്യമായി പങ്കിടുന്നതിന് മുമ്പ് പരിശോധിക്കുക.</string>
+    <string name="settings_export_logs_copy">പകർത്തുക</string>
+    <string name="settings_export_logs_save">സേവ് ചെയ്യുക</string>
+    <string name="settings_export_logs_copied">ലോഗുകൾ ക്ലിപ്പ്ബോർഡിലേക്ക് പകർത്തി</string>
+    <string name="settings_export_logs_saved">ലോഗുകൾ സേവ് ചെയ്തു</string>
+    <string name="settings_export_logs_failure">ലോഗുകൾ എക്സ്പോർട്ട് ചെയ്യാനായില്ല</string>
 </resources>

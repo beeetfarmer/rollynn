@@ -571,4 +571,12 @@
     <string name="settings_restore_keys_title">Восстановить ключи API?</string>
     <string name="settings_restore_keys_message">Эта резервная копия содержит зашифрованные ключи API. Введите пароль, чтобы восстановить их, или пропустите их, чтобы восстановить только настройки.</string>
     <string name="settings_restore_keys_wrong_password">Неверный пароль</string>
+    <string name="settings_export_logs_title">Экспорт журналов</string>
+    <string name="settings_export_logs_summary">Скопируйте или сохраните журналы приложения, чтобы сообщить о проблеме</string>
+    <string name="settings_export_logs_message">Пароли, ключи API и адреса серверов удаляются. В журналах всё ещё могут быть названия треков, поэтому проверьте их перед публикацией.</string>
+    <string name="settings_export_logs_copy">Копировать</string>
+    <string name="settings_export_logs_save">Сохранить</string>
+    <string name="settings_export_logs_copied">Журналы скопированы в буфер обмена</string>
+    <string name="settings_export_logs_saved">Журналы сохранены</string>
+    <string name="settings_export_logs_failure">Не удалось экспортировать журналы</string>
 </resources>

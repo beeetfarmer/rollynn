@@ -817,4 +817,12 @@
     <string name="settings_tab_library">Library</string>
     <string name="settings_tab_playback">Playback</string>
     <string name="settings_tab_general">General</string>
+    <string name="settings_export_logs_title">Export logs</string>
+    <string name="settings_export_logs_summary">Copy or save the app\'s logs to report a problem</string>
+    <string name="settings_export_logs_message">Passwords, API keys and server addresses are removed. Logs can still show track names, so check them before sharing publicly.</string>
+    <string name="settings_export_logs_copy">Copy</string>
+    <string name="settings_export_logs_save">Save</string>
+    <string name="settings_export_logs_copied">Logs copied to the clipboard</string>
+    <string name="settings_export_logs_saved">Logs saved</string>
+    <string name="settings_export_logs_failure">Could not export the logs</string>
 </resources>

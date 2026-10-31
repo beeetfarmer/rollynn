@@ -576,4 +576,12 @@
     <string name="settings_restore_keys_title">API anahtarları geri yüklensin mi?</string>
     <string name="settings_restore_keys_message">Bu yedek şifreli API anahtarları içeriyor. Geri yüklemek için parolasını girin veya yalnızca ayarlarınızı geri yüklemek için anahtarları atlayın.</string>
     <string name="settings_restore_keys_wrong_password">Yanlış parola</string>
+    <string name="settings_export_logs_title">Günlükleri dışa aktar</string>
+    <string name="settings_export_logs_summary">Bir sorunu bildirmek için uygulama günlüklerini kopyalayın veya kaydedin</string>
+    <string name="settings_export_logs_message">Parolalar, API anahtarları ve sunucu adresleri kaldırılır. Günlüklerde parça adları yine de görünebilir, bu yüzden herkese açık paylaşmadan önce kontrol edin.</string>
+    <string name="settings_export_logs_copy">Kopyala</string>
+    <string name="settings_export_logs_save">Kaydet</string>
+    <string name="settings_export_logs_copied">Günlükler panoya kopyalandı</string>
+    <string name="settings_export_logs_saved">Günlükler kaydedildi</string>
+    <string name="settings_export_logs_failure">Günlükler dışa aktarılamadı</string>
 </resources>

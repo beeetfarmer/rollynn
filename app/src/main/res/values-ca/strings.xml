@@ -648,4 +648,12 @@
     <string name="settings_restore_keys_title">Restaurar les claus API?</string>
     <string name="settings_restore_keys_message">Aquesta còpia de seguretat conté claus API xifrades. Introduïu-ne la contrasenya per restaurar-les, o ometeu-les per restaurar només la configuració.</string>
     <string name="settings_restore_keys_wrong_password">Contrasenya incorrecta</string>
+    <string name="settings_export_logs_title">Exporta els registres</string>
+    <string name="settings_export_logs_summary">Copia o desa els registres de l\'aplicació per informar d\'un problema</string>
+    <string name="settings_export_logs_message">S\'eliminen les contrasenyes, les claus d\'API i les adreces de servidor. Els registres encara poden mostrar noms de pistes, així que revisa\'ls abans de compartir-los públicament.</string>
+    <string name="settings_export_logs_copy">Copia</string>
+    <string name="settings_export_logs_save">Desa</string>
+    <string name="settings_export_logs_copied">Registres copiats al porta-retalls</string>
+    <string name="settings_export_logs_saved">Registres desats</string>
+    <string name="settings_export_logs_failure">No s\'han pogut exportar els registres</string>
 </resources>

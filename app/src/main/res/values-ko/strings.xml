@@ -548,4 +548,12 @@
     <string name="settings_restore_keys_title">API 키를 복원할까요?</string>
     <string name="settings_restore_keys_message">이 백업에는 암호화된 API 키가 있습니다. 비밀번호를 입력해 복원하거나, 건너뛰고 설정만 복원하세요.</string>
     <string name="settings_restore_keys_wrong_password">비밀번호가 틀렸습니다</string>
+    <string name="settings_export_logs_title">로그 내보내기</string>
+    <string name="settings_export_logs_summary">문제를 신고하려면 앱 로그를 복사하거나 저장하세요</string>
+    <string name="settings_export_logs_message">비밀번호, API 키, 서버 주소는 제거됩니다. 로그에 트랙 이름은 남아 있을 수 있으니 공개적으로 공유하기 전에 확인하세요.</string>
+    <string name="settings_export_logs_copy">복사</string>
+    <string name="settings_export_logs_save">저장</string>
+    <string name="settings_export_logs_copied">로그를 클립보드에 복사했습니다</string>
+    <string name="settings_export_logs_saved">로그를 저장했습니다</string>
+    <string name="settings_export_logs_failure">로그를 내보낼 수 없습니다</string>
 </resources>

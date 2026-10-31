@@ -289,4 +289,12 @@
     <string name="settings_restore_keys_title">ਕੀ API ਕੁੰਜੀਆਂ ਰੀਸਟੋਰ ਕਰਨੀਆਂ ਹਨ?</string>
     <string name="settings_restore_keys_message">ਇਸ ਬੈਕਅੱਪ ਵਿੱਚ ਇਨਕ੍ਰਿਪਟ ਕੀਤੀਆਂ API ਕੁੰਜੀਆਂ ਹਨ। ਉਹਨਾਂ ਨੂੰ ਰੀਸਟੋਰ ਕਰਨ ਲਈ ਇਸਦਾ ਪਾਸਵਰਡ ਦਰਜ ਕਰੋ, ਜਾਂ ਉਹਨਾਂ ਨੂੰ ਛੱਡ ਕੇ ਸਿਰਫ਼ ਆਪਣੀਆਂ ਸੈਟਿੰਗਾਂ ਰੀਸਟੋਰ ਕਰੋ।</string>
     <string name="settings_restore_keys_wrong_password">ਗਲਤ ਪਾਸਵਰਡ</string>
+    <string name="settings_export_logs_title">ਲੌਗ ਨਿਰਯਾਤ ਕਰੋ</string>
+    <string name="settings_export_logs_summary">ਸਮੱਸਿਆ ਦੀ ਰਿਪੋਰਟ ਕਰਨ ਲਈ ਐਪ ਦੇ ਲੌਗ ਕਾਪੀ ਜਾਂ ਸੇਵ ਕਰੋ</string>
+    <string name="settings_export_logs_message">ਪਾਸਵਰਡ, API ਕੁੰਜੀਆਂ ਅਤੇ ਸਰਵਰ ਪਤੇ ਹਟਾ ਦਿੱਤੇ ਜਾਂਦੇ ਹਨ। ਲੌਗਾਂ ਵਿੱਚ ਟਰੈਕਾਂ ਦੇ ਨਾਮ ਫਿਰ ਵੀ ਦਿਖ ਸਕਦੇ ਹਨ, ਇਸ ਲਈ ਜਨਤਕ ਤੌਰ \'ਤੇ ਸਾਂਝਾ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਜਾਂਚ ਲਓ।</string>
+    <string name="settings_export_logs_copy">ਕਾਪੀ ਕਰੋ</string>
+    <string name="settings_export_logs_save">ਸੇਵ ਕਰੋ</string>
+    <string name="settings_export_logs_copied">ਲੌਗ ਕਲਿੱਪਬੋਰਡ \'ਤੇ ਕਾਪੀ ਹੋ ਗਏ</string>
+    <string name="settings_export_logs_saved">ਲੌਗ ਸੇਵ ਹੋ ਗਏ</string>
+    <string name="settings_export_logs_failure">ਲੌਗ ਨਿਰਯਾਤ ਨਹੀਂ ਕੀਤੇ ਜਾ ਸਕੇ</string>
 </resources>

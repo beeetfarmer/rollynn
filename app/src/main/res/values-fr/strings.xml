@@ -665,4 +665,12 @@
     <string name="settings_restore_keys_title">Restaurer les clés API ?</string>
     <string name="settings_restore_keys_message">Cette sauvegarde contient des clés API chiffrées. Saisissez son mot de passe pour les restaurer, ou ignorez-les pour restaurer uniquement vos paramètres.</string>
     <string name="settings_restore_keys_wrong_password">Mot de passe incorrect</string>
+    <string name="settings_export_logs_title">Exporter les journaux</string>
+    <string name="settings_export_logs_summary">Copier ou enregistrer les journaux de l\'application pour signaler un problème</string>
+    <string name="settings_export_logs_message">Les mots de passe, les clés API et les adresses de serveur sont supprimés. Les journaux peuvent encore afficher des noms de pistes, vérifiez-les avant de les partager publiquement.</string>
+    <string name="settings_export_logs_copy">Copier</string>
+    <string name="settings_export_logs_save">Enregistrer</string>
+    <string name="settings_export_logs_copied">Journaux copiés dans le presse-papiers</string>
+    <string name="settings_export_logs_saved">Journaux enregistrés</string>
+    <string name="settings_export_logs_failure">Impossible d\'exporter les journaux</string>
 </resources>

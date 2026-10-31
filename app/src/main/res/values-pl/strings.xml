@@ -659,4 +659,12 @@
     <string name="settings_restore_keys_title">Przywrócić klucze API?</string>
     <string name="settings_restore_keys_message">Ta kopia zapasowa zawiera zaszyfrowane klucze API. Wpisz jej hasło, aby je przywrócić, lub pomiń je, aby przywrócić tylko ustawienia.</string>
     <string name="settings_restore_keys_wrong_password">Nieprawidłowe hasło</string>
+    <string name="settings_export_logs_title">Eksportuj dzienniki</string>
+    <string name="settings_export_logs_summary">Skopiuj lub zapisz dzienniki aplikacji, aby zgłosić problem</string>
+    <string name="settings_export_logs_message">Hasła, klucze API i adresy serwerów są usuwane. Dzienniki mogą nadal zawierać nazwy utworów, więc sprawdź je przed publicznym udostępnieniem.</string>
+    <string name="settings_export_logs_copy">Kopiuj</string>
+    <string name="settings_export_logs_save">Zapisz</string>
+    <string name="settings_export_logs_copied">Skopiowano dzienniki do schowka</string>
+    <string name="settings_export_logs_saved">Zapisano dzienniki</string>
+    <string name="settings_export_logs_failure">Nie udało się wyeksportować dzienników</string>
 </resources>

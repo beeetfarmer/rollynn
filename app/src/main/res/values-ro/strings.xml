@@ -667,4 +667,12 @@
     <string name="settings_restore_keys_title">Restaurați cheile API?</string>
     <string name="settings_restore_keys_message">Această copie de rezervă conține chei API criptate. Introduceți parola pentru a le restaura sau omiteți-le pentru a restaura doar setările.</string>
     <string name="settings_restore_keys_wrong_password">Parolă greșită</string>
+    <string name="settings_export_logs_title">Exportă jurnalele</string>
+    <string name="settings_export_logs_summary">Copiază sau salvează jurnalele aplicației pentru a raporta o problemă</string>
+    <string name="settings_export_logs_message">Parolele, cheile API și adresele serverelor sunt eliminate. Jurnalele pot afișa în continuare numele pieselor, așa că verifică-le înainte de a le partaja public.</string>
+    <string name="settings_export_logs_copy">Copiază</string>
+    <string name="settings_export_logs_save">Salvează</string>
+    <string name="settings_export_logs_copied">Jurnale copiate în clipboard</string>
+    <string name="settings_export_logs_saved">Jurnale salvate</string>
+    <string name="settings_export_logs_failure">Jurnalele nu au putut fi exportate</string>
 </resources>

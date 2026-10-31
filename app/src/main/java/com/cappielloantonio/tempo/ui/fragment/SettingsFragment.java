@@ -1,6 +1,8 @@
 package com.cappielloantonio.tempo.ui.fragment;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -63,6 +65,7 @@ import com.cappielloantonio.tempo.ui.dialog.StarredArtistSyncDialog;
 import com.cappielloantonio.tempo.ui.dialog.StreamingCacheStorageDialog;
 import com.cappielloantonio.tempo.util.DownloadUtil;
 import com.cappielloantonio.tempo.util.Preferences;
+import com.cappielloantonio.tempo.util.LogExportUtil;
 import com.cappielloantonio.tempo.util.SettingsBackupUtil;
 import com.cappielloantonio.tempo.util.UIUtil;
 import com.cappielloantonio.tempo.util.ExternalAudioReader;
@@ -97,6 +100,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     private ActivityResultLauncher<Intent> directoryPickerLauncher;
     private ActivityResultLauncher<String> settingsBackupLauncher;
     private ActivityResultLauncher<String[]> settingsRestoreLauncher;
+    private ActivityResultLauncher<String> logExportLauncher;
 
     private MediaService.LocalBinder mediaServiceBinder;
     private boolean isServiceBound = false;
@@ -126,6 +130,14 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
                 uri -> {
                     if (uri == null) return;
                     confirmRestore(uri);
+                }
+        );
+
+        logExportLauncher = registerForActivityResult(
+                new ActivityResultContracts.CreateDocument("text/plain"),
+                uri -> {
+                    if (uri == null) return;
+                    saveLogs(uri);
                 }
         );
 
@@ -341,6 +353,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         actionLastFmSettings();
         actionPopinnSettings();
         actionSettingsBackupRestore();
+        actionExportLogs();
         actionConfigureDock();
         actionConfigureMetadata();
 
@@ -879,6 +892,52 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
                 return true;
             });
         }
+    }
+
+    private void actionExportLogs() {
+        Preference exportLogsPref = findPreference("export_logs");
+        if (exportLogsPref == null) return;
+
+        exportLogsPref.setOnPreferenceClickListener(preference -> {
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.settings_export_logs_title)
+                    .setMessage(R.string.settings_export_logs_message)
+                    .setNeutralButton(android.R.string.cancel, null)
+                    .setNegativeButton(R.string.settings_export_logs_copy, (dialog, which) -> copyLogs())
+                    .setPositiveButton(R.string.settings_export_logs_save, (dialog, which) ->
+                            logExportLauncher.launch(LogExportUtil.suggestedFileName()))
+                    .show();
+            return true;
+        });
+    }
+
+    private void copyLogs() {
+        Activity activity = requireActivity();
+        Context context = activity.getApplicationContext();
+
+        new Thread(() -> {
+            String report = LogExportUtil.collect();
+            activity.runOnUiThread(() -> {
+                if (report != null) {
+                    ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                    clipboard.setPrimaryClip(ClipData.newPlainText("Rollynn logs", LogExportUtil.forClipboard(report)));
+                }
+                Toast.makeText(context, report != null ? R.string.settings_export_logs_copied
+                        : R.string.settings_export_logs_failure, Toast.LENGTH_LONG).show();
+            });
+        }).start();
+    }
+
+    private void saveLogs(Uri destination) {
+        Activity activity = requireActivity();
+        Context context = activity.getApplicationContext();
+
+        new Thread(() -> {
+            String report = LogExportUtil.collect();
+            boolean saved = report != null && LogExportUtil.save(context, destination, report);
+            activity.runOnUiThread(() -> Toast.makeText(context, saved ? R.string.settings_export_logs_saved
+                    : R.string.settings_export_logs_failure, Toast.LENGTH_LONG).show());
+        }).start();
     }
 
     /** Asked after the file is chosen, so no password waits in memory behind the file picker. */

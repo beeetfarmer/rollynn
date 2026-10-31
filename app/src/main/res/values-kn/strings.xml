@@ -289,4 +289,12 @@
     <string name="settings_restore_keys_title">API ಕೀಗಳನ್ನು ಮರುಸ್ಥಾಪಿಸಬೇಕೇ?</string>
     <string name="settings_restore_keys_message">ಈ ಬ್ಯಾಕಪ್‌ನಲ್ಲಿ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಿದ API ಕೀಗಳಿವೆ. ಅವುಗಳನ್ನು ಮರುಸ್ಥಾಪಿಸಲು ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ, ಅಥವಾ ಅವುಗಳನ್ನು ಬಿಟ್ಟು ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮಾತ್ರ ಮರುಸ್ಥಾಪಿಸಿ.</string>
     <string name="settings_restore_keys_wrong_password">ತಪ್ಪು ಪಾಸ್‌ವರ್ಡ್</string>
+    <string name="settings_export_logs_title">ಲಾಗ್‌ಗಳನ್ನು ರಫ್ತು ಮಾಡಿ</string>
+    <string name="settings_export_logs_summary">ಸಮಸ್ಯೆಯನ್ನು ವರದಿ ಮಾಡಲು ಆ್ಯಪ್ ಲಾಗ್‌ಗಳನ್ನು ನಕಲಿಸಿ ಅಥವಾ ಉಳಿಸಿ</string>
+    <string name="settings_export_logs_message">ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, API ಕೀಗಳು ಮತ್ತು ಸರ್ವರ್ ವಿಳಾಸಗಳನ್ನು ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ. ಲಾಗ್‌ಗಳಲ್ಲಿ ಟ್ರ್ಯಾಕ್ ಹೆಸರುಗಳು ಇನ್ನೂ ಕಾಣಿಸಬಹುದು, ಆದ್ದರಿಂದ ಸಾರ್ವಜನಿಕವಾಗಿ ಹಂಚಿಕೊಳ್ಳುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ.</string>
+    <string name="settings_export_logs_copy">ನಕಲಿಸಿ</string>
+    <string name="settings_export_logs_save">ಉಳಿಸಿ</string>
+    <string name="settings_export_logs_copied">ಲಾಗ್‌ಗಳನ್ನು ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ಗೆ ನಕಲಿಸಲಾಗಿದೆ</string>
+    <string name="settings_export_logs_saved">ಲಾಗ್‌ಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ</string>
+    <string name="settings_export_logs_failure">ಲಾಗ್‌ಗಳನ್ನು ರಫ್ತು ಮಾಡಲಾಗಲಿಲ್ಲ</string>
 </resources>
