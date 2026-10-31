@@ -1,6 +1,7 @@
 package com.cappielloantonio.tempo.util;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
@@ -11,6 +12,9 @@ import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.Shader;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
+import android.widget.RatingBar;
 
 import androidx.core.graphics.ColorUtils;
 
@@ -23,6 +27,18 @@ import androidx.core.graphics.ColorUtils;
 public final class PlayerBackgroundUtil {
 
     private PlayerBackgroundUtil() {
+    }
+
+    /** Colours a rating bar's stars, keeping the empty ones visible on any background. */
+    public static void tintRatingBar(RatingBar bar, int color) {
+        ColorStateList tint = ColorStateList.valueOf(color);
+        bar.setProgressTintList(tint);
+        bar.setProgressBackgroundTintList(tint);
+        // The platform drawable fades this layer to disabledAlpha, too faint for a tint alone.
+        Drawable stars = bar.getProgressDrawable();
+        Drawable empty = stars instanceof LayerDrawable
+                ? ((LayerDrawable) stars).findDrawableByLayerId(android.R.id.background) : null;
+        if (empty != null) empty.mutate().setAlpha(0x80);
     }
 
     /**

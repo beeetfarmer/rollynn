@@ -696,7 +696,7 @@ public class PlayerControllerFragment extends Fragment {
             bar.setBufferedColor(androidx.core.graphics.ColorUtils.setAlphaComponent(color, 0x66));
             bar.setUnplayedColor(androidx.core.graphics.ColorUtils.setAlphaComponent(color, 0x33));
         } else if (view instanceof android.widget.RatingBar) {
-            ((android.widget.RatingBar) view).setProgressTintList(tint);
+            PlayerBackgroundUtil.tintRatingBar((android.widget.RatingBar) view, color);
         } else if (view instanceof ImageView) {
             // Icons are drawn either as the image (app:tint) or as the background.
             if (((ImageView) view).getImageTintList() != null) ((ImageView) view).setImageTintList(tint);
