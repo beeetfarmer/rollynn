@@ -33,10 +33,11 @@
 
     <ImageView
         android:id="@+id/play_pause_icon"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
         android:layout_gravity="center"
-        android:layout_margin="14dp"
+        android:layout_margin="18dp"
+        app:tint="@android:color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

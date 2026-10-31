@@ -162,11 +162,8 @@ public class PlayerSongQueueAdapter extends RecyclerView.Adapter<PlayerSongQueue
 
         if (isCurrent) {
             holder.item.playPauseIcon.setVisibility(View.VISIBLE);
-            if (isPlaying) {
-                holder.item.playPauseIcon.setImageResource(R.drawable.ic_pause);
-            } else {
-                holder.item.playPauseIcon.setImageResource(R.drawable.ic_play);
-            }
+            // Shows the track's state, not the action a tap would take.
+            holder.item.playPauseIcon.setImageResource(isPlaying ? R.drawable.ic_play : R.drawable.ic_pause);
             holder.item.coverArtOverlay.setVisibility(View.VISIBLE);
         } else {
             holder.item.playPauseIcon.setVisibility(View.INVISIBLE);
