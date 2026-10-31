@@ -70,6 +70,7 @@ public class PlayerQueueFragment extends Fragment implements ClickCallback {
     private ListenableFuture<MediaBrowser> mediaBrowserListenableFuture;
 
     private PlayerSongQueueAdapter playerSongQueueAdapter;
+    private int pendingScrollPosition = RecyclerView.NO_POSITION;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -122,13 +123,24 @@ public class PlayerQueueFragment extends Fragment implements ClickCallback {
             try {
                 int position = mediaBrowserListenableFuture.get().getCurrentMediaItemIndex();
                 requireActivity().runOnUiThread(() -> {
-                    LinearLayoutManager lm = (LinearLayoutManager) bind.playerQueueRecyclerView.getLayoutManager();
-                    if (lm != null) lm.scrollToPositionWithOffset(position, 0);
+                    if (bind != null) scrollToTrack(position);
                 });
             } catch (Exception e) {
                 Log.e("PlayerQueueFragment", "Failed to get mediaBrowserListenableFuture in onResume", e);
             }
         }, MoreExecutors.directExecutor());
+    }
+
+    /** Puts the track at the top. The queue loads asynchronously, so it can be too short to do that yet. */
+    void scrollToTrack(int position) {
+        if (position >= playerSongQueueAdapter.getItemCount()) {
+            pendingScrollPosition = position;
+            return;
+        }
+
+        pendingScrollPosition = RecyclerView.NO_POSITION;
+        LinearLayoutManager lm = (LinearLayoutManager) bind.playerQueueRecyclerView.getLayoutManager();
+        if (lm != null) lm.scrollToPositionWithOffset(position, 0);
     }
 
     @Override
@@ -180,6 +192,7 @@ public class PlayerQueueFragment extends Fragment implements ClickCallback {
             if (queue != null) {
                 playerSongQueueAdapter.setItems(queue.stream().map(item -> (Child) item).collect(Collectors.toList()));
                 reapplyPlayback();
+                if (pendingScrollPosition != RecyclerView.NO_POSITION) scrollToTrack(pendingScrollPosition);
             }
         });
 
