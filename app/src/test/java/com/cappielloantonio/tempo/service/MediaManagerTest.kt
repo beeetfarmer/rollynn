@@ -191,7 +191,6 @@ class MediaManagerTest {
         verify(browser).addMediaItem(eq(3), any(MediaItem::class.java))
     }
 
-    @Ignore("Known bug: insertAll drops tracks already queued, so the saved queue falls behind the player")
     @Test
     fun aTrackAlreadyInTheQueueIsSavedLikeThePlayerHasIt() {
         savedQueue("a", "b")
@@ -203,7 +202,6 @@ class MediaManagerTest {
         assertEquals(listOf("a", "b", "a"), queueIds())
     }
 
-    @Ignore("Known bug: the saved queue is short, so its insert throws before the player is told")
     @Test
     fun addingAfterARepeatedTrackStillReachesThePlayer() {
         savedQueue("a", "b")
@@ -214,6 +212,28 @@ class MediaManagerTest {
         MediaManager.enqueue(future, songs("c"), false)
 
         verify(browser, times(2)).addMediaItems(anyList())
+    }
+
+    @Test
+    fun aSavedQueueBehindThePlayerStillTakesNewTracks() {
+        savedQueue("a")
+        playing(0, 5)
+
+        MediaManager.enqueue(future, songs("x"), false)
+
+        assertEquals(listOf("x"), addedItemIds())
+        assertEquals(listOf("a", "x"), queueIds())
+    }
+
+    @Test
+    fun aSavedQueueBehindThePlayerStillTakesANewTrack() {
+        savedQueue("a")
+        playing(0, 5)
+
+        MediaManager.enqueue(future, song("x"), false)
+
+        verify(browser).addMediaItem(any(MediaItem::class.java))
+        assertEquals(listOf("a", "x"), queueIds())
     }
 
     // remove / removeRange / swap / shuffle

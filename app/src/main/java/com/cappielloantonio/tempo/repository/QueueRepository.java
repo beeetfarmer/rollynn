@@ -121,7 +121,8 @@ public class QueueRepository {
             }
 
             Queue queueItem = new Queue(media);
-            mediaList.add(afterIndex, queueItem);
+            // A queue saved by an older version can be shorter than the player's.
+            mediaList.add(Math.min(afterIndex, mediaList.size()), queueItem);
 
             for (int i = 0; i < mediaList.size(); i++) {
                 mediaList.get(i).setTrackOrder(i);
@@ -139,14 +140,6 @@ public class QueueRepository {
         }
     }
 
-    private boolean isMediaInQueue(List<Queue> queue, Child media) {
-        if (queue == null || media == null) return false;
-        return queue.stream().anyMatch(queueItem ->
-                queueItem != null && media.getId() != null &&
-                        queueItem.getId().equals(media.getId())
-        );
-    }
-
     public void insertAll(List<Child> toAdd, boolean reset, int afterIndex) {
         try {
             List<Queue> media = new ArrayList<>();
@@ -160,15 +153,11 @@ public class QueueRepository {
                 media = getMediaThreadSafe.getMedia();
             }
 
-            List<Child> filteredToAdd = toAdd;
-            final List<Queue> finalMedia = media;
-            filteredToAdd = toAdd.stream()
-                    .filter(child -> !isMediaInQueue(finalMedia, child))
-                    .collect(Collectors.toList());
-
-            for (int i = 0; i < filteredToAdd.size(); i++) {
-                Queue queueItem = new Queue(filteredToAdd.get(i));
-                media.add(afterIndex + i, queueItem);
+            // A queue saved by an older version can be shorter than the player's.
+            int start = Math.min(afterIndex, media.size());
+            for (int i = 0; i < toAdd.size(); i++) {
+                Queue queueItem = new Queue(toAdd.get(i));
+                media.add(start + i, queueItem);
             }
 
             for (int i = 0; i < media.size(); i++) {
