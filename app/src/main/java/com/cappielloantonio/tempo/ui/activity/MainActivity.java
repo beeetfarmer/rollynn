@@ -130,7 +130,7 @@ public class MainActivity extends BaseActivity {
         View navHostView = bind.getRoot().findViewById(R.id.nav_host_fragment);
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(navHostView, (v, insets) -> {
             // The artist page bleeds under the status bar; the search screen's
-            // Material SearchBar applies the status inset itself. Both skip ours.
+            // SearchView and results apply the status inset themselves. Both skip ours.
             boolean skipTop = immersiveBars || suppressNavHostTopInset;
             int top = skipTop ? 0 : insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).top;
             v.setPadding(0, top, 0, 0);

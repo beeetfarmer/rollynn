@@ -14,6 +14,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.util.UnstableApi;
@@ -72,6 +74,7 @@ public class SearchFragment extends Fragment implements ClickCallback {
         searchViewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
         playbackViewModel = new ViewModelProvider(requireActivity()).get(PlaybackViewModel.class);
 
+        keepBelowStatusBar(bind.searchAppBar, bind.searchResultLayout);
         initSearchResultView();
         initSearchView();
         inputFocus();
@@ -105,6 +108,21 @@ public class SearchFragment extends Fragment implements ClickCallback {
         super.onDestroyView();
         if (pendingSuggestion != null) suggestionHandler.removeCallbacks(pendingSuggestion);
         bind = null;
+    }
+
+    /**
+     * The nav host leaves the top inset to this screen so the SearchView can fill
+     * it, but SearchBar doesn't apply it. Its AppBarLayout overlaps the results,
+     * so they have to move down by the same amount.
+     */
+    static void keepBelowStatusBar(View appBar, View results) {
+        int resultsTop = results.getPaddingTop();
+        ViewCompat.setOnApplyWindowInsetsListener(appBar, (v, insets) -> {
+            int top = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top;
+            v.setPadding(v.getPaddingLeft(), top, v.getPaddingRight(), v.getPaddingBottom());
+            results.setPadding(results.getPaddingLeft(), resultsTop + top, results.getPaddingRight(), results.getPaddingBottom());
+            return insets;
+        });
     }
 
     private void initSearchResultView() {
