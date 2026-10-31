@@ -24,14 +24,15 @@ public class PlaylistChooserViewModel extends AndroidViewModel {
     private static final String TAG = "PlaylistChooserVM";
     private final PlaylistRepository playlistRepository;
     private final MutableLiveData<List<Playlist>> playlists = new MutableLiveData<>(null);
-    private final MutableLiveData<Boolean> playlistIsPublic = new MutableLiveData<>(false);
+    private final MutableLiveData<Boolean> playlistIsPublic = new MutableLiveData<>(null);
 
+    /** Null leaves the visibility alone: the switch off must not make a public playlist private. */
     public Boolean getIsPlaylistPublic() {
         return playlistIsPublic.getValue();
     }
 
     public void setIsPlaylistPublic(boolean isPublic) {
-        playlistIsPublic.setValue(isPublic);
+        playlistIsPublic.setValue(isPublic ? Boolean.TRUE : null);
     }
 
     private ArrayList<Child> toAdd = new ArrayList<>();

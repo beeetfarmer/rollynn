@@ -33,6 +33,8 @@ public class PlaylistChooserDialog extends DialogFragment {
 
         playlistChooserViewModel = new ViewModelProvider(requireActivity()).get(PlaylistChooserViewModel.class);
 
+        // The view model outlives the dialog, but the switch always starts off.
+        playlistChooserViewModel.setIsPlaylistPublic(false);
         bind.playlistDialogChooserVisibilitySwitch.setOnCheckedChangeListener(
                 (buttonView,
                  isChecked) -> playlistChooserViewModel.setIsPlaylistPublic(isChecked)
