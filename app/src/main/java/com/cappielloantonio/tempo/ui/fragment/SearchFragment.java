@@ -77,9 +77,22 @@ public class SearchFragment extends Fragment implements ClickCallback {
         keepBelowStatusBar(bind.searchAppBar, bind.searchResultLayout);
         initSearchResultView();
         initSearchView();
-        inputFocus();
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Coming back from a result rebuilds the view: restore that search rather
+        // than opening an empty one over a blank page.
+        if (hasSearched) {
+            bind.searchBar.setText(searchViewModel.getQuery());
+            performSearch(searchViewModel.getQuery());
+        } else {
+            inputFocus();
+        }
     }
 
     @Override
