@@ -141,8 +141,15 @@ public final class SettingsBackupUtil {
             JSONObject settings = root.optJSONObject(KEY_SETTINGS);
             if (settings == null) return -1;
 
-            SharedPreferences.Editor editor = App.getInstance().getPreferences().edit();
+            SharedPreferences preferences = App.getInstance().getPreferences();
+            SharedPreferences.Editor editor = preferences.edit();
             int restored = 0;
+
+            // A setting left at its default is not stored, so it is not in the
+            // file either. Clearing first is what returns those to their defaults.
+            for (String key : preferences.getAll().keySet()) {
+                if (!isExcluded(key)) editor.remove(key);
+            }
 
             for (Iterator<String> keys = settings.keys(); keys.hasNext(); ) {
                 String key = keys.next();

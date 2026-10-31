@@ -144,12 +144,34 @@ class SettingsBackupUtilTest {
     }
 
     @Test
-    fun restoreLeavesSettingsTheBackupDoesNotMention() {
-        preferences.edit().putString("kept", "value").commit()
+    fun restoreResetsSettingsTheBackupDoesNotMention() {
+        preferences.edit().putString("changed_since_backup", "value").commit()
 
         restore(backupOf("theme" to string("dark")))
 
-        assertEquals("value", preferences.getString("kept", null))
+        assertFalse(preferences.contains("changed_since_backup"))
+        assertEquals("dark", preferences.getString("theme", null))
+    }
+
+    @Test
+    fun aSettingAtItsDefaultWhenBackedUpReturnsToIt() {
+        val backup = export().toString()
+        preferences.edit().putString("theme", "dark").commit()
+
+        restore(backup)
+
+        assertFalse(preferences.contains("theme"))
+    }
+
+    @Test
+    fun resettingLeavesTheLoginAndSecretsAlone() {
+        val editor = preferences.edit()
+        (sessionKeys + secretKeys).forEach { editor.putString(it, "kept") }
+        editor.commit()
+
+        restore(backupOf("theme" to string("dark")))
+
+        (sessionKeys + secretKeys).forEach { assertEquals(it, "kept", preferences.getString(it, null)) }
     }
 
     @Test
@@ -185,6 +207,15 @@ class SettingsBackupUtilTest {
         assertEquals(-1, restore(""))
         assertEquals(-1, restore("""{"format":1}"""))
         assertEquals(-1, restore("""{"format":1,"settings":"nope"}"""))
+    }
+
+    @Test
+    fun aFileThatIsNotABackupChangesNothing() {
+        preferences.edit().putString("theme", "light").commit()
+
+        restore("""{"format":1}""")
+
+        assertEquals("light", preferences.getString("theme", null))
     }
 
     @Test
