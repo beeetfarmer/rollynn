@@ -24,7 +24,7 @@ public class App extends Application {
     private static SharedPreferences preferences;
     private static SharedPreferences encryptedPreferences;
 
-    private static final String[] SENSITIVE_KEYS = {"password", "token", "salt", "last_fm_api_key"};
+    private static final String[] SENSITIVE_KEYS = {"password", "token", "salt", "last_fm_api_key", "koito_api_key", "audiomuse_api_token"};
 
     @Override
     public void onCreate() {

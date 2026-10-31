@@ -24,6 +24,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
 import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -68,6 +69,8 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.Locale;
 import java.util.Map;
 
@@ -339,6 +342,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         actionAutoDownloadLyrics();
         actionLyricsRomanization();
         actionTranslationSettings();
+        actionServiceKeys();
         actionLastFmSettings();
         actionPopinnSettings();
         actionSettingsBackupRestore();
@@ -774,27 +778,35 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         }
     }
 
-    private void actionTranslationSettings() {
-        EditTextPreference apiKeyPref = findPreference("translation_api_key");
-        if (apiKeyPref != null) {
-            apiKeyPref.setSummaryProvider(null);
-            String currentKey = Preferences.getTranslationApiKey();
-            if (currentKey != null && !currentKey.isEmpty()) {
-                String masked = currentKey.substring(0, Math.min(4, currentKey.length())) + "****";
-                apiKeyPref.setSummary(masked);
-            }
-            apiKeyPref.setOnPreferenceChangeListener((pref, newValue) -> {
-                String key = (String) newValue;
-                Preferences.setTranslationApiKey(key);
-                if (key != null && !key.isEmpty()) {
-                    String masked = key.substring(0, Math.min(4, key.length())) + "****";
-                    pref.setSummary(masked);
-                } else {
-                    pref.setSummary(R.string.settings_translation_api_key_summary);
-                }
-                return false;
-            });
+    /** Returning false from the listener keeps the value out of the plain preferences the screen writes to. */
+    private void bindSecret(String prefKey, Supplier<String> getter, Consumer<String> setter, @StringRes int emptySummary) {
+        EditTextPreference preference = findPreference(prefKey);
+        if (preference == null) return;
+
+        preference.setSummaryProvider(null);
+        String current = getter.get();
+        if (current != null && !current.isEmpty()) {
+            preference.setSummary(current.substring(0, Math.min(4, current.length())) + "****");
         }
+        preference.setOnPreferenceChangeListener((pref, newValue) -> {
+            String value = (String) newValue;
+            setter.accept(value);
+            if (value != null && !value.isEmpty()) {
+                pref.setSummary(value.substring(0, Math.min(4, value.length())) + "****");
+            } else {
+                pref.setSummary(emptySummary);
+            }
+            return false;
+        });
+    }
+
+    private void actionServiceKeys() {
+        bindSecret("koito_api_key", Preferences::getKoitoApiKey, Preferences::setKoitoApiKey, R.string.settings_koito_key_summary);
+        bindSecret("audiomuse_api_token", Preferences::getAudioMuseApiToken, Preferences::setAudioMuseApiToken, R.string.settings_audiomuse_token_summary);
+    }
+
+    private void actionTranslationSettings() {
+        bindSecret("translation_api_key", Preferences::getTranslationApiKey, Preferences::setTranslationApiKey, R.string.settings_translation_api_key_summary);
 
         EditTextPreference modelPref = findPreference("translation_model");
         if (modelPref != null) {

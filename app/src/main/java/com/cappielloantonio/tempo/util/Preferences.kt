@@ -347,7 +347,12 @@ object Preferences {
 
     @JvmStatic
     fun getKoitoApiKey(): String? {
-        return App.getInstance().preferences.getString(KOITO_API_KEY, null)
+        return App.getInstance().encryptedPreferences.getString(KOITO_API_KEY, null)
+    }
+
+    @JvmStatic
+    fun setKoitoApiKey(apiKey: String?) {
+        App.getInstance().encryptedPreferences.edit().putString(KOITO_API_KEY, apiKey).apply()
     }
 
     @JvmStatic
@@ -357,7 +362,12 @@ object Preferences {
 
     @JvmStatic
     fun getAudioMuseApiToken(): String? {
-        return App.getInstance().preferences.getString(AUDIOMUSE_API_TOKEN, null)
+        return App.getInstance().encryptedPreferences.getString(AUDIOMUSE_API_TOKEN, null)
+    }
+
+    @JvmStatic
+    fun setAudioMuseApiToken(apiToken: String?) {
+        App.getInstance().encryptedPreferences.edit().putString(AUDIOMUSE_API_TOKEN, apiToken).apply()
     }
 
     /** True when similar artists should come from AudioMuse-AI rather than the music server. */
