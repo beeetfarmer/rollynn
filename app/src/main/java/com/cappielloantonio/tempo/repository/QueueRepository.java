@@ -205,14 +205,14 @@ public class QueueRepository {
         return count;
     }
 
-    public void setLastPlayedTimestamp(String id) {
-        SetLastPlayedTimestampThreadSafe timestamp = new SetLastPlayedTimestampThreadSafe(queueDao, id);
+    public void setLastPlayedTimestamp(String id, int position) {
+        SetLastPlayedTimestampThreadSafe timestamp = new SetLastPlayedTimestampThreadSafe(queueDao, id, position);
         Thread thread = new Thread(timestamp);
         thread.start();
     }
 
-    public void setPlayingPausedTimestamp(String id, long ms) {
-        SetPlayingPausedTimestampThreadSafe timestamp = new SetPlayingPausedTimestampThreadSafe(queueDao, id, ms);
+    public void setPlayingPausedTimestamp(String id, int position, long ms) {
+        SetPlayingPausedTimestampThreadSafe timestamp = new SetPlayingPausedTimestampThreadSafe(queueDao, id, position, ms);
         Thread thread = new Thread(timestamp);
         thread.start();
     }
@@ -335,32 +335,38 @@ public class QueueRepository {
     private static class SetLastPlayedTimestampThreadSafe implements Runnable {
         private final QueueDao queueDao;
         private final String mediaId;
+        private final int position;
 
-        public SetLastPlayedTimestampThreadSafe(QueueDao queueDao, String mediaId) {
+        public SetLastPlayedTimestampThreadSafe(QueueDao queueDao, String mediaId, int position) {
             this.queueDao = queueDao;
             this.mediaId = mediaId;
+            this.position = position;
         }
 
         @Override
         public void run() {
-            queueDao.setLastPlay(mediaId, System.currentTimeMillis());
+            long now = System.currentTimeMillis();
+            // By position, since a repeated track has several rows. A queue saved by an older version can differ.
+            if (queueDao.setLastPlayAt(position, mediaId, now) == 0) queueDao.setLastPlay(mediaId, now);
         }
     }
 
     private static class SetPlayingPausedTimestampThreadSafe implements Runnable {
         private final QueueDao queueDao;
         private final String mediaId;
+        private final int position;
         private final long ms;
 
-        public SetPlayingPausedTimestampThreadSafe(QueueDao queueDao, String mediaId, long ms) {
+        public SetPlayingPausedTimestampThreadSafe(QueueDao queueDao, String mediaId, int position, long ms) {
             this.queueDao = queueDao;
             this.mediaId = mediaId;
+            this.position = position;
             this.ms = ms;
         }
 
         @Override
         public void run() {
-            queueDao.setPlayingChanged(mediaId, ms);
+            if (queueDao.setPlayingChangedAt(position, mediaId, ms) == 0) queueDao.setPlayingChanged(mediaId, ms);
         }
     }
 

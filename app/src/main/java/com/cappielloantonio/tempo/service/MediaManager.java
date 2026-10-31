@@ -514,13 +514,13 @@ public class MediaManager {
         }
     }
 
-    public static void setLastPlayedTimestamp(MediaItem mediaItem) {
-        if (mediaItem != null) getQueueRepository().setLastPlayedTimestamp(mediaItem.mediaId);
+    public static void setLastPlayedTimestamp(MediaItem mediaItem, int position) {
+        if (mediaItem != null) getQueueRepository().setLastPlayedTimestamp(mediaItem.mediaId, position);
     }
 
-    public static void setPlayingPausedTimestamp(MediaItem mediaItem, long ms) {
+    public static void setPlayingPausedTimestamp(MediaItem mediaItem, int position, long ms) {
         if (mediaItem != null)
-            getQueueRepository().setPlayingPausedTimestamp(mediaItem.mediaId, ms);
+            getQueueRepository().setPlayingPausedTimestamp(mediaItem.mediaId, position, ms);
     }
 
     public static void scrobble(MediaItem mediaItem, boolean submission) {

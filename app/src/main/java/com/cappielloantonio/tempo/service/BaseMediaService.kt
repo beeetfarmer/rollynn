@@ -179,7 +179,7 @@ open class BaseMediaService : MediaLibraryService() {
                 applyGenreBasedPreset(mediaItem)
 
                 if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK || reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) {
-                    MediaManager.setLastPlayedTimestamp(mediaItem)
+                    MediaManager.setLastPlayedTimestamp(mediaItem, player.currentMediaItemIndex)
                     if (mediaItem.mediaMetadata.extras?.getString("type") == Constants.MEDIA_TYPE_MUSIC) {
                         MediaManager.saveChronology(mediaItem)
                     }
@@ -329,6 +329,7 @@ open class BaseMediaService : MediaLibraryService() {
                 if (!isPlaying) {
                     MediaManager.setPlayingPausedTimestamp(
                         player.currentMediaItem,
+                        player.currentMediaItemIndex,
                         player.currentPosition
                     )
                 } else {
@@ -402,7 +403,7 @@ open class BaseMediaService : MediaLibraryService() {
                     }
 
                     if (newPosition.mediaItem?.mediaMetadata?.extras?.getString("type") == Constants.MEDIA_TYPE_MUSIC) {
-                        MediaManager.setLastPlayedTimestamp(newPosition.mediaItem)
+                        MediaManager.setLastPlayedTimestamp(newPosition.mediaItem, newPosition.mediaItemIndex)
                     }
                 }
             }

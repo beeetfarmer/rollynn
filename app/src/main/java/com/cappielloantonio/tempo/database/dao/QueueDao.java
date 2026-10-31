@@ -39,6 +39,12 @@ public interface QueueDao {
     @Query("UPDATE queue SET playing_changed=:timestamp WHERE id=:id")
     void setPlayingChanged(String id, long timestamp);
 
+    @Query("UPDATE queue SET last_play=:timestamp WHERE track_order=:position AND id=:id")
+    int setLastPlayAt(int position, String id, long timestamp);
+
+    @Query("UPDATE queue SET playing_changed=:timestamp WHERE track_order=:position AND id=:id")
+    int setPlayingChangedAt(int position, String id, long timestamp);
+
     @Query("SELECT * FROM queue ORDER BY last_play DESC LIMIT 1")
     Queue getLastPlayed();
 }

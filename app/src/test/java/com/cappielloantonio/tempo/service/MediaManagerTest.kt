@@ -473,6 +473,42 @@ class MediaManagerTest {
     }
 
     @Test
+    fun resumesTheCopyOfARepeatedTrackThatWasPlaying() {
+        savedQueue("a", "b", "a")
+
+        MediaManager.setLastPlayedTimestamp(mediaItem("a"), 2)
+        MediaManager.setPlayingPausedTimestamp(mediaItem("a"), 2, 7000)
+        settle()
+        MediaManager.init(future, songs("a", "b", "a"))
+
+        verify(browser).seekTo(2, 7000)
+    }
+
+    @Test
+    fun aRepeatedTrackPausedAtTheFirstCopyResumesThere() {
+        savedQueue("a", "b", "a")
+
+        MediaManager.setLastPlayedTimestamp(mediaItem("a"), 0)
+        MediaManager.setPlayingPausedTimestamp(mediaItem("a"), 0, 3000)
+        settle()
+        MediaManager.init(future, songs("a", "b", "a"))
+
+        verify(browser).seekTo(0, 3000)
+    }
+
+    @Test
+    fun aQueueOutOfStepWithThePlayerStillRemembersTheTrack() {
+        savedQueue("a", "b")
+
+        MediaManager.setLastPlayedTimestamp(mediaItem("b"), 5)
+        MediaManager.setPlayingPausedTimestamp(mediaItem("b"), 5, 3000)
+        settle()
+        MediaManager.init(future, songs("a", "b"))
+
+        verify(browser).seekTo(1, 3000)
+    }
+
+    @Test
     fun getCurrentIndexAsksThePlayer() {
         `when`(browser.currentMediaItemIndex).thenReturn(4)
         var index = -1
