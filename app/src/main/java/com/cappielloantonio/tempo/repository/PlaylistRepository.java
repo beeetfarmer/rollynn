@@ -240,7 +240,10 @@ public class PlaylistRepository {
                         @Override
                         public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
                             if (response.isSuccessful()) notifyPlaylistChanged();
-                            if (callback != null) callback.onSuccess();
+                            if (callback != null) {
+                                if (response.isSuccessful()) callback.onSuccess();
+                                else callback.onFailure();
+                            }
                         }
 
                         @Override

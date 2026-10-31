@@ -17,7 +17,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
@@ -279,7 +278,6 @@ class PlaylistRepositoryTest {
         verify(client).updatePlaylist("p1", null, true, arrayListOf("a"), null)
     }
 
-    @Ignore("Known bug: an HTTP error still calls onSuccess")
     @Test
     fun addingSongsReportsAServerError() {
         `when`(client.updatePlaylist(any(), any(), any(), any(), any())).thenAnswerHttpError()
