@@ -49,6 +49,39 @@ public abstract class AppDatabase extends RoomDatabase {
     private final static String DB_NAME = "tempo_db";
     private static AppDatabase instance;
 
+    static final Migration MIGRATION_12_13 = new Migration(12, 13) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE `recent_search` ADD COLUMN `timestamp` INTEGER NOT NULL DEFAULT 0");
+        }
+    };
+
+    static final Migration MIGRATION_13_14 = new Migration(13, 14) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE `playlist` ADD COLUMN `songCount` INTEGER NOT NULL DEFAULT 0");
+        }
+    };
+
+    // The tables did not change, but without a step here Room would wipe the database.
+    static final Migration MIGRATION_14_15 = new Migration(14, 15) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+        }
+    };
+
+    static final Migration MIGRATION_15_16 = new Migration(15, 16) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS `scrobble` (" +
+                    "`dbId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`id` TEXT NOT NULL, " +
+                    "`timestamp` INTEGER NOT NULL, " +
+                    "`submission` INTEGER NOT NULL, " +
+                    "`server` TEXT NOT NULL)");
+        }
+    };
+
     static final Migration MIGRATION_16_17 = new Migration(16, 17) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase db) {
@@ -116,7 +149,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public static synchronized AppDatabase getInstance() {
         if (instance == null) {
             instance = Room.databaseBuilder(App.getContext(), AppDatabase.class, DB_NAME)
-                    .addMigrations(MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20)
+                    .addMigrations(MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20)
                     .fallbackToDestructiveMigration()
                     .build();
         }

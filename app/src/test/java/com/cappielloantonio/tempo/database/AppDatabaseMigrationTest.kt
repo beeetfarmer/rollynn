@@ -94,6 +94,82 @@ class AppDatabaseMigrationTest {
         assertEquals(listOf("pinned"), rows("SELECT id FROM playlist").map { it[0] })
     }
 
+    private fun SQLiteDatabase.insertOldUserData(version: Int) {
+        insertDownload("song")
+        execSQL("INSERT INTO queue (id, track_order, last_play, playing_changed, is_dir, is_video) VALUES ('queued', 0, 0, 0, 0, 0)")
+        execSQL("INSERT INTO recent_search (search) VALUES ('query')")
+        if (version >= 14) {
+            execSQL("INSERT INTO playlist (id, name, duration, songCount) VALUES ('pinned', 'Pinned', 0, 2)")
+        } else {
+            execSQL("INSERT INTO playlist (id, name, duration) VALUES ('pinned', 'Pinned', 0)")
+        }
+    }
+
+    private fun assertOldUserDataKept() {
+        assertEquals(listOf("song"), rows("SELECT id FROM download").map { it[0] })
+        assertEquals(listOf("queued"), rows("SELECT id FROM queue").map { it[0] })
+        assertEquals(listOf("query"), rows("SELECT search FROM recent_search").map { it[0] })
+        assertEquals(listOf("pinned"), rows("SELECT id FROM playlist").map { it[0] })
+    }
+
+    @Test
+    fun version10KeepsUserData() {
+        createDatabase(10) { insertOldUserData(10) }
+        assertOldUserDataKept()
+    }
+
+    @Test
+    fun version11KeepsUserData() {
+        createDatabase(11) { insertOldUserData(11) }
+        assertOldUserDataKept()
+    }
+
+    @Test
+    fun version12KeepsUserData() {
+        createDatabase(12) { insertOldUserData(12) }
+        assertOldUserDataKept()
+    }
+
+    @Test
+    fun version13KeepsUserData() {
+        createDatabase(13) { insertOldUserData(13) }
+        assertOldUserDataKept()
+    }
+
+    @Test
+    fun version14KeepsUserData() {
+        createDatabase(14) { insertOldUserData(14) }
+        assertOldUserDataKept()
+    }
+
+    @Test
+    fun version15KeepsUserData() {
+        createDatabase(15) { insertOldUserData(15) }
+        assertOldUserDataKept()
+    }
+
+    @Test
+    fun columnsAddedSinceVersion12StartAtZero() {
+        createDatabase(12) { insertOldUserData(12) }
+
+        assertEquals(listOf("0"), rows("SELECT songCount FROM playlist").single())
+        assertEquals(listOf("0"), rows("SELECT timestamp FROM recent_search").single())
+    }
+
+    @Test
+    fun aPlaylistSongCountSurvivesFromVersion14() {
+        createDatabase(14) { insertOldUserData(14) }
+
+        assertEquals(listOf("2"), rows("SELECT songCount FROM playlist").single())
+    }
+
+    @Test
+    fun theScrobbleTableIsAddedFromVersion15() {
+        createDatabase(15)
+
+        assertEquals(listOf("0"), rows("SELECT COUNT(*) FROM scrobble").single())
+    }
+
     @Test
     fun version16KeepsUserData() {
         createDatabase(16) { insertUserData() }
@@ -182,7 +258,7 @@ class AppDatabaseMigrationTest {
 
     @Test
     fun aVersionWithoutAMigrationStartsEmptyInsteadOfCrashing() {
-        createDatabase(15) { insertDownload("old") }
+        createDatabase(9) { insertDownload("old") }
 
         assertTrue(rows("SELECT id FROM download").isEmpty())
     }
