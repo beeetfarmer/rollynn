@@ -4,7 +4,6 @@ import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
-import org.junit.Ignore
 import org.junit.Test
 import org.mockito.Mockito.mock
 import java.time.Instant
@@ -62,9 +61,14 @@ class EmptyDateTypeAdapterTest {
         assertEquals(date("2024-01-02T03:04:05.500Z"), parse("2024-01-02T03:04:05.5Z"))
     }
 
-    @Ignore("Known bug: the zoneless format stops before the offset, so it is ignored")
     @Test
     fun appliesAnExplicitUtcOffset() {
         assertEquals(date("2024-01-02T02:04:05Z"), parse("2024-01-02T03:04:05+01:00"))
+        assertEquals(date("2024-01-02T08:34:05Z"), parse("2024-01-02T03:04:05-05:30"))
+    }
+
+    @Test
+    fun appliesAnOffsetAfterAFraction() {
+        assertEquals(date("2024-01-02T02:04:05.678Z"), parse("2024-01-02T03:04:05.678123+01:00"))
     }
 }
