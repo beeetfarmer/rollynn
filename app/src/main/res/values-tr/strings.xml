@@ -565,4 +565,15 @@
     <string name="starred_artist_sync_dialog_title">Yıldızlı sanatçıları eşitle</string>
     <string name="playlist_create_folder">Yeni klasör</string>
     <string name="playlist_create_ai">Yapay zekâ çalma listesi</string>
+    <string name="settings_backup_keys_title">API anahtarları dahil edilsin mi?</string>
+    <string name="settings_backup_keys_message">API anahtarlarınızı bu yedekte şifreli olarak saklamak için bir parola belirleyin. Parolayı unutursanız anahtarlar kurtarılamaz, ancak diğer ayarlarınız yine de geri yüklenir.</string>
+    <string name="settings_backup_keys_password_hint">Parola</string>
+    <string name="settings_backup_keys_confirm_hint">Parolayı onaylayın</string>
+    <string name="settings_backup_keys_include">Anahtarları dahil et</string>
+    <string name="settings_backup_keys_skip">Anahtarları atla</string>
+    <string name="settings_backup_keys_too_short">En az 8 karakter kullanın</string>
+    <string name="settings_backup_keys_mismatch">Parolalar eşleşmiyor</string>
+    <string name="settings_restore_keys_title">API anahtarları geri yüklensin mi?</string>
+    <string name="settings_restore_keys_message">Bu yedek şifreli API anahtarları içeriyor. Geri yüklemek için parolasını girin veya yalnızca ayarlarınızı geri yüklemek için anahtarları atlayın.</string>
+    <string name="settings_restore_keys_wrong_password">Yanlış parola</string>
 </resources>

@@ -648,4 +648,15 @@
     <string name="song_bottom_sheet_track_info">Informacje o utworze</string>
     <string name="playlist_create_folder">Nowy folder</string>
     <string name="playlist_create_ai">Playlista AI</string>
+    <string name="settings_backup_keys_title">Uwzględnić klucze API?</string>
+    <string name="settings_backup_keys_message">Ustaw hasło, aby zachować klucze API w tej kopii zapasowej w postaci zaszyfrowanej. Jeśli je zapomnisz, kluczy nie da się odzyskać, ale pozostałe ustawienia nadal zostaną przywrócone.</string>
+    <string name="settings_backup_keys_password_hint">Hasło</string>
+    <string name="settings_backup_keys_confirm_hint">Potwierdź hasło</string>
+    <string name="settings_backup_keys_include">Uwzględnij klucze</string>
+    <string name="settings_backup_keys_skip">Pomiń klucze</string>
+    <string name="settings_backup_keys_too_short">Użyj co najmniej 8 znaków</string>
+    <string name="settings_backup_keys_mismatch">Hasła nie są zgodne</string>
+    <string name="settings_restore_keys_title">Przywrócić klucze API?</string>
+    <string name="settings_restore_keys_message">Ta kopia zapasowa zawiera zaszyfrowane klucze API. Wpisz jej hasło, aby je przywrócić, lub pomiń je, aby przywrócić tylko ustawienia.</string>
+    <string name="settings_restore_keys_wrong_password">Nieprawidłowe hasło</string>
 </resources>

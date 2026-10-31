@@ -654,4 +654,15 @@
     <string name="song_bottom_sheet_track_info">Infos sur le titre</string>
     <string name="playlist_create_folder">Nouveau dossier</string>
     <string name="playlist_create_ai">Playlist IA</string>
+    <string name="settings_backup_keys_title">Inclure les clés API ?</string>
+    <string name="settings_backup_keys_message">Définissez un mot de passe pour conserver vos clés API, chiffrées, dans cette sauvegarde. Si vous l\'oubliez, les clés seront irrécupérables, mais vos autres paramètres pourront toujours être restaurés.</string>
+    <string name="settings_backup_keys_password_hint">Mot de passe</string>
+    <string name="settings_backup_keys_confirm_hint">Confirmer le mot de passe</string>
+    <string name="settings_backup_keys_include">Inclure les clés</string>
+    <string name="settings_backup_keys_skip">Ignorer les clés</string>
+    <string name="settings_backup_keys_too_short">Utilisez au moins 8 caractères</string>
+    <string name="settings_backup_keys_mismatch">Les mots de passe ne correspondent pas</string>
+    <string name="settings_restore_keys_title">Restaurer les clés API ?</string>
+    <string name="settings_restore_keys_message">Cette sauvegarde contient des clés API chiffrées. Saisissez son mot de passe pour les restaurer, ou ignorez-les pour restaurer uniquement vos paramètres.</string>
+    <string name="settings_restore_keys_wrong_password">Mot de passe incorrect</string>
 </resources>

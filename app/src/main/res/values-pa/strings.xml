@@ -278,4 +278,15 @@
     <string name="streaming_cache_storage_dialog_title">ਸਟੋਰੇਜ ਚੁਣੋ</string>
     <string name="track_info_dialog_title">ਟਰੈਕ ਜਾਣਕਾਰੀ</string>
     <string name="track_info_title">ਸਿਰਲੇਖ</string>
+    <string name="settings_backup_keys_title">ਕੀ API ਕੁੰਜੀਆਂ ਸ਼ਾਮਲ ਕਰਨੀਆਂ ਹਨ?</string>
+    <string name="settings_backup_keys_message">ਆਪਣੀਆਂ API ਕੁੰਜੀਆਂ ਨੂੰ ਇਸ ਬੈਕਅੱਪ ਵਿੱਚ ਇਨਕ੍ਰਿਪਟ ਕਰਕੇ ਰੱਖਣ ਲਈ ਪਾਸਵਰਡ ਸੈੱਟ ਕਰੋ। ਪਾਸਵਰਡ ਭੁੱਲਣ \'ਤੇ ਕੁੰਜੀਆਂ ਵਾਪਸ ਨਹੀਂ ਮਿਲਣਗੀਆਂ, ਪਰ ਤੁਹਾਡੀਆਂ ਬਾਕੀ ਸੈਟਿੰਗਾਂ ਫਿਰ ਵੀ ਰੀਸਟੋਰ ਹੋ ਜਾਣਗੀਆਂ।</string>
+    <string name="settings_backup_keys_password_hint">ਪਾਸਵਰਡ</string>
+    <string name="settings_backup_keys_confirm_hint">ਪਾਸਵਰਡ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ</string>
+    <string name="settings_backup_keys_include">ਕੁੰਜੀਆਂ ਸ਼ਾਮਲ ਕਰੋ</string>
+    <string name="settings_backup_keys_skip">ਕੁੰਜੀਆਂ ਛੱਡੋ</string>
+    <string name="settings_backup_keys_too_short">ਘੱਟੋ-ਘੱਟ 8 ਅੱਖਰ ਵਰਤੋ</string>
+    <string name="settings_backup_keys_mismatch">ਪਾਸਵਰਡ ਮੇਲ ਨਹੀਂ ਖਾਂਦੇ</string>
+    <string name="settings_restore_keys_title">ਕੀ API ਕੁੰਜੀਆਂ ਰੀਸਟੋਰ ਕਰਨੀਆਂ ਹਨ?</string>
+    <string name="settings_restore_keys_message">ਇਸ ਬੈਕਅੱਪ ਵਿੱਚ ਇਨਕ੍ਰਿਪਟ ਕੀਤੀਆਂ API ਕੁੰਜੀਆਂ ਹਨ। ਉਹਨਾਂ ਨੂੰ ਰੀਸਟੋਰ ਕਰਨ ਲਈ ਇਸਦਾ ਪਾਸਵਰਡ ਦਰਜ ਕਰੋ, ਜਾਂ ਉਹਨਾਂ ਨੂੰ ਛੱਡ ਕੇ ਸਿਰਫ਼ ਆਪਣੀਆਂ ਸੈਟਿੰਗਾਂ ਰੀਸਟੋਰ ਕਰੋ।</string>
+    <string name="settings_restore_keys_wrong_password">ਗਲਤ ਪਾਸਵਰਡ</string>
 </resources>

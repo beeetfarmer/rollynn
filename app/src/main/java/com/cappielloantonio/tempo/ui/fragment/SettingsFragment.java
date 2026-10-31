@@ -26,6 +26,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.os.LocaleListCompat;
@@ -48,6 +49,7 @@ import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.helper.ThemeHelper;
 import com.cappielloantonio.tempo.interfaces.DialogClickCallback;
 import com.cappielloantonio.tempo.interfaces.ScanCallback;
+import com.cappielloantonio.tempo.databinding.DialogBackupPasswordBinding;
 import com.cappielloantonio.tempo.popinn.PopinnClient;
 import com.cappielloantonio.tempo.popinn.PopinnRepository;
 import com.cappielloantonio.tempo.service.EqualizerManager;
@@ -76,6 +78,7 @@ import java.util.Map;
 
 @OptIn(markerClass = UnstableApi.class)
 public class SettingsFragment extends PreferenceFragmentCompat implements PreferenceFragmentCompat.OnPreferenceStartScreenCallback {
+    private static final int MIN_BACKUP_PASSWORD_LENGTH = 8;
     private static final String TAG = "SettingsFragment";
 
     private static final String DEFAULT_CATEGORY = "screen_appearance";
@@ -114,15 +117,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
                 new ActivityResultContracts.CreateDocument("application/json"),
                 uri -> {
                     if (uri == null) return;
-
-                    int exported = SettingsBackupUtil.export(requireContext(), uri);
-                    Toast.makeText(
-                            requireContext(),
-                            exported >= 0
-                                    ? getString(R.string.settings_backup_success, exported)
-                                    : getString(R.string.settings_backup_failure),
-                            Toast.LENGTH_LONG
-                    ).show();
+                    askBackupPassword(uri);
                 }
         );
 
@@ -886,18 +881,106 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         }
     }
 
+    /** Asked after the file is chosen, so no password waits in memory behind the file picker. */
+    private void askBackupPassword(Uri destination) {
+        if (!SettingsBackupUtil.hasApiKeys()) {
+            backUpSettings(destination, null);
+            return;
+        }
+
+        DialogBackupPasswordBinding dialogBind = DialogBackupPasswordBinding.inflate(getLayoutInflater());
+        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.settings_backup_keys_title)
+                .setMessage(R.string.settings_backup_keys_message)
+                .setView(dialogBind.getRoot())
+                .setCancelable(false)
+                .setNegativeButton(R.string.settings_backup_keys_skip, (d, which) -> backUpSettings(destination, null))
+                .setPositiveButton(R.string.settings_backup_keys_include, null)
+                .show();
+
+        // Set here rather than on the builder, which would close the dialog on an invalid password.
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String password = String.valueOf(dialogBind.backupPasswordText.getText());
+            String confirmation = String.valueOf(dialogBind.backupPasswordConfirmText.getText());
+
+            dialogBind.backupPasswordLayout.setError(password.length() < MIN_BACKUP_PASSWORD_LENGTH
+                    ? getString(R.string.settings_backup_keys_too_short) : null);
+            dialogBind.backupPasswordConfirmLayout.setError(password.equals(confirmation)
+                    ? null : getString(R.string.settings_backup_keys_mismatch));
+            if (password.length() < MIN_BACKUP_PASSWORD_LENGTH || !password.equals(confirmation)) return;
+
+            dialog.dismiss();
+            backUpSettings(destination, password.toCharArray());
+        });
+    }
+
+    private void backUpSettings(Uri destination, @Nullable char[] password) {
+        Activity activity = requireActivity();
+        Context context = activity.getApplicationContext();
+
+        new Thread(() -> {
+            int exported = SettingsBackupUtil.export(context, destination, password);
+            activity.runOnUiThread(() -> Toast.makeText(
+                    context,
+                    exported >= 0
+                            ? context.getString(R.string.settings_backup_success, exported)
+                            : context.getString(R.string.settings_backup_failure),
+                    Toast.LENGTH_LONG
+            ).show());
+        }).start();
+    }
+
     /** Restoring overwrites settings wholesale, so it is confirmed first. */
     private void confirmRestore(Uri source) {
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.settings_restore_confirm_title)
                 .setMessage(R.string.settings_restore_confirm_message)
                 .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(R.string.settings_restore_confirm_button, (dialog, which) -> restoreSettings(source))
+                .setPositiveButton(R.string.settings_restore_confirm_button, (dialog, which) -> {
+                    if (SettingsBackupUtil.hasEncryptedApiKeys(requireContext(), source)) {
+                        askRestorePassword(source, false);
+                    } else {
+                        restoreSettings(source, null);
+                    }
+                })
                 .show();
     }
 
-    private void restoreSettings(Uri source) {
-        int restored = SettingsBackupUtil.restore(requireContext(), source);
+    private void askRestorePassword(Uri source, boolean wrongPassword) {
+        DialogBackupPasswordBinding dialogBind = DialogBackupPasswordBinding.inflate(getLayoutInflater());
+        dialogBind.backupPasswordConfirmLayout.setVisibility(View.GONE);
+        if (wrongPassword) {
+            dialogBind.backupPasswordLayout.setError(getString(R.string.settings_restore_keys_wrong_password));
+        }
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.settings_restore_keys_title)
+                .setMessage(R.string.settings_restore_keys_message)
+                .setView(dialogBind.getRoot())
+                .setNeutralButton(android.R.string.cancel, null)
+                .setNegativeButton(R.string.settings_backup_keys_skip, (dialog, which) -> restoreSettings(source, null))
+                .setPositiveButton(R.string.settings_restore_confirm_button, (dialog, which) ->
+                        restoreSettings(source, String.valueOf(dialogBind.backupPasswordText.getText()).toCharArray()))
+                .show();
+    }
+
+    private void restoreSettings(Uri source, @Nullable char[] password) {
+        Activity activity = requireActivity();
+        Context context = activity.getApplicationContext();
+
+        new Thread(() -> {
+            int restored = SettingsBackupUtil.restore(context, source, password);
+            activity.runOnUiThread(() -> {
+                if (isAdded()) onSettingsRestored(source, restored);
+            });
+        }).start();
+    }
+
+    private void onSettingsRestored(Uri source, int restored) {
+        if (restored == SettingsBackupUtil.RESTORE_WRONG_PASSWORD) {
+            askRestorePassword(source, true);
+            return;
+        }
 
         if (restored < 0) {
             Toast.makeText(requireContext(), R.string.settings_restore_failure, Toast.LENGTH_LONG).show();
@@ -905,6 +988,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         }
 
         Toast.makeText(requireContext(), getString(R.string.settings_restore_success, restored), Toast.LENGTH_LONG).show();
+
+        // The Popinn client caches its server and login, both of which may have changed.
+        PopinnClient.reset();
+        PopinnRepository.clearCache();
 
         // Theme and language are read once at startup, and the preference
         // screen shows values it cached, so the activity is rebuilt rather than

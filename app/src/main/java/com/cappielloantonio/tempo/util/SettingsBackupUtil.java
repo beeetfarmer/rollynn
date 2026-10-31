@@ -4,7 +4,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.text.format.DateFormat;
+import android.util.Base64;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
 
 import com.cappielloantonio.tempo.App;
 import com.cappielloantonio.tempo.BuildConfig;
@@ -19,6 +22,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -27,13 +32,23 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
+
 /**
  * Writes settings to a JSON file the user chooses, and reads them back.
  *
- * Credentials are deliberately left out. They would otherwise travel in
+ * Credentials never go in as plain settings. They would otherwise travel in
  * cleartext inside a file destined for shared storage or a cloud sync folder,
  * and the app cannot know where that file ends up. Nothing here can reconstruct
  * a login, so a restore leaves the current session alone.
+ *
+ * API keys for other services are hard to replace, so the user can choose a
+ * password to carry them, encrypted, in their own section of the file.
  */
 public final class SettingsBackupUtil {
     private static final String TAG = "SettingsBackupUtil";
@@ -44,6 +59,11 @@ public final class SettingsBackupUtil {
     private static final String KEY_PACKAGE = "package";
     private static final String KEY_VERSION_NAME = "versionName";
     private static final String KEY_SETTINGS = "settings";
+    private static final String KEY_API_KEYS = "apiKeys";
+    private static final String KEY_ITERATIONS = "iterations";
+    private static final String KEY_SALT = "salt";
+    private static final String KEY_IV = "iv";
+    private static final String KEY_DATA = "data";
     private static final String KEY_TYPE = "type";
     private static final String KEY_VALUE = "value";
 
@@ -53,6 +73,19 @@ public final class SettingsBackupUtil {
     private static final String TYPE_LONG = "long";
     private static final String TYPE_FLOAT = "float";
     private static final String TYPE_STRING_SET = "stringSet";
+
+    /** From {@link #restore}: the settings were left alone so the user can try again. */
+    public static final int RESTORE_WRONG_PASSWORD = -2;
+
+    // SHA-256 needs API 26. SHA-1 stays sound inside PBKDF2 and every supported version has it.
+    private static final String KDF_ALGORITHM = "PBKDF2WithHmacSHA1";
+    private static final int KDF_ITERATIONS = 1_300_000;
+    // The count comes from the file, and a huge one would hang the restore.
+    private static final int KDF_MAX_ITERATIONS = 10_000_000;
+    private static final int KEY_BITS = 256;
+    private static final int SALT_BYTES = 16;
+    private static final int IV_BYTES = 12;
+    private static final int TAG_BITS = 128;
 
     /**
      * Never exported and never restored.
@@ -92,8 +125,95 @@ public final class SettingsBackupUtil {
         return key == null || EXCLUDED_KEYS.contains(key) || key.startsWith(EXCLUDED_PREFIX);
     }
 
-    /** Returns the number of settings written, or -1 if the backup failed. */
-    public static int export(Context context, Uri destination) {
+    /** The server login is not here: restoring it onto another session could not be completed. */
+    private static JSONObject readApiKeys() throws JSONException {
+        JSONObject keys = new JSONObject();
+        putIfSet(keys, "last_fm_api_key", Preferences.getLastFmApiKey());
+        putIfSet(keys, "translation_api_key", Preferences.getTranslationApiKey());
+        putIfSet(keys, "koito_api_key", Preferences.getKoitoApiKey());
+        putIfSet(keys, "audiomuse_api_token", Preferences.getAudioMuseApiToken());
+        putIfSet(keys, "popinn_password", Preferences.getPopinnPassword());
+        return keys;
+    }
+
+    private static void putIfSet(JSONObject keys, String name, @Nullable String value) throws JSONException {
+        if (value != null && !value.isEmpty()) keys.put(name, value);
+    }
+
+    /** Keys missing from the backup are left as they are: secrets are never cleared by a restore. */
+    private static int writeApiKeys(JSONObject keys) {
+        if (keys.has("last_fm_api_key")) Preferences.setLastFmApiKey(keys.optString("last_fm_api_key"));
+        if (keys.has("translation_api_key")) Preferences.setTranslationApiKey(keys.optString("translation_api_key"));
+        if (keys.has("koito_api_key")) Preferences.setKoitoApiKey(keys.optString("koito_api_key"));
+        if (keys.has("audiomuse_api_token")) Preferences.setAudioMuseApiToken(keys.optString("audiomuse_api_token"));
+        if (keys.has("popinn_password")) Preferences.setPopinnPassword(keys.optString("popinn_password"));
+        return keys.length();
+    }
+
+    private static SecretKeySpec deriveKey(char[] password, byte[] salt, int iterations) throws GeneralSecurityException {
+        PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, KEY_BITS);
+        try {
+            return new SecretKeySpec(SecretKeyFactory.getInstance(KDF_ALGORITHM).generateSecret(spec).getEncoded(), "AES");
+        } finally {
+            spec.clearPassword();
+        }
+    }
+
+    private static JSONObject encrypt(JSONObject keys, char[] password) throws GeneralSecurityException, JSONException {
+        byte[] salt = new byte[SALT_BYTES];
+        byte[] iv = new byte[IV_BYTES];
+        SecureRandom random = new SecureRandom();
+        random.nextBytes(salt);
+        random.nextBytes(iv);
+
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.ENCRYPT_MODE, deriveKey(password, salt, KDF_ITERATIONS), new GCMParameterSpec(TAG_BITS, iv));
+
+        JSONObject encrypted = new JSONObject();
+        encrypted.put(KEY_ITERATIONS, KDF_ITERATIONS);
+        encrypted.put(KEY_SALT, Base64.encodeToString(salt, Base64.NO_WRAP));
+        encrypted.put(KEY_IV, Base64.encodeToString(iv, Base64.NO_WRAP));
+        encrypted.put(KEY_DATA, Base64.encodeToString(cipher.doFinal(keys.toString().getBytes(StandardCharsets.UTF_8)), Base64.NO_WRAP));
+        return encrypted;
+    }
+
+    private static JSONObject decrypt(JSONObject encrypted, char[] password) throws GeneralSecurityException, JSONException {
+        int iterations = encrypted.getInt(KEY_ITERATIONS);
+        if (iterations < 1 || iterations > KDF_MAX_ITERATIONS) throw new JSONException("Bad iteration count");
+
+        byte[] salt = Base64.decode(encrypted.getString(KEY_SALT), Base64.NO_WRAP);
+        byte[] iv = Base64.decode(encrypted.getString(KEY_IV), Base64.NO_WRAP);
+        byte[] data = Base64.decode(encrypted.getString(KEY_DATA), Base64.NO_WRAP);
+
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.DECRYPT_MODE, deriveKey(password, salt, iterations), new GCMParameterSpec(TAG_BITS, iv));
+        return new JSONObject(new String(cipher.doFinal(data), StandardCharsets.UTF_8));
+    }
+
+    /** Whether there are any API keys a backup could carry. */
+    public static boolean hasApiKeys() {
+        try {
+            return readApiKeys().length() > 0;
+        } catch (JSONException exception) {
+            return false;
+        }
+    }
+
+    /** Whether the file holds encrypted API keys, and so needs a password to restore them. */
+    public static boolean hasEncryptedApiKeys(Context context, Uri source) {
+        try {
+            String content = read(context, source);
+            return content != null && new JSONObject(content).optJSONObject(KEY_API_KEYS) != null;
+        } catch (JSONException exception) {
+            return false;
+        }
+    }
+
+    /**
+     * Returns the number of settings and keys written, or -1 if the backup failed.
+     * The key derivation is slow on purpose, so with a password this must run off the main thread.
+     */
+    public static int export(Context context, Uri destination, @Nullable char[] password) {
         SharedPreferences preferences = App.getInstance().getPreferences();
 
         try {
@@ -116,20 +236,32 @@ public final class SettingsBackupUtil {
             root.put(KEY_VERSION_NAME, BuildConfig.VERSION_NAME);
             root.put(KEY_SETTINGS, settings);
 
+            if (password != null) {
+                JSONObject keys = readApiKeys();
+                if (keys.length() > 0) {
+                    root.put(KEY_API_KEYS, encrypt(keys, password));
+                    exported += keys.length();
+                }
+            }
+
             try (OutputStream stream = context.getContentResolver().openOutputStream(destination, "wt")) {
                 if (stream == null) return -1;
                 stream.write(root.toString(2).getBytes(StandardCharsets.UTF_8));
             }
 
             return exported;
-        } catch (JSONException | IOException | SecurityException exception) {
+        } catch (JSONException | IOException | GeneralSecurityException | SecurityException exception) {
             Log.w(TAG, "Settings backup failed", exception);
             return -1;
         }
     }
 
-    /** Returns the number of settings applied, or -1 if the file was unusable. */
-    public static int restore(Context context, Uri source) {
+    /**
+     * Returns the number of settings and keys applied, -1 if the file was unusable, or
+     * {@link #RESTORE_WRONG_PASSWORD}. Nothing changes unless it succeeds. A null password restores
+     * only the settings. With a password this must run off the main thread, as for {@link #export}.
+     */
+    public static int restore(Context context, Uri source, @Nullable char[] password) {
         try {
             String content = read(context, source);
             if (content == null) return -1;
@@ -140,6 +272,10 @@ public final class SettingsBackupUtil {
 
             JSONObject settings = root.optJSONObject(KEY_SETTINGS);
             if (settings == null) return -1;
+
+            // Decrypted first, so a wrong password leaves the settings untouched.
+            JSONObject encryptedKeys = root.optJSONObject(KEY_API_KEYS);
+            JSONObject apiKeys = password != null && encryptedKeys != null ? decrypt(encryptedKeys, password) : null;
 
             SharedPreferences preferences = App.getInstance().getPreferences();
             SharedPreferences.Editor editor = preferences.edit();
@@ -164,8 +300,11 @@ public final class SettingsBackupUtil {
             // Committed rather than applied: the caller restarts the activity
             // straight after, and the write has to have landed by then.
             editor.commit();
+            if (apiKeys != null) restored += writeApiKeys(apiKeys);
             return restored;
-        } catch (JSONException | SecurityException exception) {
+        } catch (BadPaddingException exception) {
+            return RESTORE_WRONG_PASSWORD;
+        } catch (JSONException | GeneralSecurityException | IllegalArgumentException | SecurityException exception) {
             Log.w(TAG, "Settings restore failed", exception);
             return -1;
         }

@@ -537,4 +537,15 @@
     <string name="starred_artist_sync_dialog_title">즐겨찾기한 아티스트 동기화</string>
     <string name="playlist_create_folder">새 폴더</string>
     <string name="playlist_create_ai">AI 플레이리스트</string>
+    <string name="settings_backup_keys_title">API 키를 포함할까요?</string>
+    <string name="settings_backup_keys_message">비밀번호를 설정하면 API 키가 암호화되어 이 백업에 저장됩니다. 비밀번호를 잊으면 키는 복구할 수 없지만 다른 설정은 그대로 복원됩니다.</string>
+    <string name="settings_backup_keys_password_hint">비밀번호</string>
+    <string name="settings_backup_keys_confirm_hint">비밀번호 확인</string>
+    <string name="settings_backup_keys_include">키 포함</string>
+    <string name="settings_backup_keys_skip">키 건너뛰기</string>
+    <string name="settings_backup_keys_too_short">8자 이상 입력하세요</string>
+    <string name="settings_backup_keys_mismatch">비밀번호가 일치하지 않습니다</string>
+    <string name="settings_restore_keys_title">API 키를 복원할까요?</string>
+    <string name="settings_restore_keys_message">이 백업에는 암호화된 API 키가 있습니다. 비밀번호를 입력해 복원하거나, 건너뛰고 설정만 복원하세요.</string>
+    <string name="settings_restore_keys_wrong_password">비밀번호가 틀렸습니다</string>
 </resources>

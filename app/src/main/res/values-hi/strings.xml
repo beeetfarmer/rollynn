@@ -278,4 +278,15 @@
     <string name="streaming_cache_storage_dialog_title">स्टोरेज विकल्प चुनें</string>
     <string name="track_info_dialog_title">ट्रैक जानकारी</string>
     <string name="track_info_title">शीर्षक</string>
+    <string name="settings_backup_keys_title">API कुंजियाँ शामिल करें?</string>
+    <string name="settings_backup_keys_message">अपनी API कुंजियों को इस बैकअप में एन्क्रिप्ट करके रखने के लिए पासवर्ड सेट करें। पासवर्ड भूलने पर कुंजियाँ वापस नहीं मिलेंगी, लेकिन आपकी बाकी सेटिंग्स फिर भी रीस्टोर हो जाएँगी।</string>
+    <string name="settings_backup_keys_password_hint">पासवर्ड</string>
+    <string name="settings_backup_keys_confirm_hint">पासवर्ड की पुष्टि करें</string>
+    <string name="settings_backup_keys_include">कुंजियाँ शामिल करें</string>
+    <string name="settings_backup_keys_skip">कुंजियाँ छोड़ें</string>
+    <string name="settings_backup_keys_too_short">कम से कम 8 अक्षर इस्तेमाल करें</string>
+    <string name="settings_backup_keys_mismatch">पासवर्ड मेल नहीं खाते</string>
+    <string name="settings_restore_keys_title">API कुंजियाँ रीस्टोर करें?</string>
+    <string name="settings_restore_keys_message">इस बैकअप में एन्क्रिप्ट की गई API कुंजियाँ हैं। उन्हें रीस्टोर करने के लिए इसका पासवर्ड दर्ज करें, या उन्हें छोड़कर केवल अपनी सेटिंग्स रीस्टोर करें।</string>
+    <string name="settings_restore_keys_wrong_password">गलत पासवर्ड</string>
 </resources>

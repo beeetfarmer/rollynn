@@ -560,4 +560,15 @@
     <string name="starred_artist_sync_dialog_title">Синхронизировать отмеченных исполнителей</string>
     <string name="playlist_create_folder">Новая папка</string>
     <string name="playlist_create_ai">ИИ-плейлист</string>
+    <string name="settings_backup_keys_title">Включить ключи API?</string>
+    <string name="settings_backup_keys_message">Задайте пароль, чтобы сохранить ключи API в этой резервной копии в зашифрованном виде. Если вы его забудете, ключи нельзя будет восстановить, но остальные настройки всё равно восстановятся.</string>
+    <string name="settings_backup_keys_password_hint">Пароль</string>
+    <string name="settings_backup_keys_confirm_hint">Подтвердите пароль</string>
+    <string name="settings_backup_keys_include">Включить ключи</string>
+    <string name="settings_backup_keys_skip">Пропустить ключи</string>
+    <string name="settings_backup_keys_too_short">Используйте не менее 8 символов</string>
+    <string name="settings_backup_keys_mismatch">Пароли не совпадают</string>
+    <string name="settings_restore_keys_title">Восстановить ключи API?</string>
+    <string name="settings_restore_keys_message">Эта резервная копия содержит зашифрованные ключи API. Введите пароль, чтобы восстановить их, или пропустите их, чтобы восстановить только настройки.</string>
+    <string name="settings_restore_keys_wrong_password">Неверный пароль</string>
 </resources>

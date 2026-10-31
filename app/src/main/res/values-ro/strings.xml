@@ -656,4 +656,15 @@
     <string name="song_bottom_sheet_track_info">Informații piesă</string>
     <string name="playlist_create_folder">Dosar nou</string>
     <string name="playlist_create_ai">Playlist AI</string>
+    <string name="settings_backup_keys_title">Includeți cheile API?</string>
+    <string name="settings_backup_keys_message">Setați o parolă pentru a păstra cheile API, criptate, în această copie de rezervă. Dacă o uitați, cheile nu mai pot fi recuperate, dar celelalte setări vor fi restaurate în continuare.</string>
+    <string name="settings_backup_keys_password_hint">Parolă</string>
+    <string name="settings_backup_keys_confirm_hint">Confirmați parola</string>
+    <string name="settings_backup_keys_include">Includeți cheile</string>
+    <string name="settings_backup_keys_skip">Omiteți cheile</string>
+    <string name="settings_backup_keys_too_short">Folosiți cel puțin 8 caractere</string>
+    <string name="settings_backup_keys_mismatch">Parolele nu coincid</string>
+    <string name="settings_restore_keys_title">Restaurați cheile API?</string>
+    <string name="settings_restore_keys_message">Această copie de rezervă conține chei API criptate. Introduceți parola pentru a le restaura sau omiteți-le pentru a restaura doar setările.</string>
+    <string name="settings_restore_keys_wrong_password">Parolă greșită</string>
 </resources>

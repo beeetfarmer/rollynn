@@ -504,4 +504,15 @@
     <string name="streaming_cache_storage_dialog_title">Escolher armazenamento</string>
     <string name="playlist_create_folder">Nova pasta</string>
     <string name="playlist_create_ai">Playlist com IA</string>
+    <string name="settings_backup_keys_title">Incluir as chaves de API?</string>
+    <string name="settings_backup_keys_message">Defina uma palavra-passe para guardar as suas chaves de API, encriptadas, nesta cópia de segurança. Se a esquecer, as chaves não poderão ser recuperadas, mas as restantes definições continuarão a ser restauradas.</string>
+    <string name="settings_backup_keys_password_hint">Palavra-passe</string>
+    <string name="settings_backup_keys_confirm_hint">Confirmar palavra-passe</string>
+    <string name="settings_backup_keys_include">Incluir chaves</string>
+    <string name="settings_backup_keys_skip">Ignorar chaves</string>
+    <string name="settings_backup_keys_too_short">Use pelo menos 8 caracteres</string>
+    <string name="settings_backup_keys_mismatch">As palavras-passe não coincidem</string>
+    <string name="settings_restore_keys_title">Restaurar as chaves de API?</string>
+    <string name="settings_restore_keys_message">Esta cópia de segurança contém chaves de API encriptadas. Introduza a palavra-passe para as restaurar, ou ignore-as para restaurar apenas as definições.</string>
+    <string name="settings_restore_keys_wrong_password">Palavra-passe incorreta</string>
 </resources>

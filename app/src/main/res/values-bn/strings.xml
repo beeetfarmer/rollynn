@@ -278,4 +278,15 @@
     <string name="streaming_cache_storage_dialog_title">স্টোরেজ বেছে নিন</string>
     <string name="track_info_dialog_title">ট্র্যাকের তথ্য</string>
     <string name="track_info_title">শিরোনাম</string>
+    <string name="settings_backup_keys_title">API কী অন্তর্ভুক্ত করবেন?</string>
+    <string name="settings_backup_keys_message">আপনার API কীগুলো এই ব্যাকআপে এনক্রিপ্ট করে রাখতে একটি পাসওয়ার্ড সেট করুন। পাসওয়ার্ড ভুলে গেলে কীগুলো আর পুনরুদ্ধার করা যাবে না, তবে আপনার অন্যান্য সেটিংস তবুও পুনরুদ্ধার হবে।</string>
+    <string name="settings_backup_keys_password_hint">পাসওয়ার্ড</string>
+    <string name="settings_backup_keys_confirm_hint">পাসওয়ার্ড নিশ্চিত করুন</string>
+    <string name="settings_backup_keys_include">কী অন্তর্ভুক্ত করুন</string>
+    <string name="settings_backup_keys_skip">কী বাদ দিন</string>
+    <string name="settings_backup_keys_too_short">অন্তত ৮টি অক্ষর ব্যবহার করুন</string>
+    <string name="settings_backup_keys_mismatch">পাসওয়ার্ড মিলছে না</string>
+    <string name="settings_restore_keys_title">API কী পুনরুদ্ধার করবেন?</string>
+    <string name="settings_restore_keys_message">এই ব্যাকআপে এনক্রিপ্ট করা API কী আছে। সেগুলো পুনরুদ্ধার করতে পাসওয়ার্ড দিন, অথবা বাদ দিয়ে শুধু আপনার সেটিংস পুনরুদ্ধার করুন।</string>
+    <string name="settings_restore_keys_wrong_password">ভুল পাসওয়ার্ড</string>
 </resources>

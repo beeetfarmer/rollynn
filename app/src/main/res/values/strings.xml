@@ -146,6 +146,17 @@
     <string name="settings_restore_confirm_button">Restore</string>
     <string name="settings_restore_success">Restored %1$d settings</string>
     <string name="settings_restore_failure">That file is not a valid settings backup</string>
+    <string name="settings_backup_keys_title">Include API keys?</string>
+    <string name="settings_backup_keys_message">Set a password to keep your API keys in this backup, encrypted. If you forget it the keys cannot be recovered, but your other settings will still restore.</string>
+    <string name="settings_backup_keys_password_hint">Password</string>
+    <string name="settings_backup_keys_confirm_hint">Confirm password</string>
+    <string name="settings_backup_keys_include">Include keys</string>
+    <string name="settings_backup_keys_skip">Skip keys</string>
+    <string name="settings_backup_keys_too_short">Use at least 8 characters</string>
+    <string name="settings_backup_keys_mismatch">The passwords do not match</string>
+    <string name="settings_restore_keys_title">Restore API keys?</string>
+    <string name="settings_restore_keys_message">This backup holds encrypted API keys. Enter its password to restore them, or skip them to restore only your settings.</string>
+    <string name="settings_restore_keys_wrong_password">Wrong password</string>
     <string name="settings_popinn_title">Music Videos</string>
     <string name="settings_popinn_summary">Show music videos from a Popinn server on artist pages</string>
     <string name="settings_popinn_server_url">Server URL</string>

@@ -278,4 +278,15 @@
     <string name="streaming_cache_storage_dialog_title">സ്റ്റോറേജ് തിരഞ്ഞെടുക്കുക</string>
     <string name="track_info_dialog_title">ട്രാക്ക് വിവരം</string>
     <string name="track_info_title">ശീർഷകം</string>
+    <string name="settings_backup_keys_title">API കീകൾ ഉൾപ്പെടുത്തണോ?</string>
+    <string name="settings_backup_keys_message">നിങ്ങളുടെ API കീകൾ ഈ ബാക്കപ്പിൽ എൻക്രിപ്റ്റ് ചെയ്ത് സൂക്ഷിക്കാൻ ഒരു പാസ്‌വേഡ് സജ്ജമാക്കുക. അത് മറന്നാൽ കീകൾ വീണ്ടെടുക്കാനാവില്ല, എന്നാൽ നിങ്ങളുടെ മറ്റ് ക്രമീകരണങ്ങൾ പുനഃസ്ഥാപിക്കപ്പെടും.</string>
+    <string name="settings_backup_keys_password_hint">പാസ്‌വേഡ്</string>
+    <string name="settings_backup_keys_confirm_hint">പാസ്‌വേഡ് സ്ഥിരീകരിക്കുക</string>
+    <string name="settings_backup_keys_include">കീകൾ ഉൾപ്പെടുത്തുക</string>
+    <string name="settings_backup_keys_skip">കീകൾ ഒഴിവാക്കുക</string>
+    <string name="settings_backup_keys_too_short">കുറഞ്ഞത് 8 അക്ഷരങ്ങൾ ഉപയോഗിക്കുക</string>
+    <string name="settings_backup_keys_mismatch">പാസ്‌വേഡുകൾ പൊരുത്തപ്പെടുന്നില്ല</string>
+    <string name="settings_restore_keys_title">API കീകൾ പുനഃസ്ഥാപിക്കണോ?</string>
+    <string name="settings_restore_keys_message">ഈ ബാക്കപ്പിൽ എൻക്രിപ്റ്റ് ചെയ്ത API കീകളുണ്ട്. അവ പുനഃസ്ഥാപിക്കാൻ പാസ്‌വേഡ് നൽകുക, അല്ലെങ്കിൽ അവ ഒഴിവാക്കി നിങ്ങളുടെ ക്രമീകരണങ്ങൾ മാത്രം പുനഃസ്ഥാപിക്കുക.</string>
+    <string name="settings_restore_keys_wrong_password">തെറ്റായ പാസ്‌വേഡ്</string>
 </resources>

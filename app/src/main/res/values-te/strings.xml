@@ -278,4 +278,15 @@
     <string name="streaming_cache_storage_dialog_title">స్టోరేజ్ ఎంపికను ఎంచుకోండి</string>
     <string name="track_info_dialog_title">ట్రాక్ సమాచారం</string>
     <string name="track_info_title">శీర్షిక</string>
+    <string name="settings_backup_keys_title">API కీలను చేర్చాలా?</string>
+    <string name="settings_backup_keys_message">మీ API కీలను ఈ బ్యాకప్‌లో ఎన్‌క్రిప్ట్ చేసి ఉంచడానికి పాస్‌వర్డ్ సెట్ చేయండి. దాన్ని మర్చిపోతే కీలను తిరిగి పొందలేరు, కానీ మీ ఇతర సెట్టింగ్‌లు అయినా పునరుద్ధరించబడతాయి.</string>
+    <string name="settings_backup_keys_password_hint">పాస్‌వర్డ్</string>
+    <string name="settings_backup_keys_confirm_hint">పాస్‌వర్డ్‌ను నిర్ధారించండి</string>
+    <string name="settings_backup_keys_include">కీలను చేర్చు</string>
+    <string name="settings_backup_keys_skip">కీలను దాటవేయి</string>
+    <string name="settings_backup_keys_too_short">కనీసం 8 అక్షరాలు ఉపయోగించండి</string>
+    <string name="settings_backup_keys_mismatch">పాస్‌వర్డ్‌లు సరిపోలడం లేదు</string>
+    <string name="settings_restore_keys_title">API కీలను పునరుద్ధరించాలా?</string>
+    <string name="settings_restore_keys_message">ఈ బ్యాకప్‌లో ఎన్‌క్రిప్ట్ చేసిన API కీలు ఉన్నాయి. వాటిని పునరుద్ధరించడానికి పాస్‌వర్డ్ నమోదు చేయండి, లేదా వాటిని దాటవేసి మీ సెట్టింగ్‌లను మాత్రమే పునరుద్ధరించండి.</string>
+    <string name="settings_restore_keys_wrong_password">తప్పు పాస్‌వర్డ్</string>
 </resources>

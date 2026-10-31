@@ -637,4 +637,15 @@
     <string name="song_bottom_sheet_track_info">Informació de la pista</string>
     <string name="playlist_create_folder">Carpeta nova</string>
     <string name="playlist_create_ai">Llista amb IA</string>
+    <string name="settings_backup_keys_title">Incloure les claus API?</string>
+    <string name="settings_backup_keys_message">Definiu una contrasenya per conservar les claus API, xifrades, en aquesta còpia de seguretat. Si l\'oblideu, les claus no es podran recuperar, però la resta de la configuració es restaurarà igualment.</string>
+    <string name="settings_backup_keys_password_hint">Contrasenya</string>
+    <string name="settings_backup_keys_confirm_hint">Confirmeu la contrasenya</string>
+    <string name="settings_backup_keys_include">Inclou les claus</string>
+    <string name="settings_backup_keys_skip">Omet les claus</string>
+    <string name="settings_backup_keys_too_short">Feu servir almenys 8 caràcters</string>
+    <string name="settings_backup_keys_mismatch">Les contrasenyes no coincideixen</string>
+    <string name="settings_restore_keys_title">Restaurar les claus API?</string>
+    <string name="settings_restore_keys_message">Aquesta còpia de seguretat conté claus API xifrades. Introduïu-ne la contrasenya per restaurar-les, o ometeu-les per restaurar només la configuració.</string>
+    <string name="settings_restore_keys_wrong_password">Contrasenya incorrecta</string>
 </resources>

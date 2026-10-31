@@ -278,4 +278,15 @@
     <string name="streaming_cache_storage_dialog_title">ಸಂಗ್ರಹಣೆ ಆಯ್ಕೆಮಾಡಿ</string>
     <string name="track_info_dialog_title">ಟ್ರ್ಯಾಕ್ ಮಾಹಿತಿ</string>
     <string name="track_info_title">ಶೀರ್ಷಿಕೆ</string>
+    <string name="settings_backup_keys_title">API ಕೀಗಳನ್ನು ಸೇರಿಸಬೇಕೇ?</string>
+    <string name="settings_backup_keys_message">ನಿಮ್ಮ API ಕೀಗಳನ್ನು ಈ ಬ್ಯಾಕಪ್‌ನಲ್ಲಿ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಿ ಇರಿಸಲು ಪಾಸ್‌ವರ್ಡ್ ಹೊಂದಿಸಿ. ಅದನ್ನು ಮರೆತರೆ ಕೀಗಳನ್ನು ಮರುಪಡೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ, ಆದರೆ ನಿಮ್ಮ ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಮರುಸ್ಥಾಪನೆಯಾಗುತ್ತವೆ.</string>
+    <string name="settings_backup_keys_password_hint">ಪಾಸ್‌ವರ್ಡ್</string>
+    <string name="settings_backup_keys_confirm_hint">ಪಾಸ್‌ವರ್ಡ್ ದೃಢೀಕರಿಸಿ</string>
+    <string name="settings_backup_keys_include">ಕೀಗಳನ್ನು ಸೇರಿಸಿ</string>
+    <string name="settings_backup_keys_skip">ಕೀಗಳನ್ನು ಬಿಟ್ಟುಬಿಡಿ</string>
+    <string name="settings_backup_keys_too_short">ಕನಿಷ್ಠ 8 ಅಕ್ಷರಗಳನ್ನು ಬಳಸಿ</string>
+    <string name="settings_backup_keys_mismatch">ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಹೊಂದಿಕೆಯಾಗುತ್ತಿಲ್ಲ</string>
+    <string name="settings_restore_keys_title">API ಕೀಗಳನ್ನು ಮರುಸ್ಥಾಪಿಸಬೇಕೇ?</string>
+    <string name="settings_restore_keys_message">ಈ ಬ್ಯಾಕಪ್‌ನಲ್ಲಿ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಿದ API ಕೀಗಳಿವೆ. ಅವುಗಳನ್ನು ಮರುಸ್ಥಾಪಿಸಲು ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ, ಅಥವಾ ಅವುಗಳನ್ನು ಬಿಟ್ಟು ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮಾತ್ರ ಮರುಸ್ಥಾಪಿಸಿ.</string>
+    <string name="settings_restore_keys_wrong_password">ತಪ್ಪು ಪಾಸ್‌ವರ್ಡ್</string>
 </resources>

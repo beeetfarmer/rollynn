@@ -536,4 +536,15 @@
     <string name="starred_artist_sync_dialog_title">Lieblingskünstler synchronisieren</string>
     <string name="playlist_create_folder">Neuer Ordner</string>
     <string name="playlist_create_ai">KI-Playlist</string>
+    <string name="settings_backup_keys_title">API-Schlüssel einbeziehen?</string>
+    <string name="settings_backup_keys_message">Lege ein Passwort fest, um deine API-Schlüssel verschlüsselt in dieser Sicherung aufzubewahren. Wenn du es vergisst, können die Schlüssel nicht wiederhergestellt werden, deine übrigen Einstellungen aber schon.</string>
+    <string name="settings_backup_keys_password_hint">Passwort</string>
+    <string name="settings_backup_keys_confirm_hint">Passwort bestätigen</string>
+    <string name="settings_backup_keys_include">Schlüssel einbeziehen</string>
+    <string name="settings_backup_keys_skip">Schlüssel überspringen</string>
+    <string name="settings_backup_keys_too_short">Mindestens 8 Zeichen verwenden</string>
+    <string name="settings_backup_keys_mismatch">Die Passwörter stimmen nicht überein</string>
+    <string name="settings_restore_keys_title">API-Schlüssel wiederherstellen?</string>
+    <string name="settings_restore_keys_message">Diese Sicherung enthält verschlüsselte API-Schlüssel. Gib das Passwort ein, um sie wiederherzustellen, oder überspringe sie, um nur deine Einstellungen wiederherzustellen.</string>
+    <string name="settings_restore_keys_wrong_password">Falsches Passwort</string>
 </resources>

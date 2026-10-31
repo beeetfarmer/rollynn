@@ -278,4 +278,15 @@
     <string name="streaming_cache_storage_dialog_title">சேமிப்பிடத்தைத் தேர்வுசெய்க</string>
     <string name="track_info_dialog_title">பாடல் தகவல்</string>
     <string name="track_info_title">தலைப்பு</string>
+    <string name="settings_backup_keys_title">API விசைகளைச் சேர்க்கவா?</string>
+    <string name="settings_backup_keys_message">உங்கள் API விசைகளை இந்தக் காப்புப்பிரதியில் குறியாக்கம் செய்து வைக்க கடவுச்சொல்லை அமைக்கவும். அதை மறந்தால் விசைகளை மீட்க முடியாது, ஆனால் உங்கள் மற்ற அமைப்புகள் மீட்டமைக்கப்படும்.</string>
+    <string name="settings_backup_keys_password_hint">கடவுச்சொல்</string>
+    <string name="settings_backup_keys_confirm_hint">கடவுச்சொல்லை உறுதிப்படுத்தவும்</string>
+    <string name="settings_backup_keys_include">விசைகளைச் சேர்</string>
+    <string name="settings_backup_keys_skip">விசைகளைத் தவிர்</string>
+    <string name="settings_backup_keys_too_short">குறைந்தது 8 எழுத்துகளைப் பயன்படுத்தவும்</string>
+    <string name="settings_backup_keys_mismatch">கடவுச்சொற்கள் பொருந்தவில்லை</string>
+    <string name="settings_restore_keys_title">API விசைகளை மீட்டமைக்கவா?</string>
+    <string name="settings_restore_keys_message">இந்தக் காப்புப்பிரதியில் குறியாக்கம் செய்யப்பட்ட API விசைகள் உள்ளன. அவற்றை மீட்டமைக்க கடவுச்சொல்லை உள்ளிடவும், அல்லது அவற்றைத் தவிர்த்து உங்கள் அமைப்புகளை மட்டும் மீட்டமைக்கவும்.</string>
+    <string name="settings_restore_keys_wrong_password">தவறான கடவுச்சொல்</string>
 </resources>

@@ -648,4 +648,15 @@
     <string name="song_bottom_sheet_track_info">曲目信息</string>
     <string name="playlist_create_folder">新建文件夹</string>
     <string name="playlist_create_ai">AI 播放列表</string>
+    <string name="settings_backup_keys_title">包含 API 密钥吗？</string>
+    <string name="settings_backup_keys_message">设置密码后，API 密钥将加密保存在此备份中。如果忘记密码，密钥将无法恢复，但其他设置仍可恢复。</string>
+    <string name="settings_backup_keys_password_hint">密码</string>
+    <string name="settings_backup_keys_confirm_hint">确认密码</string>
+    <string name="settings_backup_keys_include">包含密钥</string>
+    <string name="settings_backup_keys_skip">跳过密钥</string>
+    <string name="settings_backup_keys_too_short">请至少使用 8 个字符</string>
+    <string name="settings_backup_keys_mismatch">两次输入的密码不一致</string>
+    <string name="settings_restore_keys_title">恢复 API 密钥吗？</string>
+    <string name="settings_restore_keys_message">此备份包含加密的 API 密钥。输入密码以恢复密钥，或跳过以仅恢复设置。</string>
+    <string name="settings_restore_keys_wrong_password">密码错误</string>
 </resources>

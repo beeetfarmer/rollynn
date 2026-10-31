@@ -30,16 +30,16 @@ class SettingsBackupUtilTest {
     )
     private val sessionKeys = listOf("server", "user", "server_id", "low_security", "in_use_server_address")
 
-    private fun export(): JSONObject {
+    private fun export(password: CharArray? = null): JSONObject {
         val output = ByteArrayOutputStream()
         shadowOf(context.contentResolver).registerOutputStream(uri, output)
-        assertTrue(SettingsBackupUtil.export(context, uri) >= 0)
+        assertTrue(SettingsBackupUtil.export(context, uri, password) >= 0)
         return JSONObject(output.toString(Charsets.UTF_8.name()))
     }
 
-    private fun restore(content: String): Int {
+    private fun restore(content: String, password: CharArray? = null): Int {
         shadowOf(context.contentResolver).registerInputStream(uri, ByteArrayInputStream(content.toByteArray()))
-        return SettingsBackupUtil.restore(context, uri)
+        return SettingsBackupUtil.restore(context, uri, password)
     }
 
     private fun backupOf(vararg settings: Pair<String, String>) =
@@ -75,7 +75,7 @@ class SettingsBackupUtilTest {
         preferences.edit().putString("a", "1").putString("b", "2").putString("password", "x").commit()
         shadowOf(context.contentResolver).registerOutputStream(uri, ByteArrayOutputStream())
 
-        assertEquals(2, SettingsBackupUtil.export(context, uri))
+        assertEquals(2, SettingsBackupUtil.export(context, uri, null))
     }
 
     @Test
@@ -232,7 +232,7 @@ class SettingsBackupUtilTest {
             override fun read(): Int = throw IOException("gone")
         })
 
-        assertEquals(-1, SettingsBackupUtil.restore(context, uri))
+        assertEquals(-1, SettingsBackupUtil.restore(context, uri, null))
     }
 
     @Test

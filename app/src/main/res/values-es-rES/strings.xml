@@ -635,4 +635,15 @@
     <string name="song_bottom_sheet_track_info">Información de la pista</string>
     <string name="playlist_create_folder">Nueva carpeta</string>
     <string name="playlist_create_ai">Lista con IA</string>
+    <string name="settings_backup_keys_title">¿Incluir las claves API?</string>
+    <string name="settings_backup_keys_message">Establece una contraseña para guardar tus claves API, cifradas, en esta copia de seguridad. Si la olvidas, las claves no se podrán recuperar, pero el resto de tus ajustes se restaurarán igualmente.</string>
+    <string name="settings_backup_keys_password_hint">Contraseña</string>
+    <string name="settings_backup_keys_confirm_hint">Confirmar contraseña</string>
+    <string name="settings_backup_keys_include">Incluir claves</string>
+    <string name="settings_backup_keys_skip">Omitir claves</string>
+    <string name="settings_backup_keys_too_short">Usa al menos 8 caracteres</string>
+    <string name="settings_backup_keys_mismatch">Las contraseñas no coinciden</string>
+    <string name="settings_restore_keys_title">¿Restaurar las claves API?</string>
+    <string name="settings_restore_keys_message">Esta copia de seguridad contiene claves API cifradas. Introduce su contraseña para restaurarlas, u omítelas para restaurar solo tus ajustes.</string>
+    <string name="settings_restore_keys_wrong_password">Contraseña incorrecta</string>
 </resources>

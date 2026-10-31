@@ -647,4 +647,15 @@
     <string name="song_bottom_sheet_track_info">Info brano</string>
     <string name="playlist_create_folder">Nuova cartella</string>
     <string name="playlist_create_ai">Playlist IA</string>
+    <string name="settings_backup_keys_title">Includere le chiavi API?</string>
+    <string name="settings_backup_keys_message">Imposta una password per conservare le tue chiavi API, cifrate, in questo backup. Se la dimentichi, le chiavi non potranno essere recuperate, ma le altre impostazioni verranno comunque ripristinate.</string>
+    <string name="settings_backup_keys_password_hint">Password</string>
+    <string name="settings_backup_keys_confirm_hint">Conferma password</string>
+    <string name="settings_backup_keys_include">Includi chiavi</string>
+    <string name="settings_backup_keys_skip">Salta chiavi</string>
+    <string name="settings_backup_keys_too_short">Usa almeno 8 caratteri</string>
+    <string name="settings_backup_keys_mismatch">Le password non coincidono</string>
+    <string name="settings_restore_keys_title">Ripristinare le chiavi API?</string>
+    <string name="settings_restore_keys_message">Questo backup contiene chiavi API cifrate. Inserisci la password per ripristinarle, oppure saltale per ripristinare solo le impostazioni.</string>
+    <string name="settings_restore_keys_wrong_password">Password errata</string>
 </resources>
