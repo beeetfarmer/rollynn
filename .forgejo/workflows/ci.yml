@@ -19,7 +19,7 @@ env:
 
 jobs:
   checks:
-    name: Lint, build, dependency audit
+    name: Lint, test, build, dependency audit
     runs-on: docker
     container:
       image: ghcr.io/cirruslabs/android-sdk:35
@@ -33,9 +33,9 @@ jobs:
           git init -q . && git remote add origin "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
           git -c "http.extraheader=Authorization: token $CHECKOUT_TOKEN" fetch -q --depth=1 origin "$GITHUB_SHA"
           git checkout -q FETCH_HEAD
-      - name: Lint and build
+      - name: Lint, test and build
         # Lint fails only on issues not in app/lint-baseline.xml.
-        run: ./gradlew --no-daemon :app:lintDegoogledDebug :app:assembleDebug
+        run: ./gradlew --no-daemon :app:lintDegoogledDebug :app:testDegoogledDebugUnitTest :app:assembleDebug
       - name: Dependency audit (fail on fixable HIGH or CRITICAL)
         # Gradle has no lockfile here, so write one for Trivy to read: only what ships in the release APKs.
         run: |
