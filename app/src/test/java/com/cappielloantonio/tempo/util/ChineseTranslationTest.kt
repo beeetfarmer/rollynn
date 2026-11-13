@@ -58,6 +58,23 @@ class ChineseTranslationTest {
     }
 
     @Test
+    fun layoutsAndSettingsHaveNoHardcodedText() {
+        // Brand names are the same in every language.
+        val allowed = setOf("Last.fm")
+        val attr = Regex("""(?:android|app):(?:title|summary|text|hint|contentDescription|dialogTitle)="([^"]*)"""")
+        val hardcoded = res.listFiles()!!
+            .filter { it.isDirectory && (it.name.startsWith("layout") || it.name == "menu" || it.name == "xml") }
+            .flatMap { it.listFiles()!!.toList() }
+            .flatMap { file ->
+                attr.findAll(file.readText()).map { it.groupValues[1] }
+                    .filter { !it.startsWith("@") && !it.startsWith("?") && Regex("[A-Za-z]{2}").containsMatchIn(it) }
+                    .filter { it !in allowed }
+                    .map { "${file.parentFile.name}/${file.name}: $it" }
+            }
+        assertTrue("Use string resources instead of: $hardcoded", hardcoded.isEmpty())
+    }
+
+    @Test
     fun placeholderExtractionSeesPositionalAndPercentEscapes() {
         assertTrue(placeholders("Mark when %1\$d%% is reached") == listOf("%1\$d"))
         assertTrue(placeholders("你的 %2\$d 年 %1\$s 回顾") == listOf("%1\$s", "%2\$d"))

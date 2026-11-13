@@ -847,4 +847,12 @@
     <string name="metadata_alignment_center">居中</string>
     <string name="metadata_alignment_right">右对齐</string>
     <string name="settings_title_dock">Dock 栏</string>
+    <string name="settings_category_scan_visibility">扫描与可见性</string>
+    <string name="settings_category_details_sorting">详情与排序</string>
+    <string name="settings_category_sound_effects">声音与音效</string>
+    <string name="settings_category_behavior">行为</string>
+    <string name="settings_category_network">网络</string>
+    <string name="settings_category_cache_storage">缓存与存储</string>
+    <string name="settings_category_offline_sync">离线同步</string>
+    <string name="settings_category_info">信息</string>
 </resources>

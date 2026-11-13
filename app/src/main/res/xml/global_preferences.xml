@@ -126,7 +126,7 @@
         android:key="screen_library"
         android:title="@string/settings_tab_library">
 
-        <PreferenceCategory app:title="Scan &amp; Visibility">
+        <PreferenceCategory app:title="@string/settings_category_scan_visibility">
             <Preference
                 android:key="scan_library"
                 android:title="@string/settings_scan_title"
@@ -154,7 +154,7 @@
                 app:icon="@drawable/ic_placeholder_directory" />
         </PreferenceCategory>
 
-        <PreferenceCategory app:title="Details &amp; Sorting">
+        <PreferenceCategory app:title="@string/settings_category_details_sorting">
             <SwitchPreference
                 android:title="@string/settings_album_detail"
                 android:defaultValue="false"
@@ -222,7 +222,7 @@
         android:key="screen_playback"
         android:title="@string/settings_tab_playback">
 
-        <PreferenceCategory app:title="Sound &amp; Effects">
+        <PreferenceCategory app:title="@string/settings_category_sound_effects">
             <Preference
                 android:layout_height="match_parent"
                 android:key="system_equalizer"
@@ -317,7 +317,7 @@
                 app:icon="@drawable/ic_replay" />
         </PreferenceCategory>
 
-        <PreferenceCategory app:title="Behavior">
+        <PreferenceCategory app:title="@string/settings_category_behavior">
             <SwitchPreference
                 android:title="@string/settings_auto_download_lyrics"
                 android:defaultValue="false"
@@ -475,7 +475,7 @@
         android:key="screen_general"
         android:title="@string/settings_tab_general">
 
-        <PreferenceCategory app:title="Network">
+        <PreferenceCategory app:title="@string/settings_category_network">
             <SwitchPreference
                 android:title="@string/settings_wifi_only_title"
                 android:defaultValue="false"
@@ -512,7 +512,7 @@
                 app:icon="@drawable/ic_refresh" />
         </PreferenceCategory>
 
-        <PreferenceCategory app:title="Cache &amp; Storage">
+        <PreferenceCategory app:title="@string/settings_category_cache_storage">
             <ListPreference
                 app:defaultValue="256"
                 app:dialogTitle="@string/settings_streaming_cache_size"
@@ -566,7 +566,7 @@
                 app:icon="@drawable/ic_close" />
         </PreferenceCategory>
 
-        <PreferenceCategory app:title="Offline Sync">
+        <PreferenceCategory app:title="@string/settings_category_offline_sync">
             <SwitchPreference
                 android:title="@string/settings_sync_starred_tracks_for_offline_use_title"
                 android:defaultValue="false"
@@ -695,7 +695,7 @@
                 app:icon="@drawable/ic_refresh" />
         </PreferenceCategory>
 
-        <PreferenceCategory app:title="Info">
+        <PreferenceCategory app:title="@string/settings_category_info">
             <Preference
                 app:summary="@string/settings_github_summary"
                 app:title="@string/settings_github_title"
