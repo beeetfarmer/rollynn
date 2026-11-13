@@ -120,7 +120,7 @@ public class PodcastEpisodeBottomSheetDialog extends BottomSheetDialogFragment i
 
         TextView goToChannel = view.findViewById(R.id.go_to_channel_text_view);
         goToChannel.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Open the channel", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.podcast_open_channel, Toast.LENGTH_SHORT).show();
             dismissBottomSheet();
         });
     }

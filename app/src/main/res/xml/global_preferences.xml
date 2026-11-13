@@ -550,8 +550,8 @@
 
             <Preference
                 android:key="set_download_directory"
-                android:title="Set download folder"
-                android:summary="Choose a folder for downloaded music files"
+                android:title="@string/settings_set_download_folder"
+                android:summary="@string/settings_set_download_folder_summary"
                 android:icon="@drawable/ic_folder"
                 app:isPreferenceVisible="false" />
 
@@ -655,17 +655,17 @@
 
             <PreferenceScreen
                 android:key="screen_lastfm"
-                android:title="Last.fm Account"
+                android:title="@string/settings_lastfm_account"
                 app:icon="@drawable/ic_refresh">
                 <PreferenceCategory app:title="Last.fm">
                     <EditTextPreference
                         android:key="last_fm_user"
-                        android:title="Username"
+                        android:title="@string/server_signup_dialog_hint_username"
                         app:useSimpleSummaryProvider="true"
                         app:icon="@drawable/ic_placeholder_artist" />
                     <EditTextPreference
                         android:key="last_fm_api_key"
-                        android:title="API Key"
+                        android:title="@string/settings_translation_api_key"
                         android:inputType="textPassword"
                         app:icon="@drawable/ic_link" />
                 </PreferenceCategory>

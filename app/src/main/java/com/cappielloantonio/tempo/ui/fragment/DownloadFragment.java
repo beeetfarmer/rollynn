@@ -341,7 +341,7 @@ public class DownloadFragment extends Fragment implements ClickCallback {
                 );
                 Preferences.setDownloadDirectoryUri(uri.toString());
                 ExternalAudioReader.refreshCache();
-                Toast.makeText(requireContext(), "Download directory set", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.download_directory_saved, Toast.LENGTH_SHORT).show();
             }
         }
     }

@@ -153,14 +153,14 @@ public class MetadataConfigurationFragment extends Fragment {
 
         private String getItemDisplayName(String item) {
             switch (item) {
-                case Constants.METADATA_TITLE: return "Title";
-                case Constants.METADATA_ARTIST: return "Artist";
-                case Constants.METADATA_ALBUM: return "Album";
-                case Constants.METADATA_YEAR: return "Year";
-                case Constants.METADATA_GENRE: return "Genre";
-                case Constants.METADATA_BITRATE: return "Bitrate";
-                case Constants.METADATA_PLAY_COUNT: return "Play Count";
-                case Constants.METADATA_SCROBBLES: return "Scrobbles";
+                case Constants.METADATA_TITLE: return getString(R.string.track_info_title);
+                case Constants.METADATA_ARTIST: return getString(R.string.track_info_artist);
+                case Constants.METADATA_ALBUM: return getString(R.string.track_info_album);
+                case Constants.METADATA_YEAR: return getString(R.string.track_info_year);
+                case Constants.METADATA_GENRE: return getString(R.string.track_info_genre);
+                case Constants.METADATA_BITRATE: return getString(R.string.track_info_bitrate);
+                case Constants.METADATA_PLAY_COUNT: return getString(R.string.track_info_play_count);
+                case Constants.METADATA_SCROBBLES: return getString(R.string.metadata_scrobbles);
                 default: return item;
             }
         }

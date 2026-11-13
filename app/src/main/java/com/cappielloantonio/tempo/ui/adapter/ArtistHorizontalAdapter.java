@@ -1,5 +1,6 @@
 package com.cappielloantonio.tempo.ui.adapter;
 
+import com.cappielloantonio.tempo.R;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -82,7 +83,7 @@ public class ArtistHorizontalAdapter extends RecyclerView.Adapter<ArtistHorizont
         holder.item.artistNameTextView.setText(artist.getName());
 
         if (artist.getAlbumCount() > 0) {
-            holder.item.artistInfoTextView.setText("Album count: " + artist.getAlbumCount());
+            holder.item.artistInfoTextView.setText(holder.itemView.getContext().getString(R.string.artist_album_count, artist.getAlbumCount()));
         } else {
             holder.item.artistInfoTextView.setVisibility(View.GONE);
         }

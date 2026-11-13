@@ -181,17 +181,7 @@ public class DockConfigurationFragment extends Fragment {
         }
 
         private String getItemDisplayName(String item) {
-            switch (item) {
-                case Constants.DOCK_ITEM_LIBRARY: return "Library";
-                case Constants.DOCK_ITEM_ALBUMS: return "Albums";
-                case Constants.DOCK_ITEM_ARTISTS: return "Artists";
-                case Constants.DOCK_ITEM_REWIND: return "Rewind";
-                case Constants.DOCK_ITEM_DOWNLOADS: return "Downloads";
-                case Constants.DOCK_ITEM_PLAYLISTS: return "Playlists";
-                case Constants.DOCK_ITEM_SEARCH: return "Search";
-                case Constants.DOCK_ITEM_SETTINGS: return "Settings";
-                default: return "Home";
-            }
+            return getString(MainActivity.dockLabelRes(item));
         }
 
         private int getDockIcon(String item) {

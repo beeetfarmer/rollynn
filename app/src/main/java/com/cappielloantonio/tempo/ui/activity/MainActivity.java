@@ -821,16 +821,21 @@ public class MainActivity extends BaseActivity {
     }
 
     private String getDockLabel(String item) {
+        return getString(dockLabelRes(item));
+    }
+
+    @androidx.annotation.StringRes
+    public static int dockLabelRes(String item) {
         switch (item) {
-            case Constants.DOCK_ITEM_LIBRARY: return "Library";
-            case Constants.DOCK_ITEM_DOWNLOADS: return "Downloads";
-            case Constants.DOCK_ITEM_ALBUMS: return "Albums";
-            case Constants.DOCK_ITEM_ARTISTS: return "Artists";
-            case Constants.DOCK_ITEM_REWIND: return "Rewind";
-            case Constants.DOCK_ITEM_PLAYLISTS: return "Playlists";
-            case Constants.DOCK_ITEM_SEARCH: return "Search";
-            case Constants.DOCK_ITEM_SETTINGS: return "Settings";
-            default: return "Home";
+            case Constants.DOCK_ITEM_LIBRARY: return R.string.menu_library_label;
+            case Constants.DOCK_ITEM_DOWNLOADS: return R.string.download_title_section;
+            case Constants.DOCK_ITEM_ALBUMS: return R.string.album_catalogue_title;
+            case Constants.DOCK_ITEM_ARTISTS: return R.string.artist_catalogue_title;
+            case Constants.DOCK_ITEM_REWIND: return R.string.rewind_title;
+            case Constants.DOCK_ITEM_PLAYLISTS: return R.string.library_title_playlist;
+            case Constants.DOCK_ITEM_SEARCH: return R.string.menu_search_button;
+            case Constants.DOCK_ITEM_SETTINGS: return R.string.settings_title;
+            default: return R.string.menu_home_label;
         }
     }
 

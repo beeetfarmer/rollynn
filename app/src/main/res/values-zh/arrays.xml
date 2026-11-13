@@ -254,4 +254,27 @@
         <item>3</item>
         <item>4</item>
     </string-array>
+
+    <string-array name="translation_language_titles">
+        <item>英语</item>
+        <item>西班牙语</item>
+        <item>法语</item>
+        <item>德语</item>
+        <item>意大利语</item>
+        <item>葡萄牙语</item>
+        <item>俄语</item>
+        <item>日语</item>
+        <item>韩语</item>
+        <item>中文</item>
+        <item>阿拉伯语</item>
+        <item>印地语</item>
+        <item>土耳其语</item>
+        <item>荷兰语</item>
+        <item>波兰语</item>
+        <item>瑞典语</item>
+        <item>乌克兰语</item>
+        <item>越南语</item>
+        <item>泰语</item>
+        <item>印尼语</item>
+    </string-array>
 </resources>

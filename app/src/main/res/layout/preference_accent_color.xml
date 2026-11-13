@@ -11,7 +11,7 @@
         style="@style/TitleMedium"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Accent Color"
+        android:text="@string/settings_accent_color"
         android:textColor="?attr/colorOnSurface" />
 
     <HorizontalScrollView

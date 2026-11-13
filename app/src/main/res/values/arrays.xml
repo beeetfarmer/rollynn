@@ -251,8 +251,8 @@
     </string-array>
 
     <string-array name="playlist_sort_option_titles">
-        <item>Name</item>
-        <item>Random</item>
+        <item>@string/menu_sort_name</item>
+        <item>@string/menu_sort_random</item>
     </string-array>
     <string-array name="playlist_sort_option_values">
         <item>ORDER_BY_NAME</item>
@@ -284,7 +284,7 @@
         <item>4</item>
     </string-array>
     <string-array name="landscape_items_per_row">
-        <item>3"</item>
+        <item>3</item>
         <item>4</item>
         <item>5</item>
         <item>6</item>
@@ -355,9 +355,9 @@
     </string-array>
 
     <string-array name="metadata_alignment_titles">
-        <item>Left</item>
-        <item>Center</item>
-        <item>Right</item>
+        <item>@string/metadata_alignment_left</item>
+        <item>@string/metadata_alignment_center</item>
+        <item>@string/metadata_alignment_right</item>
     </string-array>
     <string-array name="metadata_alignment_values">
         <item>left</item>

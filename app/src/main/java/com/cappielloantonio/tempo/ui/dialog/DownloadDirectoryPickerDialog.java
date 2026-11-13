@@ -40,7 +40,7 @@ public class DownloadDirectoryPickerDialog extends DialogFragment {
                             Preferences.setDownloadDirectoryUri(uri.toString());
                             ExternalAudioReader.refreshCache();
 
-                            Toast.makeText(requireContext(), "Download directory set:\n" + uri.toString(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(requireContext(), getString(R.string.download_directory_set_to, uri.toString()), Toast.LENGTH_LONG).show();
                         }
                     }
                 }
@@ -48,9 +48,9 @@ public class DownloadDirectoryPickerDialog extends DialogFragment {
         );
 
         return new MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Set Download Directory")
-            .setMessage("Choose a folder where downloaded songs will be stored.")
-            .setPositiveButton("Choose Folder", (dialog, which) -> {
+            .setTitle(R.string.settings_set_download_folder)
+            .setMessage(R.string.download_directory_dialog_message)
+            .setPositiveButton(R.string.download_directory_choose, (dialog, which) -> {
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                 intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
                               | Intent.FLAG_GRANT_READ_URI_PERMISSION

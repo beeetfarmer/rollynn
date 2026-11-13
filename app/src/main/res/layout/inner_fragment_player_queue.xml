@@ -78,7 +78,7 @@
             android:id="@+id/fab_menu_toggle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="Toggle FAB Action menu"
+            android:contentDescription="@string/queue_actions_menu"
             tools:ignore="HardcodedText"
             app:srcCompat="@drawable/ic_add" />
 

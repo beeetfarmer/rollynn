@@ -831,4 +831,23 @@
     <string name="settings_export_logs_copied">Logs copied to the clipboard</string>
     <string name="settings_export_logs_saved">Logs saved</string>
     <string name="settings_export_logs_failure">Could not export the logs</string>
+    <string name="metadata_scrobbles">Scrobbles</string>
+    <string name="settings_accent_color">Accent color</string>
+    <string name="settings_lastfm_account">Last.fm account</string>
+    <string name="settings_set_download_folder_summary">Choose a folder for downloaded music files</string>
+    <string name="download_directory_dialog_message">Choose a folder where downloaded songs will be stored.</string>
+    <string name="download_directory_choose">Choose folder</string>
+    <string name="download_directory_saved">Download folder set</string>
+    <string name="download_directory_set_to">Download folder set:\n%1$s</string>
+    <string name="podcast_open_channel">Open the channel</string>
+    <string name="artist_album_count">Album count: %1$d</string>
+    <string name="queue_empty">Queue is empty</string>
+    <string name="queue_download_unavailable">Download service unavailable.</string>
+    <string name="queue_all_downloaded">All songs already downloaded</string>
+    <string name="queue_loaded">Queue loaded</string>
+    <string name="queue_no_saved">No saved queue found</string>
+    <string name="queue_actions_menu">Queue actions</string>
+    <string name="metadata_alignment_left">Left</string>
+    <string name="metadata_alignment_center">Center</string>
+    <string name="metadata_alignment_right">Right</string>
 </resources>
