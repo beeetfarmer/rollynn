@@ -122,9 +122,10 @@ public class ArtistPageViewModel extends AndroidViewModel {
         });
     }
 
-    private boolean isType(AlbumID3 album, String targetType) {
+    static boolean isType(AlbumID3 album, String targetType) {
         if (album.getReleaseTypes() != null && !album.getReleaseTypes().isEmpty()) {
-            return album.getReleaseTypes().contains(targetType);
+            // OpenSubsonic servers may send "Album"/"EP" as well as "album"/"ep"
+            return album.getReleaseTypes().stream().anyMatch(targetType::equalsIgnoreCase);
         }
         // Fallback to song count if releaseTypes is not available
         int songCount = album.getSongCount() != null ? album.getSongCount() : 0;
