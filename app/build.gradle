@@ -102,6 +102,8 @@ android {
         unitTests {
             // Robolectric reads the merged manifest and resources, and starts the real App.
             includeAndroidResources = true
+            // The default 512m runs out partway through the Robolectric suite.
+            all { maxHeapSize = "2g" }
         }
     }
 
