@@ -10,7 +10,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
 import androidx.fragment.app.Fragment;
+import androidx.media3.common.util.UnstableApi;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -180,6 +182,7 @@ public class DockConfigurationFragment extends Fragment {
             return items.size();
         }
 
+        @OptIn(markerClass = UnstableApi.class)
         private String getItemDisplayName(String item) {
             return getString(MainActivity.dockLabelRes(item));
         }
