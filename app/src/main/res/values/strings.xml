@@ -850,4 +850,5 @@
     <string name="metadata_alignment_left">Left</string>
     <string name="metadata_alignment_center">Center</string>
     <string name="metadata_alignment_right">Right</string>
+    <string name="settings_title_dock">Dock</string>
 </resources>

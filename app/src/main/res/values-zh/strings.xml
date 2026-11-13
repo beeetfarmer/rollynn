@@ -846,4 +846,5 @@
     <string name="metadata_alignment_left">左对齐</string>
     <string name="metadata_alignment_center">居中</string>
     <string name="metadata_alignment_right">右对齐</string>
+    <string name="settings_title_dock">Dock 栏</string>
 </resources>
