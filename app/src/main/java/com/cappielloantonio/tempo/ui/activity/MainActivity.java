@@ -99,6 +99,8 @@ public class MainActivity extends BaseActivity {
     private boolean dockSameRow = false;
     // Set once the user drags or opens the full player; a peek change also reports COLLAPSED.
     private boolean playerSheetOpened = false;
+    // Last slide targets, so repeated layout passes don't restart running animations.
+    private float lastNavOffset = Float.NaN;
     private AssetLinkNavigator assetLinkNavigator;
     private AssetLinkUtil.AssetLink pendingAssetLink;
 
@@ -451,16 +453,30 @@ public class MainActivity extends BaseActivity {
         if (bind == null || isLandscape || bottomSheetBehavior == null) return;
         View card = bind.navigationDock.dockCard;
         if (card.getWidth() == 0) return;
+        PlayerBottomSheetFragment fragment = (PlayerBottomSheetFragment) getSupportFragmentManager().findFragmentByTag("PlayerBottomSheet");
+        // Position what is actually showing, so a flag that lags the views can't
+        // leave the dock and mini player overlapping.
+        navCompact = bind.navigationDock.dockCompactButton.getVisibility() == View.VISIBLE;
+        if (fragment != null && fragment.getView() != null
+                && bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
+            playerCompact = fragment.isCompactShown();
+        }
         int screenWidth = bind.drawerLayout.getWidth() > 0
                 ? bind.drawerLayout.getWidth()
                 : getResources().getDisplayMetrics().widthPixels;
-        // Measure the size the dock is heading to: while it grows or shrinks its
-        // width is mid-animation, and right after a toggle it isn't laid out yet.
-        card.measure(View.MeasureSpec.makeMeasureSpec(screenWidth, View.MeasureSpec.AT_MOST),
-                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-        int navWidth = card.getMeasuredWidth();
-        int rowHeight = card.getMeasuredHeight();
-        if (navWidth == 0 || rowHeight == 0) return;
+        // The size the dock is heading to: right after a toggle it isn't laid out
+        // yet. Measure only the items, never the card itself: that would flag the
+        // card for layout and re-run this from its layout listener every frame.
+        int navWidth;
+        if (navCompact) {
+            navWidth = bind.navigationDock.dockCompactButton.getLayoutParams().width;
+        } else {
+            dockContainer.measure(View.MeasureSpec.makeMeasureSpec(screenWidth, View.MeasureSpec.AT_MOST),
+                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+            navWidth = dockContainer.getMeasuredWidth();
+        }
+        int rowHeight = currentDockHeight > 0 ? currentDockHeight : card.getHeight();
+        if (navWidth <= 0 || rowHeight == 0) return;
         boolean playerVisible = findViewById(R.id.player_bottom_sheet).getVisibility() == View.VISIBLE
                 && bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_HIDDEN;
 
@@ -471,10 +487,12 @@ public class MainActivity extends BaseActivity {
 
         // Both views are centred by gravity; shift them to their computed spots.
         float navOffset = r.getNavX() - (screenWidth - navWidth) / 2f;
-        if (animate) card.animate().translationX(navOffset).setDuration(200).start();
-        else card.setTranslationX(navOffset);
+        if (navOffset != lastNavOffset) {
+            lastNavOffset = navOffset;
+            if (animate) card.animate().translationX(navOffset).setDuration(200).start();
+            else card.setTranslationX(navOffset);
+        }
 
-        PlayerBottomSheetFragment fragment = (PlayerBottomSheetFragment) getSupportFragmentManager().findFragmentByTag("PlayerBottomSheet");
         if (fragment != null) {
             fragment.setCompactSize(rowHeight);
             if (!playerCompact) fragment.setMiniPlayerWidth(r.getPlayerWidth());
@@ -502,8 +520,6 @@ public class MainActivity extends BaseActivity {
             lp.height = currentDockHeight;
             button.setLayoutParams(lp);
         }
-        androidx.transition.TransitionManager.beginDelayedTransition(bind.drawerLayout,
-                new androidx.transition.ChangeBounds().addTarget(bind.navigationDock.dockCard).setDuration(200));
         dockContainer.setVisibility(navCompact ? View.GONE : View.VISIBLE);
         button.setVisibility(navCompact ? View.VISIBLE : View.GONE);
     }

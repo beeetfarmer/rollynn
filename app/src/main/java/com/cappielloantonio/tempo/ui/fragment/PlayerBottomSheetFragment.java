@@ -115,6 +115,7 @@ public class PlayerBottomSheetFragment extends Fragment {
         mediaBrowserListenableFuture = null;
         super.onDestroyView();
         bind = null;
+        lastOffsetX = Float.NaN;
     }
 
     private void customizeBottomSheetAction() {
@@ -417,6 +418,10 @@ public class PlayerBottomSheetFragment extends Fragment {
 
     private boolean compact = false;
 
+    public boolean isCompactShown() {
+        return bind != null && bind.playerCompactLayout.getVisibility() == View.VISIBLE;
+    }
+
     /** Swaps the pill for the round cover (or back). Only call while the sheet is collapsed. */
     public void setMiniPlayerCompact(boolean compact) {
         this.compact = compact;
@@ -439,12 +444,19 @@ public class PlayerBottomSheetFragment extends Fragment {
     }
 
     /** Shifts both mini players sideways from their centred position. */
+    private float lastOffsetX = Float.NaN;
+
     public void setMiniPlayerOffsetX(float offset, boolean animate) {
-        if (bind == null) return;
+        // Layout passes call this repeatedly; restarting a running slide each time
+        // would keep it from ever settling.
+        if (bind == null || offset == lastOffsetX) return;
+        lastOffsetX = offset;
         for (View v : new View[]{bind.playerHeaderLayout.getRoot(), bind.playerCompactLayout}) {
-            v.animate().cancel();
             if (animate) v.animate().translationX(offset).setDuration(200).start();
-            else v.setTranslationX(offset);
+            else {
+                v.animate().cancel();
+                v.setTranslationX(offset);
+            }
         }
     }
 
@@ -510,6 +522,7 @@ public class PlayerBottomSheetFragment extends Fragment {
     public void setMiniPlayerHeight(int height) {
         if (bind != null) {
             ViewGroup.LayoutParams params = bind.playerHeaderLayout.getRoot().getLayoutParams();
+            if (params.height == height) return;
             params.height = height;
             bind.playerHeaderLayout.getRoot().setLayoutParams(params);
         }
