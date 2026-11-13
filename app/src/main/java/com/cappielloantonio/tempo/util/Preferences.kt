@@ -113,6 +113,8 @@ object Preferences {
     private const val ARTIST_DISPLAY_BIOGRAPHY= "artist_display_biography"
     private const val NETWORK_PING_TIMEOUT = "network_ping_timeout_base"
     private const val DOCK_ITEMS = "dock_items"
+    private const val DOCK_COLLAPSIBLE_NAV = "dock_collapsible_nav"
+    private const val DOCK_COLLAPSIBLE_PLAYER = "dock_collapsible_player"
     private const val ACCENT_COLOR = "accent_color"
     private const val NOW_PLAYING_METADATA = "now_playing_metadata"
     private const val PLAY_NEXT_BEHAVIOR = "play_next_behavior"
@@ -385,6 +387,16 @@ object Preferences {
     @JvmStatic
     fun isRewindTabEnabled(): Boolean {
         return App.getInstance().preferences.getBoolean(REWIND_TAB_ENABLED, false)
+    }
+
+    @JvmStatic
+    fun isNavDockCollapsible(): Boolean {
+        return App.getInstance().preferences.getBoolean(DOCK_COLLAPSIBLE_NAV, false)
+    }
+
+    @JvmStatic
+    fun isMiniPlayerCollapsible(): Boolean {
+        return App.getInstance().preferences.getBoolean(DOCK_COLLAPSIBLE_PLAYER, false)
     }
 
     @JvmStatic

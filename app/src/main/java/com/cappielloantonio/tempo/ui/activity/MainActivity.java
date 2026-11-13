@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -48,6 +49,7 @@ import com.cappielloantonio.tempo.ui.fragment.PlayerBottomSheetFragment;
 import com.cappielloantonio.tempo.util.AssetLinkNavigator;
 import com.cappielloantonio.tempo.util.AssetLinkUtil;
 import com.cappielloantonio.tempo.util.Constants;
+import com.cappielloantonio.tempo.util.DockLayout;
 import com.cappielloantonio.tempo.util.NetworkUtil;
 import com.cappielloantonio.tempo.util.Preferences;
 import com.cappielloantonio.tempo.util.UIUtil;
@@ -91,6 +93,12 @@ public class MainActivity extends BaseActivity {
     private boolean immersiveBars = false;
     private boolean suppressNavHostTopInset = false;
     private int currentDockHeight = 0;
+    // Portrait only: minimized docks share the bottom row (see DockLayout).
+    private boolean navCompact = false;
+    private boolean playerCompact = false;
+    private boolean dockSameRow = false;
+    // Set once the user drags or opens the full player; a peek change also reports COLLAPSED.
+    private boolean playerSheetOpened = false;
     private AssetLinkNavigator assetLinkNavigator;
     private AssetLinkUtil.AssetLink pendingAssetLink;
 
@@ -197,6 +205,8 @@ public class MainActivity extends BaseActivity {
 
     public void init() {
         fragmentManager = getSupportFragmentManager();
+        navCompact = !isLandscape && Preferences.isNavDockCollapsible();
+        playerCompact = !isLandscape && Preferences.isMiniPlayerCollapsible();
 
         initBottomSheet();
         initNavigation();
@@ -215,6 +225,7 @@ public class MainActivity extends BaseActivity {
         fragmentManager.beginTransaction().replace(R.id.player_bottom_sheet, new PlayerBottomSheetFragment(), "PlayerBottomSheet").commit();
 
         checkBottomSheetAfterStateChanged();
+        bind.navigationDock.dockCard.post(() -> applyDockLayout(false));
     }
 
     public void setBottomSheetInPeek(Boolean isVisible) {
@@ -231,6 +242,7 @@ public class MainActivity extends BaseActivity {
         } else {
             findViewById(R.id.player_bottom_sheet).setVisibility(View.GONE);
         }
+        applyDockLayout(false);
     }
 
     private void checkBottomSheetAfterStateChanged() {
@@ -265,6 +277,7 @@ public class MainActivity extends BaseActivity {
                         case BottomSheetBehavior.STATE_HIDDEN:
                             resetMusicSession();
                             applyPlayerSystemBarColors(false);
+                            applyDockLayout(true);
                             break;
                         case BottomSheetBehavior.STATE_COLLAPSED:
                             if (playerBottomSheetFragment != null) {
@@ -275,8 +288,18 @@ public class MainActivity extends BaseActivity {
                                 bind.offlineModeTextView.setVisibility(View.VISIBLE);
                             }
                             applyPlayerSystemBarColors(false);
+                            // Back from the full player: minimize again. Not on our own animated
+                            // peek changes, which settle to COLLAPSED too.
+                            boolean wasOpened = playerSheetOpened;
+                            playerSheetOpened = false;
+                            if (wasOpened && !isLandscape && Preferences.isMiniPlayerCollapsible() && !playerCompact) {
+                                setPlayerCompact(true);
+                            } else {
+                                applyDockLayout(true);
+                            }
                             break;
                         case BottomSheetBehavior.STATE_EXPANDED:
+                            playerSheetOpened = true;
                             if (playerBottomSheetFragment != null) {
                                 playerBottomSheetFragment.setBodyVisibility(true);
                             }
@@ -286,8 +309,10 @@ public class MainActivity extends BaseActivity {
                             }
                             applyPlayerSystemBarColors(true);
                             break;
-                        case BottomSheetBehavior.STATE_SETTLING:
                         case BottomSheetBehavior.STATE_DRAGGING:
+                            playerSheetOpened = true;
+                            break;
+                        case BottomSheetBehavior.STATE_SETTLING:
                         case BottomSheetBehavior.STATE_HALF_EXPANDED:
                             break;
                     }
@@ -399,10 +424,16 @@ public class MainActivity extends BaseActivity {
     }
 
     private void updateBottomSheetPeek() {
+        updateBottomSheetPeek(false);
+    }
+
+    private void updateBottomSheetPeek(boolean animate) {
         if (bottomSheetBehavior == null) return;
         int defaultHeader = UIUtil.dpToPx(this, 48);
         int defaultPeek = getResources().getDimensionPixelSize(R.dimen.bottom_sheet_behavior_peek_height);
-        int bottomGap = defaultPeek - defaultHeader;
+        // Sharing the dock's row, the mini player's bottom lines up with the dock's
+        // (its bottom margin); stacked, it clears the dock as before.
+        int bottomGap = dockSameRow ? UIUtil.dpToPx(this, 8) : defaultPeek - defaultHeader;
         int header = currentDockHeight > 0 ? currentDockHeight : defaultHeader;
 
         // Always edge to edge now, so lift the mini player above the nav bar.
@@ -412,7 +443,126 @@ public class MainActivity extends BaseActivity {
         if (insets != null) {
             navInset = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).bottom;
         }
-        bottomSheetBehavior.setPeekHeight(bottomGap + header + navInset, false);
+        bottomSheetBehavior.setPeekHeight(bottomGap + header + navInset, animate);
+    }
+
+    /** Positions the portrait dock and mini player side by side or stacked. */
+    private void applyDockLayout(boolean animate) {
+        if (bind == null || isLandscape || bottomSheetBehavior == null) return;
+        View card = bind.navigationDock.dockCard;
+        if (card.getWidth() == 0) return;
+        int screenWidth = bind.drawerLayout.getWidth() > 0
+                ? bind.drawerLayout.getWidth()
+                : getResources().getDisplayMetrics().widthPixels;
+        // Measure the size the dock is heading to: while it grows or shrinks its
+        // width is mid-animation, and right after a toggle it isn't laid out yet.
+        card.measure(View.MeasureSpec.makeMeasureSpec(screenWidth, View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        int navWidth = card.getMeasuredWidth();
+        int rowHeight = card.getMeasuredHeight();
+        if (navWidth == 0 || rowHeight == 0) return;
+        boolean playerVisible = findViewById(R.id.player_bottom_sheet).getVisibility() == View.VISIBLE
+                && bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_HIDDEN;
+
+        DockLayout.Result r = DockLayout.compute(screenWidth, navWidth, rowHeight,
+                navCompact, playerCompact, playerVisible,
+                UIUtil.dpToPx(this, 28), UIUtil.dpToPx(this, 12),
+                UIUtil.dpToPx(this, 8), UIUtil.dpToPx(this, 200));
+
+        // Both views are centred by gravity; shift them to their computed spots.
+        float navOffset = r.getNavX() - (screenWidth - navWidth) / 2f;
+        if (animate) card.animate().translationX(navOffset).setDuration(200).start();
+        else card.setTranslationX(navOffset);
+
+        PlayerBottomSheetFragment fragment = (PlayerBottomSheetFragment) getSupportFragmentManager().findFragmentByTag("PlayerBottomSheet");
+        if (fragment != null) {
+            fragment.setCompactSize(rowHeight);
+            if (!playerCompact) fragment.setMiniPlayerWidth(r.getPlayerWidth());
+            fragment.setMiniPlayerOffsetX(r.getPlayerX() - (screenWidth - r.getPlayerWidth()) / 2f, animate);
+        }
+
+        if (r.getSameRow() != dockSameRow) {
+            dockSameRow = r.getSameRow();
+            updateBottomSheetPeek(animate);
+        }
+    }
+
+    private void setNavCompact(boolean compact) {
+        navCompact = compact;
+        applyNavCompactViews();
+    }
+
+    /** Shows the round button or the items; the card's relayout then re-runs applyDockLayout. */
+    private void applyNavCompactViews() {
+        if (bind == null) return;
+        View button = bind.navigationDock.dockCompactButton;
+        if (currentDockHeight > 0) {
+            ViewGroup.LayoutParams lp = button.getLayoutParams();
+            lp.width = currentDockHeight;
+            lp.height = currentDockHeight;
+            button.setLayoutParams(lp);
+        }
+        androidx.transition.TransitionManager.beginDelayedTransition(bind.drawerLayout,
+                new androidx.transition.ChangeBounds().addTarget(bind.navigationDock.dockCard).setDuration(200));
+        dockContainer.setVisibility(navCompact ? View.GONE : View.VISIBLE);
+        button.setVisibility(navCompact ? View.VISIBLE : View.GONE);
+    }
+
+    private void minimizeNavDockIfCollapsible() {
+        if (!isLandscape && Preferences.isNavDockCollapsible() && !navCompact) setNavCompact(true);
+    }
+
+    private void setPlayerCompact(boolean compact) {
+        playerCompact = compact;
+        PlayerBottomSheetFragment fragment = (PlayerBottomSheetFragment) getSupportFragmentManager().findFragmentByTag("PlayerBottomSheet");
+        if (fragment != null) fragment.setMiniPlayerCompact(compact);
+        applyDockLayout(true);
+    }
+
+    /** Tap on the minimized player: grow it back into the mini player. */
+    public void expandMiniPlayer() {
+        setPlayerCompact(false);
+    }
+
+    public boolean isMiniPlayerCompact() {
+        return playerCompact;
+    }
+
+    public void onDockCollapseSettingsChanged() {
+        navCompact = !isLandscape && Preferences.isNavDockCollapsible();
+        applyNavCompactViews();
+        setPlayerCompact(!isLandscape && Preferences.isMiniPlayerCollapsible());
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) minimizeDocksOnOutsideTouch(ev);
+        return super.dispatchTouchEvent(ev);
+    }
+
+    /** A touch anywhere but an opened dock minimizes it again; the touch still goes through. */
+    private void minimizeDocksOnOutsideTouch(MotionEvent ev) {
+        if (bind == null || isLandscape || bottomSheetBehavior == null) return;
+        if (!navCompact && Preferences.isNavDockCollapsible()
+                && !isTouchInside(bind.navigationDock.dockCard, ev)) {
+            setNavCompact(true);
+        }
+        if (!playerCompact && Preferences.isMiniPlayerCollapsible()
+                && bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
+            PlayerBottomSheetFragment fragment = (PlayerBottomSheetFragment) getSupportFragmentManager().findFragmentByTag("PlayerBottomSheet");
+            if (fragment != null && fragment.getView() != null && !isTouchInside(fragment.getPlayerHeader(), ev)) {
+                setPlayerCompact(true);
+            }
+        }
+    }
+
+    private static boolean isTouchInside(View v, MotionEvent ev) {
+        if (v.getVisibility() != View.VISIBLE) return false;
+        int[] loc = new int[2];
+        v.getLocationOnScreen(loc);
+        float x = ev.getRawX();
+        float y = ev.getRawY();
+        return x >= loc[0] && x < loc[0] + v.getWidth() && y >= loc[1] && y < loc[1] + v.getHeight();
     }
 
     /**
@@ -537,11 +687,6 @@ public class MainActivity extends BaseActivity {
                         int minWidth = UIUtil.dpToPx(this, 420);
                         int availableWidth = screenWidth - width - (sideMargin * 2);
                         fragment.setMiniPlayerWidth(Math.max(minWidth, availableWidth));
-                    } else {
-                        // Independent of dock size: a consistently wide mini player (screen minus side margins).
-                        int screenWidth = getResources().getDisplayMetrics().widthPixels;
-                        int sideMargin = UIUtil.dpToPx(this, 28);
-                        fragment.setMiniPlayerWidth(screenWidth - sideMargin * 2);
                     }
                     // Match the mini player's thickness to the dock, growing upward
                     // (the extra height is absorbed by a taller peek, below).
@@ -552,6 +697,8 @@ public class MainActivity extends BaseActivity {
                 currentDockHeight = height;
                 updateBottomSheetPeek();
             }
+            // Portrait: width/position of the mini player beside or above the dock.
+            applyDockLayout(oldRight - oldLeft > 0);
         });
 
         // Keep the dock clear of the navigation bar. On edge-to-edge pages (the
@@ -604,6 +751,7 @@ public class MainActivity extends BaseActivity {
                 if (navController.getCurrentDestination() == null || navController.getCurrentDestination().getId() != fragmentId) {
                     navController.navigate(fragmentId);
                 }
+                minimizeNavDockIfCollapsible();
             });
             dockItemView.setTag(fragmentId);
             dockContainer.addView(dockItemView);
@@ -615,6 +763,9 @@ public class MainActivity extends BaseActivity {
         ((TextView) moreView.findViewById(R.id.dock_item_label)).setText(R.string.dock_more);
         moreView.setOnClickListener(v -> showMoreMenu(dockItems));
         dockContainer.addView(moreView);
+
+        bind.navigationDock.dockCompactButton.setOnClickListener(v -> setNavCompact(false));
+        applyNavCompactViews();
 
         updateDockActiveState(navController.getCurrentDestination() != null ? navController.getCurrentDestination().getId() : -1);
     }
@@ -644,6 +795,7 @@ public class MainActivity extends BaseActivity {
                     navController.navigate(fragmentId);
                 }
                 sheet.dismiss();
+                minimizeNavDockIfCollapsible();
             });
             container.addView(row);
         }

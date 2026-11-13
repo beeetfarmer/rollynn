@@ -17,4 +17,16 @@
         android:orientation="horizontal"
         android:padding="4dp" />
 
+    <!-- Shown instead of the items while the dock is minimized; size set in code. -->
+    <ImageView
+        android:id="@+id/dock_compact_button"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/dock_show_navigation"
+        android:scaleType="center"
+        android:src="@drawable/ic_view_grid"
+        android:visibility="gone"
+        app:tint="?attr/colorOnSurfaceVariant" />
+
 </com.google.android.material.card.MaterialCardView>

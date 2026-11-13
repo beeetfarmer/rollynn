@@ -69,6 +69,20 @@
                 android:summary="@string/settings_configure_dock_summary"
                 app:icon="@drawable/ic_playlist_add" />
 
+            <SwitchPreference
+                android:defaultValue="false"
+                android:key="dock_collapsible_nav"
+                android:title="@string/settings_collapsible_nav_dock"
+                android:summary="@string/settings_collapsible_nav_dock_summary"
+                app:icon="@drawable/ic_view_grid" />
+
+            <SwitchPreference
+                android:defaultValue="false"
+                android:key="dock_collapsible_player"
+                android:title="@string/settings_collapsible_mini_player"
+                android:summary="@string/settings_collapsible_mini_player_summary"
+                app:icon="@drawable/ic_album" />
+
             <Preference
                 android:key="configure_metadata"
                 android:title="@string/settings_configure_metadata"

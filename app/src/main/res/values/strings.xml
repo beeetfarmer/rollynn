@@ -681,6 +681,12 @@
     <string name="ai_playlist_save_failed">The playlist was generated but could not be saved to your server</string>
     <string name="ai_playlist_created">Created \"%1$s\" with %2$d songs</string>
     <string name="dock_more">More</string>
+    <string name="dock_show_navigation">Show navigation</string>
+    <string name="player_show_mini_player">Show mini player</string>
+    <string name="settings_collapsible_nav_dock">Minimize navigation dock</string>
+    <string name="settings_collapsible_nav_dock_summary">Shrink the dock to a round button; tap it to open. Portrait only</string>
+    <string name="settings_collapsible_mini_player">Minimize mini player</string>
+    <string name="settings_collapsible_mini_player_summary">Shrink the mini player to its cover art; tap it to open. Portrait only</string>
     <string name="rewind_title">Rewind</string>
     <string name="rewind_listened">listened</string>
     <string name="rewind_month_all">Whole year</string>

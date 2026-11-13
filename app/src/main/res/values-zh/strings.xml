@@ -589,6 +589,12 @@
     <string name="artist_page_title_single_section">单曲</string>
     <string name="dock_max_items">除“更多”外，底栏最多显示 4 项</string>
     <string name="dock_more">更多</string>
+    <string name="dock_show_navigation">显示导航</string>
+    <string name="player_show_mini_player">显示迷你播放器</string>
+    <string name="settings_collapsible_nav_dock">最小化导航栏</string>
+    <string name="settings_collapsible_nav_dock_summary">将导航栏缩小为圆形按钮，点按即可展开。仅限竖屏</string>
+    <string name="settings_collapsible_mini_player">最小化迷你播放器</string>
+    <string name="settings_collapsible_mini_player_summary">将迷你播放器缩小为封面，点按即可展开。仅限竖屏</string>
     <string name="equalizer_auto_genre_title">按流派自动选择预设</string>
     <string name="equalizer_default_preset_title">默认预设</string>
     <string name="equalizer_editor_title">自定义预设</string>

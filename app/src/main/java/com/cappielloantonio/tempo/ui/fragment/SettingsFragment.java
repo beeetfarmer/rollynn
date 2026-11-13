@@ -355,6 +355,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         actionSettingsBackupRestore();
         actionExportLogs();
         actionConfigureDock();
+        actionCollapsibleDocks();
         actionConfigureMetadata();
 
         ListPreference themePreference = findPreference(Preferences.THEME);
@@ -365,6 +366,18 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
                         ThemeHelper.applyTheme(themeOption);
                         return true;
                     });
+        }
+    }
+
+    private void actionCollapsibleDocks() {
+        for (String key : new String[]{"dock_collapsible_nav", "dock_collapsible_player"}) {
+            Preference pref = findPreference(key);
+            if (pref == null) continue;
+            pref.setOnPreferenceChangeListener((preference, value) -> {
+                // The new value is saved after this returns.
+                requireView().post(() -> activity.onDockCollapseSettingsChanged());
+                return true;
+            });
         }
     }
 

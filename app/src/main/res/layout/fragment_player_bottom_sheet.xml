@@ -21,4 +21,35 @@
         android:layout_width="wrap_content"
         android:layout_height="48dp"
         android:layout_gravity="center_horizontal" />
+
+    <!-- The minimized mini player: cover art ringed by playback progress. Size set in code. -->
+    <FrameLayout
+        android:id="@+id/player_compact_layout"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/bg_mini_player_circle"
+        android:clickable="true"
+        android:contentDescription="@string/player_show_mini_player"
+        android:elevation="4dp"
+        android:focusable="true"
+        android:visibility="gone">
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/player_compact_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            app:indicatorSize="54dp"
+            app:trackThickness="3dp"
+            app:trackColor="@android:color/transparent" />
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/player_compact_cover"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_gravity="center"
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/CircleShapeAppearance" />
+    </FrameLayout>
 </FrameLayout>

@@ -119,6 +119,9 @@ public class PlayerBottomSheetFragment extends Fragment {
 
     private void customizeBottomSheetAction() {
         bind.playerHeaderLayout.getRoot().setOnClickListener(view -> ((MainActivity) requireActivity()).expandBottomSheet());
+        // Tapping the minimized player opens the mini player; a swipe still drags the sheet.
+        bind.playerCompactLayout.setOnClickListener(view -> ((MainActivity) requireActivity()).expandMiniPlayer());
+        setMiniPlayerCompact(((MainActivity) requireActivity()).isMiniPlayerCompact());
     }
 
     private void initViewPager() {
@@ -286,6 +289,10 @@ public class PlayerBottomSheetFragment extends Fragment {
                     .from(requireContext(), mediaMetadata.extras.getString("coverArtId"), CustomGlideRequest.ResourceType.Song)
                     .build()
                     .into(bind.playerHeaderLayout.playerHeaderMediaCoverImage);
+            CustomGlideRequest.Builder
+                    .from(requireContext(), mediaMetadata.extras.getString("coverArtId"), CustomGlideRequest.ResourceType.Song)
+                    .build()
+                    .into(bind.playerCompactCover);
 
             applyDynamicBackground(mediaMetadata.extras.getString("coverArtId"));
         }
@@ -364,6 +371,7 @@ public class PlayerBottomSheetFragment extends Fragment {
 
     private void setContentDuration(long duration) {
         bind.playerHeaderLayout.playerHeaderProgressBar.setMax(durationSeconds(duration));
+        bind.playerCompactProgress.setMax(Math.max(1, durationSeconds(duration)));
     }
 
     static int durationSeconds(long durationMs) {
@@ -372,8 +380,11 @@ public class PlayerBottomSheetFragment extends Fragment {
     }
 
     private void setProgress(MediaBrowser mediaBrowser) {
-        if (bind != null)
-            bind.playerHeaderLayout.playerHeaderProgressBar.setProgress((int) (mediaBrowser.getCurrentPosition() / 1000), true);
+        if (bind != null) {
+            int seconds = (int) (mediaBrowser.getCurrentPosition() / 1000);
+            bind.playerHeaderLayout.playerHeaderProgressBar.setProgress(seconds, true);
+            bind.playerCompactProgress.setProgressCompat(seconds, true);
+        }
     }
 
     private void setPlayingState(boolean isPlaying) {
@@ -399,8 +410,42 @@ public class PlayerBottomSheetFragment extends Fragment {
         bind.playerHeaderLayout.playerHeaderNextMediaButton.setAlpha(isEnabled ? (float) 1.0 : (float) 0.3);
     }
 
+    /** Whichever mini player is showing: the full pill or the minimized circle. */
     public View getPlayerHeader() {
-        return requireView().findViewById(R.id.player_header_layout);
+        return compact ? bind.playerCompactLayout : bind.playerHeaderLayout.getRoot();
+    }
+
+    private boolean compact = false;
+
+    /** Swaps the pill for the round cover (or back). Only call while the sheet is collapsed. */
+    public void setMiniPlayerCompact(boolean compact) {
+        this.compact = compact;
+        if (bind == null) return;
+        bind.playerHeaderLayout.getRoot().setVisibility(compact ? View.GONE : View.VISIBLE);
+        bind.playerCompactLayout.setVisibility(compact ? View.VISIBLE : View.GONE);
+        bind.playerHeaderLayout.getRoot().setAlpha(1f);
+        bind.playerCompactLayout.setAlpha(1f);
+    }
+
+    /** Sizes the minimized player to a circle matching the dock's height. */
+    public void setCompactSize(int size) {
+        if (bind == null || size <= 0) return;
+        ViewGroup.LayoutParams params = bind.playerCompactLayout.getLayoutParams();
+        if (params.width == size && params.height == size) return;
+        params.width = size;
+        params.height = size;
+        bind.playerCompactLayout.setLayoutParams(params);
+        bind.playerCompactProgress.setIndicatorSize(size - UIUtil.dpToPx(requireContext(), 6));
+    }
+
+    /** Shifts both mini players sideways from their centred position. */
+    public void setMiniPlayerOffsetX(float offset, boolean animate) {
+        if (bind == null) return;
+        for (View v : new View[]{bind.playerHeaderLayout.getRoot(), bind.playerCompactLayout}) {
+            v.animate().cancel();
+            if (animate) v.animate().translationX(offset).setDuration(200).start();
+            else v.setTranslationX(offset);
+        }
     }
 
     public void goBackToFirstPage() {
@@ -454,7 +499,10 @@ public class PlayerBottomSheetFragment extends Fragment {
     public void setMiniPlayerWidth(int width) {
         if (bind != null) {
             ViewGroup.LayoutParams params = bind.playerHeaderLayout.getRoot().getLayoutParams();
+            if (params.width == width) return;
             params.width = width;
+            // The layout's 380dp minimum would stop it sharing a row with the dock.
+            bind.playerHeaderLayout.getRoot().setMinWidth(0);
             bind.playerHeaderLayout.getRoot().setLayoutParams(params);
         }
     }
