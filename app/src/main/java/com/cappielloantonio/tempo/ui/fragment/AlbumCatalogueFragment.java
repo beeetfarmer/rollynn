@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -38,14 +37,10 @@ import com.cappielloantonio.tempo.util.Constants;
 import com.cappielloantonio.tempo.util.Preferences;
 import com.cappielloantonio.tempo.viewmodel.AlbumCatalogueViewModel;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Random;
 
 @OptIn(markerClass = UnstableApi.class)
 public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
-    private static final String TAG = "AlbumCatalogueFragment";
-
     private FragmentAlbumCatalogueBinding bind;
     private MainActivity activity;
     private AlbumCatalogueViewModel albumCatalogueViewModel;
@@ -53,8 +48,7 @@ public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
     private AlbumCatalogueAdapter albumAdapter;
     private int spanCount = 2;
     private String currentSortOrder;
-    private List<com.cappielloantonio.tempo.subsonic.models.AlbumID3> originalAlbums;
-    private int shownCount = 0;
+    private long shuffleSeed = new Random().nextLong();
     private GridItemDecoration gridDecoration;
 
     @Override
@@ -63,22 +57,6 @@ public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
         currentSortOrder = Preferences.getAlbumSortOrder();
 
         initData();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        String latestSort = Preferences.getAlbumSortOrder();
-        
-        if (!latestSort.equals(currentSortOrder)) {
-            currentSortOrder = latestSort;
-        }
-        // Re-apply sort when returning to fragment
-        if (originalAlbums != null && currentSortOrder != null) {
-            applySortToAlbums(currentSortOrder);
-        } else {
-            Log.d(TAG, "onResume - Cannot re-sort, missing data");
-        }
     }
 
     @Override
@@ -112,7 +90,7 @@ public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
     }
 
     private void initData() {
-        albumCatalogueViewModel = new ViewModelProvider(requireActivity()).get(AlbumCatalogueViewModel.class);
+        albumCatalogueViewModel = new ViewModelProvider(this).get(AlbumCatalogueViewModel.class);
         albumCatalogueViewModel.loadAlbums();
     }
 
@@ -124,7 +102,7 @@ public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (albumAdapter != null) albumAdapter.getFilter().filter(s);
+                if (albumAdapter != null) albumAdapter.setQuery(s);
             }
 
             @Override
@@ -143,12 +121,7 @@ public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
         applyViewMode();
 
         albumCatalogueViewModel.getAlbumList().observe(getViewLifecycleOwner(), albums -> {
-            originalAlbums = albums;
-            Boolean loading = albumCatalogueViewModel.getLoadingStatus().getValue();
-            if (loading != null && loading && albums.size() > shownCount) {
-                albumAdapter.appendItems(new ArrayList<>(albums.subList(shownCount, albums.size())));
-                shownCount = albums.size();
-            }
+            if (isLoading()) showAlbums();
             updateSortIndicator();
         });
 
@@ -192,14 +165,16 @@ public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
                 .setIconResource(listMode ? R.drawable.ic_view_grid : R.drawable.ic_view_list);
     }
 
-    private void applySortToAlbums(String sortOrder) {
-        if (originalAlbums == null) {
-            return;
-        }
-        albumAdapter.setItemsWithoutFilter(originalAlbums);
-        if (sortOrder != null) {
-            albumAdapter.sort(sortOrder);
-        }
+    private boolean isLoading() {
+        return Boolean.TRUE.equals(albumCatalogueViewModel.getLoadingStatus().getValue());
+    }
+
+    /** Pages are shown in the server's order while loading, and sorted once they are all in. */
+    private void showAlbums() {
+        albumAdapter.setItems(
+                albumCatalogueViewModel.getAlbumList().getValue(),
+                isLoading() ? null : currentSortOrder,
+                shuffleSeed);
     }
 
     private void initProgressLoader() {
@@ -210,8 +185,7 @@ public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
             } else {
                 bind.albumListSortImageView.setEnabled(true);
                 bind.albumListProgressLoader.setVisibility(View.GONE);
-                currentSortOrder = Preferences.getAlbumSortOrder();
-                applySortToAlbums(currentSortOrder);
+                showAlbums();
                 updateSortIndicator();
             }
         });
@@ -279,7 +253,8 @@ public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
             if (newSortOrder != null) {
                 currentSortOrder = newSortOrder;
                 Preferences.setAlbumSortOrder(newSortOrder);
-                applySortToAlbums(newSortOrder);
+                shuffleSeed = new Random().nextLong();
+                showAlbums();
                 updateSortIndicator();
                 return true;
             }

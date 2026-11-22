@@ -4,12 +4,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cappielloantonio.tempo.R;
@@ -24,8 +23,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
-public class AlbumCatalogueAdapter extends RecyclerView.Adapter<AlbumCatalogueAdapter.ViewHolder> implements Filterable {
+public class AlbumCatalogueAdapter extends RecyclerView.Adapter<AlbumCatalogueAdapter.ViewHolder> {
     private static final int TYPE_GRID = 0;
     private static final int TYPE_LIST = 1;
 
@@ -33,37 +33,6 @@ public class AlbumCatalogueAdapter extends RecyclerView.Adapter<AlbumCatalogueAd
     private String currentFilter;
     private boolean showArtist;
     private boolean listMode;
-
-    private final Filter filtering = new Filter() {
-        @Override
-        protected FilterResults performFiltering(CharSequence constraint) {
-            List<AlbumID3> filteredList = new ArrayList<>();
-
-            if (constraint == null || constraint.length() == 0) {
-                filteredList.addAll(albumsFull);
-            } else {
-                String filterPattern = constraint.toString().toLowerCase().trim();
-                currentFilter = filterPattern;
-
-                for (AlbumID3 item : albumsFull) {
-                    if (item.getName().toLowerCase().contains(filterPattern)) {
-                        filteredList.add(item);
-                    }
-                }
-            }
-
-            FilterResults results = new FilterResults();
-            results.values = filteredList;
-
-            return results;
-        }
-
-        @Override
-        protected void publishResults(CharSequence constraint, FilterResults results) {
-            albums = (List<AlbumID3>) results.values;
-            notifyDataSetChanged();
-        }
-    };
 
     private List<AlbumID3> albums;
     private List<AlbumID3> albumsFull;
@@ -107,9 +76,33 @@ public class AlbumCatalogueAdapter extends RecyclerView.Adapter<AlbumCatalogueAd
         return albums.get(position);
     }
 
-    public void setItems(List<AlbumID3> albums) {
-        this.albumsFull = new ArrayList<>(albums);
-        filtering.filter(currentFilter);
+    /**
+     * Sorting and filtering are synchronous on purpose: android.widget.Filter publishes later, so
+     * restoring the filter box could overwrite the list with a result from before it was filled.
+     *
+     * @param order null keeps the order given
+     * @param shuffleSeed keeps the random order the same each time the list is shown
+     */
+    public void setItems(List<AlbumID3> albums, @Nullable String order, long shuffleSeed) {
+        albumsFull = new ArrayList<>(albums);
+        if (order != null) sort(albumsFull, order, shuffleSeed);
+        applyFilter();
+    }
+
+    public void setQuery(CharSequence query) {
+        currentFilter = query.toString().toLowerCase().trim();
+        applyFilter();
+    }
+
+    private void applyFilter() {
+        List<AlbumID3> matching = new ArrayList<>();
+        for (AlbumID3 album : albumsFull) {
+            if (currentFilter.isEmpty() || (album.getName() != null && album.getName().toLowerCase().contains(currentFilter))) {
+                matching.add(album);
+            }
+        }
+        albums = matching;
+        notifyDataSetChanged();
     }
 
     @Override
@@ -122,21 +115,6 @@ public class AlbumCatalogueAdapter extends RecyclerView.Adapter<AlbumCatalogueAd
             this.listMode = listMode;
             notifyDataSetChanged();
         }
-    }
-
-    public void appendItems(List<AlbumID3> newItems) {
-        if (newItems == null || newItems.isEmpty()) return;
-        if (!(albums instanceof ArrayList)) albums = new ArrayList<>(albums);
-        if (!(albumsFull instanceof ArrayList)) albumsFull = new ArrayList<>(albumsFull);
-        int start = albums.size();
-        albums.addAll(newItems);
-        albumsFull.addAll(newItems);
-        notifyItemRangeInserted(start, newItems.size());
-    }
-
-    @Override
-    public Filter getFilter() {
-        return filtering;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -175,15 +153,7 @@ public class AlbumCatalogueAdapter extends RecyclerView.Adapter<AlbumCatalogueAd
         }
     }
 
-    public void setItemsWithoutFilter(List<AlbumID3> albums) {
-        this.albumsFull = new ArrayList<>(albums);
-        this.albums = new ArrayList<>(albums);
-        notifyDataSetChanged();
-    }
-
-    public void sort(String order) {
-        if (albums == null) return;
-        
+    private static void sort(List<AlbumID3> albums, String order, long shuffleSeed) {
         switch (order) {
             case Constants.ALBUM_ORDER_BY_NAME:
                 albums.sort(Comparator.comparing(
@@ -201,7 +171,7 @@ public class AlbumCatalogueAdapter extends RecyclerView.Adapter<AlbumCatalogueAd
                 albums.sort(Comparator.comparing(AlbumID3::getYear));
                 break;
             case Constants.ALBUM_ORDER_BY_RANDOM:
-                Collections.shuffle(albums);
+                Collections.shuffle(albums, new Random(shuffleSeed));
                 break;
             case Constants.ALBUM_ORDER_BY_RECENTLY_ADDED:
                 albums.sort(Comparator.comparing(
@@ -224,7 +194,5 @@ public class AlbumCatalogueAdapter extends RecyclerView.Adapter<AlbumCatalogueAd
                 Collections.reverse(albums);
                 break;
         }
-
-        notifyDataSetChanged();
     }
 }
