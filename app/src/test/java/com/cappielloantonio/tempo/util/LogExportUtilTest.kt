@@ -125,6 +125,13 @@ class LogExportUtilTest {
     }
 
     @Test
+    fun theReportRedactsTheListenBrainzUsername() {
+        App.getInstance().preferences.edit().putString(Constants.LISTENBRAINZ_USER, "brainzlistener").commit()
+
+        assertFalse(LogExportUtil.report("no stats for brainzlistener").contains("brainzlistener"))
+    }
+
+    @Test
     fun theReportStartsWithTheAppAndDevice() {
         val report = LogExportUtil.report("line")
 

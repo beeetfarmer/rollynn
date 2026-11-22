@@ -657,6 +657,15 @@
                 </PreferenceCategory>
             </PreferenceScreen>
 
+            <ListPreference
+                android:key="scrobble_source"
+                android:title="@string/settings_scrobble_source_title"
+                android:defaultValue="lastfm"
+                app:dialogTitle="@string/settings_scrobble_source_title"
+                app:entries="@array/scrobble_source_titles"
+                app:entryValues="@array/scrobble_source_values"
+                app:icon="@drawable/ic_history" />
+
             <PreferenceScreen
                 android:key="screen_lastfm"
                 android:title="@string/settings_lastfm_account"
@@ -678,6 +687,25 @@
                         android:title="@string/settings_translation_api_key"
                         android:inputType="textPassword"
                         app:icon="@drawable/ic_link" />
+                </PreferenceCategory>
+            </PreferenceScreen>
+
+            <PreferenceScreen
+                android:key="screen_listenbrainz"
+                android:title="@string/settings_listenbrainz_account"
+                android:summary="@string/settings_listenbrainz_note"
+                app:icon="@drawable/ic_refresh">
+                <PreferenceCategory app:title="@string/listenbrainz_name">
+                    <Preference
+                        android:key="listenbrainz_note"
+                        android:summary="@string/settings_listenbrainz_note"
+                        app:selectable="false"
+                        app:icon="@drawable/ic_info_stream" />
+                    <EditTextPreference
+                        android:key="listenbrainz_user"
+                        android:title="@string/server_signup_dialog_hint_username"
+                        app:useSimpleSummaryProvider="true"
+                        app:icon="@drawable/ic_placeholder_artist" />
                 </PreferenceCategory>
             </PreferenceScreen>
 

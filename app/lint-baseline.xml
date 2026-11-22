@@ -14909,4 +14909,59 @@
             column="13"/>
     </issue>
 
+    <issue
+        id="MissingTranslation"
+        message="&quot;settings_listenbrainz_account&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_listenbrainz_account&quot;>ListenBrainz account&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="866"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;settings_listenbrainz_note&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_listenbrainz_note&quot;>Only your username is needed. Counts cover your 1,000 most played tracks and update about once a day.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="867"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;settings_scrobble_source_title&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_scrobble_source_title&quot;>Show scrobbles from&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="868"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;settings_scrobble_source_fallback&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_scrobble_source_fallback&quot;>ListenBrainz, while Last.fm is unavailable&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="869"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;settings_scrobble_source_needs_user&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_scrobble_source_needs_user&quot;>ListenBrainz: add your username under ListenBrainz account&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="870"
+            column="13"/>
+    </issue>
+
 </issues>

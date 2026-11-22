@@ -861,4 +861,11 @@
     <string name="settings_category_info">Info</string>
     <string name="settings_lastfm_pro_note">Needs Pro from Dec 1 to fetch scrobbles</string>
     <string name="settings_lastfm_rejected">Off: Last.fm refused the API key. The key\'s owner needs Last.fm Pro. It is checked again daily, or re-enter the key to check now.</string>
+    <string name="lastfm_name" translatable="false">Last.fm</string>
+    <string name="listenbrainz_name" translatable="false">ListenBrainz</string>
+    <string name="settings_listenbrainz_account">ListenBrainz account</string>
+    <string name="settings_listenbrainz_note">Only your username is needed. Counts cover your 1,000 most played tracks and update about once a day.</string>
+    <string name="settings_scrobble_source_title">Show scrobbles from</string>
+    <string name="settings_scrobble_source_fallback">ListenBrainz, while Last.fm is unavailable</string>
+    <string name="settings_scrobble_source_needs_user">ListenBrainz: add your username under ListenBrainz account</string>
 </resources>

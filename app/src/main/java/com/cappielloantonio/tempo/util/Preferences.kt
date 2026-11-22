@@ -1204,6 +1204,18 @@ object Preferences {
         editor.apply()
     }
 
+    /** Null until ListenBrainz is set up; the username is all it needs. */
+    @JvmStatic
+    fun getListenBrainzUser(): String? {
+        return App.getInstance().preferences.getString(Constants.LISTENBRAINZ_USER, null)?.trim()?.ifEmpty { null }
+    }
+
+    /** The source the user picked. Last.fm hands over to ListenBrainz while it can't be used. */
+    @JvmStatic
+    fun getScrobbleSource(): String {
+        return App.getInstance().preferences.getString(Constants.SCROBBLE_SOURCE, null) ?: Constants.SCROBBLE_SOURCE_LASTFM
+    }
+
     @JvmStatic
     fun getMetadataAlignment(): String {
         return App.getInstance().preferences.getString(METADATA_ALIGNMENT, METADATA_ALIGNMENT_CENTER) ?: METADATA_ALIGNMENT_CENTER

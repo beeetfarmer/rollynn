@@ -365,4 +365,13 @@
         <item>right</item>
     </string-array>
 
+    <string-array name="scrobble_source_titles">
+        <item>@string/lastfm_name</item>
+        <item>@string/listenbrainz_name</item>
+    </string-array>
+
+    <string-array name="scrobble_source_values">
+        <item>lastfm</item>
+        <item>listenbrainz</item>
+    </string-array>
 </resources>

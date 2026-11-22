@@ -133,6 +133,7 @@ public final class LogExportUtil {
                 Preferences.getToken(),
                 Preferences.getSalt(),
                 Preferences.getLastFmApiKey(),
+                Preferences.getListenBrainzUser(),
                 Preferences.getKoitoApiKey(),
                 Preferences.getAudioMuseApiToken(),
                 Preferences.getTranslationApiKey(),

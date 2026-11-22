@@ -55,6 +55,7 @@ import com.cappielloantonio.tempo.lastfm.LastFmAccess;
 import com.cappielloantonio.tempo.databinding.DialogBackupPasswordBinding;
 import com.cappielloantonio.tempo.popinn.PopinnClient;
 import com.cappielloantonio.tempo.popinn.PopinnRepository;
+import com.cappielloantonio.tempo.repository.ScrobbleCountRepository;
 import com.cappielloantonio.tempo.service.EqualizerManager;
 import com.cappielloantonio.tempo.service.MediaService;
 import com.cappielloantonio.tempo.ui.activity.MainActivity;
@@ -64,6 +65,7 @@ import com.cappielloantonio.tempo.ui.dialog.StarredSyncDialog;
 import com.cappielloantonio.tempo.ui.dialog.StarredAlbumSyncDialog;
 import com.cappielloantonio.tempo.ui.dialog.StarredArtistSyncDialog;
 import com.cappielloantonio.tempo.ui.dialog.StreamingCacheStorageDialog;
+import com.cappielloantonio.tempo.util.Constants;
 import com.cappielloantonio.tempo.util.DownloadUtil;
 import com.cappielloantonio.tempo.util.Preferences;
 import com.cappielloantonio.tempo.util.LogExportUtil;
@@ -352,6 +354,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         actionTranslationSettings();
         actionServiceKeys();
         actionLastFmSettings();
+        actionScrobbleSource();
         actionPopinnSettings();
         actionSettingsBackupRestore();
         actionExportLogs();
@@ -863,6 +866,24 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
                 return true;
             });
         }
+    }
+
+    private void actionScrobbleSource() {
+        ListPreference preference = findPreference(Constants.SCROBBLE_SOURCE);
+        if (preference == null) return;
+
+        preference.setSummary(scrobbleSourceSummary(Preferences.getScrobbleSource()));
+        preference.setOnPreferenceChangeListener((pref, newValue) -> {
+            pref.setSummary(scrobbleSourceSummary((String) newValue));
+            return true;
+        });
+    }
+
+    @StringRes
+    private int scrobbleSourceSummary(String source) {
+        if (ScrobbleCountRepository.isFallingBack(source)) return R.string.settings_scrobble_source_fallback;
+        if (!Constants.SCROBBLE_SOURCE_LISTENBRAINZ.equals(source)) return R.string.lastfm_name;
+        return Preferences.getListenBrainzUser() != null ? R.string.listenbrainz_name : R.string.settings_scrobble_source_needs_user;
     }
 
     private void showLastFmStatus() {

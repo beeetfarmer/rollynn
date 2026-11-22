@@ -4,6 +4,13 @@ import com.cappielloantonio.tempo.lastfm.LastFmAccess
 import com.cappielloantonio.tempo.lastfm.api.TrackClient
 import com.cappielloantonio.tempo.lastfm.models.LastFmTrack
 import com.cappielloantonio.tempo.lastfm.models.LastFmTrackResponse
+import com.cappielloantonio.tempo.listenbrainz.ListenBrainzApi
+import com.cappielloantonio.tempo.listenbrainz.ListenBrainzCounts
+import com.cappielloantonio.tempo.listenbrainz.ListenBrainzPayload
+import com.cappielloantonio.tempo.listenbrainz.ListenBrainzRecording
+import com.cappielloantonio.tempo.listenbrainz.ListenBrainzRecordingsResponse
+import com.cappielloantonio.tempo.testutil.AppTestEnv
+import com.cappielloantonio.tempo.util.Constants
 import com.cappielloantonio.tempo.util.Preferences
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
@@ -27,7 +34,8 @@ import java.util.concurrent.TimeUnit
 @RunWith(RobolectricTestRunner::class)
 class ScrobbleCountRepositoryTest {
     private val lastFm = mock(TrackClient::class.java)
-    private val repository = ScrobbleCountRepository(lastFm)
+    private val listenBrainz = mock(ListenBrainzApi::class.java)
+    private val repository = ScrobbleCountRepository({ lastFm }, { ListenBrainzCounts(listenBrainz) })
 
     @Before
     fun setUp() {
@@ -50,6 +58,17 @@ class ScrobbleCountRepositoryTest {
     private fun lastFmIsDown() {
         lastFmRequest().thenAnswer { Calls.failure<LastFmTrackResponse>(IOException("down")) }
     }
+
+    private fun setUpListenBrainz(count: Long = 99) {
+        AppTestEnv.setPreference(Constants.LISTENBRAINZ_USER, "brainz")
+        `when`(listenBrainz.topRecordings("brainz")).thenAnswer {
+            Calls.response(
+                ListenBrainzRecordingsResponse(ListenBrainzPayload(listOf(ListenBrainzRecording("Artist", "Track", count)))),
+            )
+        }
+    }
+
+    private fun choose(source: String) = AppTestEnv.setPreference(Constants.SCROBBLE_SOURCE, source)
 
     private fun refusedDaysAgo(days: Long) =
         Preferences.setLastFmRejectedAt(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(days) - 1000)
@@ -147,5 +166,132 @@ class ScrobbleCountRepositoryTest {
 
         assertEquals(1L, first.value)
         assertEquals(2L, second.value)
+    }
+
+    @Test
+    fun lastFmIsTheDefault() {
+        setUpListenBrainz()
+        lastFmCounts("12")
+
+        assertEquals(12L, count())
+        verifyNoInteractions(listenBrainz)
+    }
+
+    @Test
+    fun choosingListenBrainzUsesOnlyListenBrainz() {
+        setUpListenBrainz()
+        choose(Constants.SCROBBLE_SOURCE_LISTENBRAINZ)
+
+        assertEquals(99L, count())
+        verifyNoInteractions(lastFm)
+    }
+
+    @Test
+    fun choosingListenBrainzWithoutAUsernameShowsNothing() {
+        choose(Constants.SCROBBLE_SOURCE_LISTENBRAINZ)
+
+        assertNull(count())
+        verifyNoInteractions(lastFm, listenBrainz)
+    }
+
+    @Test
+    fun aBlankListenBrainzUsernameIsNotConfigured() {
+        AppTestEnv.setPreference(Constants.LISTENBRAINZ_USER, "  ")
+        refusedDaysAgo(0)
+
+        assertNull(count())
+        verifyNoInteractions(listenBrainz)
+    }
+
+    @Test
+    fun theUsernameIsTrimmed() {
+        setUpListenBrainz()
+        AppTestEnv.setPreference(Constants.LISTENBRAINZ_USER, " brainz ")
+        choose(Constants.SCROBBLE_SOURCE_LISTENBRAINZ)
+
+        assertEquals(99L, count())
+    }
+
+    @Test
+    fun withoutALastFmAccountListenBrainzIsTheDefault() {
+        setUpListenBrainz()
+        Preferences.setLastFmApiKey("")
+
+        assertEquals(99L, count())
+        verifyNoInteractions(lastFm)
+    }
+
+    @Test
+    fun theRefusedTrackAlreadyShowsListenBrainz() {
+        setUpListenBrainz()
+        lastFmRefuses()
+
+        assertEquals(99L, count())
+    }
+
+    @Test
+    fun whileOffListenBrainzStandsInWithoutAskingLastFm() {
+        setUpListenBrainz()
+        refusedDaysAgo(0)
+
+        assertEquals(99L, count())
+        verifyNoInteractions(lastFm)
+    }
+
+    @Test
+    fun aRefusalDoesNotChangeWhatTheUserChose() {
+        setUpListenBrainz()
+        choose(Constants.SCROBBLE_SOURCE_LASTFM)
+        lastFmRefuses()
+
+        count()
+
+        assertEquals(Constants.SCROBBLE_SOURCE_LASTFM, Preferences.getScrobbleSource())
+    }
+
+    @Test
+    fun gettingProBackReturnsToLastFm() {
+        setUpListenBrainz()
+        refusedDaysAgo(1)
+        lastFmCounts("7")
+
+        assertEquals(7L, count())
+        verifyNoInteractions(listenBrainz)
+    }
+
+    @Test
+    fun aFailedDailyRetryStaysOnListenBrainz() {
+        setUpListenBrainz()
+        refusedDaysAgo(1)
+        lastFmIsDown()
+
+        assertEquals(99L, count())
+        assertTrue(LastFmAccess.isRejected())
+    }
+
+    @Test
+    fun aNetworkBlipDoesNotSwitchSource() {
+        setUpListenBrainz()
+        lastFmIsDown()
+
+        assertNull(count())
+        verifyNoInteractions(listenBrainz)
+    }
+
+    @Test
+    fun fallingBackNeedsLastFmChosenAndUnusableWithListenBrainzSetUp() {
+        val chosen = Constants.SCROBBLE_SOURCE_LASTFM
+        refusedDaysAgo(0)
+        assertFalse(ScrobbleCountRepository.isFallingBack(chosen))
+
+        setUpListenBrainz()
+        assertTrue(ScrobbleCountRepository.isFallingBack(chosen))
+        assertFalse(ScrobbleCountRepository.isFallingBack(Constants.SCROBBLE_SOURCE_LISTENBRAINZ))
+
+        Preferences.setLastFmRejectedAt(0)
+        assertFalse(ScrobbleCountRepository.isFallingBack(chosen))
+
+        Preferences.setLastFmUser("")
+        assertTrue(ScrobbleCountRepository.isFallingBack(chosen))
     }
 }
