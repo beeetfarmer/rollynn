@@ -1,6 +1,7 @@
 package com.cappielloantonio.tempo.listenbrainz
 
 import androidx.annotation.Keep
+import com.cappielloantonio.tempo.BuildConfig
 import com.google.gson.annotations.SerializedName
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -30,13 +31,23 @@ data class ListenBrainzRecording(
 
 object ListenBrainz {
     private const val BASE_URL = "https://api.listenbrainz.org/"
+    private const val CONTACT_URL = "https://github.com/beeetfarmer/rollynn"
+
+    // ListenBrainz requires "name/<version> ( contact )" and may block clients without it.
+    internal val userAgent = "Rollynn/${BuildConfig.VERSION_NAME.removePrefix("v")} ( $CONTACT_URL )"
+
+    internal val client: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .addInterceptor { it.proceed(it.request().newBuilder().header("User-Agent", userAgent).build()) }
+            .build()
+    }
 
     // No request logging: the address holds the username.
     val api: ListenBrainzApi by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
-            .client(OkHttpClient())
+            .client(client)
             .build()
             .create(ListenBrainzApi::class.java)
     }
