@@ -37,8 +37,6 @@ import com.cappielloantonio.tempo.util.Constants;
 import com.cappielloantonio.tempo.util.Preferences;
 import com.cappielloantonio.tempo.viewmodel.AlbumCatalogueViewModel;
 
-import java.util.Random;
-
 @OptIn(markerClass = UnstableApi.class)
 public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
     private FragmentAlbumCatalogueBinding bind;
@@ -48,7 +46,7 @@ public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
     private AlbumCatalogueAdapter albumAdapter;
     private int spanCount = 2;
     private String currentSortOrder;
-    private long shuffleSeed = new Random().nextLong();
+    private long shuffleSeed = System.nanoTime();
     private GridItemDecoration gridDecoration;
 
     @Override
@@ -253,7 +251,7 @@ public class AlbumCatalogueFragment extends Fragment implements ClickCallback {
             if (newSortOrder != null) {
                 currentSortOrder = newSortOrder;
                 Preferences.setAlbumSortOrder(newSortOrder);
-                shuffleSeed = new Random().nextLong();
+                shuffleSeed = System.nanoTime();
                 showAlbums();
                 updateSortIndicator();
                 return true;
