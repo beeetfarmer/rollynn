@@ -660,8 +660,14 @@
             <PreferenceScreen
                 android:key="screen_lastfm"
                 android:title="@string/settings_lastfm_account"
+                android:summary="@string/settings_lastfm_pro_note"
                 app:icon="@drawable/ic_refresh">
                 <PreferenceCategory app:title="Last.fm">
+                    <Preference
+                        android:key="last_fm_status"
+                        android:summary="@string/settings_lastfm_pro_note"
+                        app:selectable="false"
+                        app:icon="@drawable/ic_info_stream" />
                     <EditTextPreference
                         android:key="last_fm_user"
                         android:title="@string/server_signup_dialog_hint_username"

@@ -51,6 +51,7 @@ import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.helper.ThemeHelper;
 import com.cappielloantonio.tempo.interfaces.DialogClickCallback;
 import com.cappielloantonio.tempo.interfaces.ScanCallback;
+import com.cappielloantonio.tempo.lastfm.LastFmAccess;
 import com.cappielloantonio.tempo.databinding.DialogBackupPasswordBinding;
 import com.cappielloantonio.tempo.popinn.PopinnClient;
 import com.cappielloantonio.tempo.popinn.PopinnRepository;
@@ -864,7 +865,16 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         }
     }
 
+    private void showLastFmStatus() {
+        int status = LastFmAccess.isRejected() ? R.string.settings_lastfm_rejected : R.string.settings_lastfm_pro_note;
+        for (String key : new String[]{"screen_lastfm", "last_fm_status"}) {
+            Preference preference = findPreference(key);
+            if (preference != null) preference.setSummary(status);
+        }
+    }
+
     private void actionLastFmSettings() {
+        showLastFmStatus();
         EditTextPreference apiKeyPref = findPreference("last_fm_api_key");
         if (apiKeyPref != null) {
             apiKeyPref.setSummaryProvider(null);
@@ -876,6 +886,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
             apiKeyPref.setOnPreferenceChangeListener((pref, newValue) -> {
                 String key = (String) newValue;
                 Preferences.setLastFmApiKey(key);
+                showLastFmStatus();
                 if (key != null && !key.isEmpty()) {
                     String masked = key.substring(0, Math.min(4, key.length())) + "****";
                     pref.setSummary(masked);

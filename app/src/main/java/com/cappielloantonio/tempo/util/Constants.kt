@@ -158,6 +158,7 @@ object Constants {
 
     const val LAST_FM_USER = "last_fm_user"
     const val LAST_FM_API_KEY = "last_fm_api_key"
+    const val LAST_FM_REJECTED_AT = "last_fm_rejected_at"
 
     const val CUSTOM_COMMAND_TOGGLE_SHUFFLE_MODE_ON = "android.media3.session.demo.SHUFFLE_ON"
     const val CUSTOM_COMMAND_TOGGLE_SHUFFLE_MODE_OFF = "android.media3.session.demo.SHUFFLE_OFF"

@@ -26,14 +26,13 @@ import com.cappielloantonio.tempo.repository.LrcGetRepository;
 import com.cappielloantonio.tempo.repository.LyricsRepository;
 import com.cappielloantonio.tempo.repository.OpenRepository;
 import com.cappielloantonio.tempo.repository.QueueRepository;
+import com.cappielloantonio.tempo.repository.ScrobbleCountRepository;
 import com.cappielloantonio.tempo.repository.SongRepository;
 import com.cappielloantonio.tempo.subsonic.models.AlbumID3;
 import com.cappielloantonio.tempo.subsonic.models.ArtistID3;
 import com.cappielloantonio.tempo.subsonic.models.Child;
 import com.cappielloantonio.tempo.subsonic.models.LyricsList;
 import com.cappielloantonio.tempo.subsonic.models.PlayQueue;
-import com.cappielloantonio.tempo.lastfm.LastFm;
-import com.cappielloantonio.tempo.lastfm.models.LastFmTrackResponse;
 import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.util.Constants;
 import com.cappielloantonio.tempo.util.DownloadUtil;
@@ -42,10 +41,6 @@ import com.cappielloantonio.tempo.util.NetworkUtil;
 import com.cappielloantonio.tempo.util.OpenSubsonicExtensionsUtil;
 import com.cappielloantonio.tempo.util.Preferences;
 import com.google.gson.Gson;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 import java.util.Collections;
 import java.util.Date;
@@ -72,6 +67,7 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
     private final LrcGetRepository lrcGetRepository;
     private final BetterLyricsRepository betterLyricsRepository;
     private final LyricsRepository lyricsRepository;
+    private final ScrobbleCountRepository scrobbleCountRepository;
     private final MutableLiveData<String> lyricsLiveData = new MutableLiveData<>(null);
     private final MutableLiveData<LyricsList> lyricsListLiveData = new MutableLiveData<>(null);
     private final MutableLiveData<Boolean> lyricsCachedLiveData = new MutableLiveData<>(false);
@@ -82,7 +78,6 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
     private final MutableLiveData<AlbumID3> liveAlbum = new MutableLiveData<>(null);
     private final MutableLiveData<ArtistID3> liveArtist = new MutableLiveData<>(null);
     private final MutableLiveData<List<Child>> instantMix = new MutableLiveData<>(null);
-    private final MutableLiveData<Long> lastFmScrobbleCount = new MutableLiveData<>(null);
     private final MutableLiveData<Integer> playerDominantColor = new MutableLiveData<>(null);
     private final Gson gson = new Gson();
 
@@ -122,6 +117,7 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
         lrcGetRepository = new LrcGetRepository();
         betterLyricsRepository = new BetterLyricsRepository();
         lyricsRepository = new LyricsRepository();
+        scrobbleCountRepository = new ScrobbleCountRepository();
     }
 
     public LiveData<List<Queue>> getQueueSong() {
@@ -656,49 +652,13 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
         return lyricsSyncState;
     }
 
-    public LiveData<Long> getLastFmScrobbleCount() {
-        return lastFmScrobbleCount;
+    public LiveData<Long> getScrobbleCount(String artist, String track) {
+        return scrobbleCountRepository.getCount(artist, track);
     }
 
     private final com.cappielloantonio.tempo.koito.KoitoRepository koitoRepository = new com.cappielloantonio.tempo.koito.KoitoRepository();
 
     public LiveData<Long> getKoitoTrackCount(String artist, String title, String album) {
         return koitoRepository.getTrackCount(artist, title, album);
-    }
-
-    public void fetchLastFmScrobbleCount(String artist, String track) {
-        lastFmScrobbleCount.postValue(null);
-
-        String username = Preferences.getLastFmUser();
-        String apiKey = Preferences.getLastFmApiKey();
-
-        if (TextUtils.isEmpty(username) || TextUtils.isEmpty(apiKey) || TextUtils.isEmpty(artist) || TextUtils.isEmpty(track)) {
-            return;
-        }
-
-        String firstArtist = artist.split("\\s*[,/;&\u2022]\\s*|\\s+feat\\.?\\s+|\\s+ft\\.?\\s+")[0].trim();
-        if (firstArtist.isEmpty()) {
-            return;
-        }
-
-        LastFm.INSTANCE.getTrackClient().getTrackInfo(firstArtist, track, username, apiKey).enqueue(new Callback<LastFmTrackResponse>() {
-            @Override
-            public void onResponse(Call<LastFmTrackResponse> call, Response<LastFmTrackResponse> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().getTrack() != null) {
-                    String countStr = response.body().getTrack().getUserPlayCount();
-                    if (countStr != null) {
-                        try {
-                            lastFmScrobbleCount.postValue(Long.parseLong(countStr));
-                        } catch (NumberFormatException ignored) {
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<LastFmTrackResponse> call, Throwable t) {
-                Log.e(TAG, "Last.fm API error", t);
-            }
-        });
     }
 }

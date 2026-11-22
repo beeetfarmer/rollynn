@@ -14887,4 +14887,26 @@
             column="5"/>
     </issue>
 
+    <issue
+        id="MissingTranslation"
+        message="&quot;settings_lastfm_pro_note&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_lastfm_pro_note&quot;>Needs Pro from Dec 1 to fetch scrobbles&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="862"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;settings_lastfm_rejected&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_lastfm_rejected&quot;>Off: Last.fm refused the API key. The key\&apos;s owner needs Last.fm Pro. It is checked again daily, or re-enter the key to check now.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="863"
+            column="13"/>
+    </issue>
+
 </issues>

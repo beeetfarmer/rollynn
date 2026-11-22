@@ -566,8 +566,7 @@ public class PlayerControllerFragment extends Fragment {
 
                     String artist = mediaMetadata.artist != null ? String.valueOf(mediaMetadata.artist) : null;
                     String title = mediaMetadata.title != null ? String.valueOf(mediaMetadata.title) : null;
-                    playerBottomSheetViewModel.fetchLastFmScrobbleCount(artist, title);
-                    playerBottomSheetViewModel.getLastFmScrobbleCount().observe(getViewLifecycleOwner(), count -> {
+                    playerBottomSheetViewModel.getScrobbleCount(artist, title).observe(getViewLifecycleOwner(), count -> {
                         counts.set(1, count != null && count > 0 ? count + " scrobbles" : null);
                     });
                     break;

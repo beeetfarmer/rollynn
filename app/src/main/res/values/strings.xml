@@ -859,4 +859,6 @@
     <string name="settings_category_cache_storage">Cache &amp; Storage</string>
     <string name="settings_category_offline_sync">Offline Sync</string>
     <string name="settings_category_info">Info</string>
+    <string name="settings_lastfm_pro_note">Needs Pro from Dec 1 to fetch scrobbles</string>
+    <string name="settings_lastfm_rejected">Off: Last.fm refused the API key. The key\'s owner needs Last.fm Pro. It is checked again daily, or re-enter the key to check now.</string>
 </resources>

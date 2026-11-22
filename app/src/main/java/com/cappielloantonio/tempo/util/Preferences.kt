@@ -1183,10 +1183,25 @@ object Preferences {
         val plainPrefs = app.preferences
 
         encryptedPrefs.edit().putString(Constants.LAST_FM_API_KEY, apiKey).apply()
+        setLastFmRejectedAt(0)
 
         if (encryptedPrefs !== plainPrefs) {
             plainPrefs.edit().remove(Constants.LAST_FM_API_KEY).apply()
         }
+    }
+
+    /** When Last.fm last refused the API key, or 0 while it accepts it. */
+    @JvmStatic
+    fun getLastFmRejectedAt(): Long {
+        return App.getInstance().preferences.getLong(Constants.LAST_FM_REJECTED_AT, 0)
+    }
+
+    @JvmStatic
+    fun setLastFmRejectedAt(time: Long) {
+        val editor = App.getInstance().preferences.edit()
+        // Not stored while accepted, so it doesn't look like a setting the user changed.
+        if (time == 0L) editor.remove(Constants.LAST_FM_REJECTED_AT) else editor.putLong(Constants.LAST_FM_REJECTED_AT, time)
+        editor.apply()
     }
 
     @JvmStatic

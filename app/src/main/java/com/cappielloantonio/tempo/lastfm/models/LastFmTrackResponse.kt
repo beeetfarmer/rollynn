@@ -6,7 +6,9 @@ import com.google.gson.annotations.SerializedName
 @Keep
 data class LastFmTrackResponse(
     @SerializedName("track")
-    val track: LastFmTrack? = null
+    val track: LastFmTrack? = null,
+    @SerializedName("error")
+    val error: Int? = null
 )
 
 @Keep

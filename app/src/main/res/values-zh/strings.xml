@@ -855,4 +855,6 @@
     <string name="settings_category_cache_storage">缓存与存储</string>
     <string name="settings_category_offline_sync">离线同步</string>
     <string name="settings_category_info">信息</string>
+    <string name="settings_lastfm_pro_note">自 12 月 1 日起需要 Pro 才能获取音乐记录</string>
+    <string name="settings_lastfm_rejected">已停用：Last.fm 拒绝了此 API 密钥。密钥所有者需要订阅 Last.fm Pro。应用每天会重新检查一次，您也可以重新输入密钥以立即检查。</string>
 </resources>
