@@ -273,6 +273,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         selectedCategory = rootKey;
         setPreferencesFromResource(R.xml.global_preferences, rootKey);
         applyCustomLayouts(getPreferenceScreen());
+        prefillSecrets();
         reinitializePreferences();
         selectChip(rootKey);
     }
@@ -422,6 +423,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         }
 
         applyCustomLayouts(getPreferenceScreen());
+        prefillSecrets();
     }
 
     private void applyCustomLayouts(androidx.preference.PreferenceGroup group) {
@@ -803,6 +805,34 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         }
     }
 
+    /**
+     * Called as soon as the preferences exist: a dialog restored with the screen binds before
+     * onResume, and would come back unmasked.
+     */
+    private void prefillSecrets() {
+        prefillSecret("last_fm_api_key", Preferences::getLastFmApiKey);
+        prefillSecret("koito_api_key", Preferences::getKoitoApiKey);
+        prefillSecret("audiomuse_api_token", Preferences::getAudioMuseApiToken);
+        prefillSecret("translation_api_key", Preferences::getTranslationApiKey);
+        prefillSecret(Preferences.POPINN_PASSWORD, Preferences::getPopinnPassword);
+    }
+
+    /**
+     * Puts the saved secret in the dialog only, as EditTextPreference.setText() would persist it to
+     * plain preferences. An empty box would delete the secret on OK. The dialog ignores the XML
+     * inputType, so masking is set here too.
+     */
+    private void prefillSecret(String key, Supplier<String> getter) {
+        EditTextPreference preference = findPreference(key);
+        if (preference == null) return;
+
+        preference.setOnBindEditTextListener(editText -> {
+            editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            editText.setText(getter.get());
+            editText.setSelection(editText.length());
+        });
+    }
+
     /** Returning false from the listener keeps the value out of the plain preferences the screen writes to. */
     private void bindSecret(String prefKey, Supplier<String> getter, Consumer<String> setter, @StringRes int emptySummary) {
         EditTextPreference preference = findPreference(prefKey);
@@ -1127,8 +1157,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         // listener returns false to stop the framework persisting it too.
         EditTextPreference passwordPref = findPreference(Preferences.POPINN_PASSWORD);
         if (passwordPref != null) {
-            // Not pre-filled: EditTextPreference.setText() would persist it to
-            // plain SharedPreferences, which is the whole thing being avoided.
             passwordPref.setSummaryProvider(null);
             passwordPref.setSummary(maskSecret(Preferences.getPopinnPassword()));
             passwordPref.setOnPreferenceChangeListener((pref, newValue) -> {
