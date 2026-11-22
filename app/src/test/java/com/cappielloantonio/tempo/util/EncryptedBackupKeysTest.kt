@@ -262,6 +262,36 @@ class EncryptedBackupKeysTest {
     }
 
     @Test
+    fun restoringTheLastFmKeyGivesItAFreshTry() {
+        Preferences.setLastFmApiKey("lastfm-secret")
+        val backup = export(password)
+        Preferences.setLastFmRejectedAt(1234)
+
+        restore(backup, password)
+
+        assertEquals(0L, Preferences.getLastFmRejectedAt())
+    }
+
+    @Test
+    fun skippingTheKeysKeepsTheRefusal() {
+        Preferences.setLastFmApiKey("lastfm-secret")
+        val backup = export(password)
+        Preferences.setLastFmRejectedAt(1234)
+
+        restore(backup, null)
+
+        assertEquals(1234L, Preferences.getLastFmRejectedAt())
+    }
+
+    @Test
+    fun aRefusalIsNotCountedAsBackedUp() {
+        Preferences.setLastFmApiKey("lastfm-secret")
+        Preferences.setLastFmRejectedAt(1234)
+
+        assertEquals(1, exportCount(password))
+    }
+
+    @Test
     fun hasApiKeysFollowsWhatIsSet() {
         assertFalse(SettingsBackupUtil.hasApiKeys())
 

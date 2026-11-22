@@ -95,7 +95,8 @@ public final class SettingsBackupUtil {
      * initialise, so a key may be in either one and this is the only reliable
      * guard. Session keys are excluded for a different reason — restoring a
      * server and username with no matching password leaves a login that cannot
-     * be completed.
+     * be completed. Device state is left out as well, as it says nothing about
+     * the phone being restored to.
      */
     private static final Set<String> EXCLUDED_KEYS = new HashSet<>(Arrays.asList(
             // Secrets
@@ -112,7 +113,9 @@ public final class SettingsBackupUtil {
             "user",
             "server_id",
             "low_security",
-            "in_use_server_address"
+            "in_use_server_address",
+            // Device state
+            Constants.LAST_FM_REJECTED_AT
     ));
 
     /** Per-server passwords are stored as "password_<serverId>". */

@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import android.net.Uri
 import com.cappielloantonio.tempo.App
 import com.cappielloantonio.tempo.BuildConfig
+import com.cappielloantonio.tempo.repository.ScrobbleCountRepository
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -233,6 +234,70 @@ class SettingsBackupUtilTest {
         })
 
         assertEquals(-1, SettingsBackupUtil.restore(context, uri, null))
+    }
+
+    @Test
+    fun theScrobbleSourceAndListenBrainzUserSurviveARoundTrip() {
+        preferences.edit()
+            .putString(Constants.SCROBBLE_SOURCE, Constants.SCROBBLE_SOURCE_LISTENBRAINZ)
+            .putString(Constants.LISTENBRAINZ_USER, "listener")
+            .commit()
+        val backup = export().toString()
+        preferences.edit().clear().commit()
+
+        assertEquals(2, restore(backup))
+        assertEquals(Constants.SCROBBLE_SOURCE_LISTENBRAINZ, Preferences.getScrobbleSource())
+        assertEquals("listener", Preferences.getListenBrainzUser())
+    }
+
+    @Test
+    fun aBackupFromBeforeListenBrainzGoesBackToLastFm() {
+        preferences.edit()
+            .putString(Constants.SCROBBLE_SOURCE, Constants.SCROBBLE_SOURCE_LISTENBRAINZ)
+            .putString(Constants.LISTENBRAINZ_USER, "listener")
+            .commit()
+
+        restore(backupOf("last_fm_user" to string("me")))
+
+        assertEquals(Constants.SCROBBLE_SOURCE_LASTFM, Preferences.getScrobbleSource())
+        assertNull(Preferences.getListenBrainzUser())
+        assertEquals("me", Preferences.getLastFmUser())
+    }
+
+    @Test
+    fun aRefusedLastFmKeyIsNotExported() {
+        Preferences.setLastFmRejectedAt(1234)
+
+        assertFalse(export().getJSONObject("settings").has(Constants.LAST_FM_REJECTED_AT))
+    }
+
+    @Test
+    fun aRefusalInTheFileIsNotRestored() {
+        assertEquals(0, restore(backupOf(Constants.LAST_FM_REJECTED_AT to """{"type":"long","value":1234}""")))
+        assertEquals(0L, Preferences.getLastFmRejectedAt())
+    }
+
+    @Test
+    fun restoringLeavesThisPhonesRefusalAlone() {
+        Preferences.setLastFmRejectedAt(1234)
+
+        restore(backupOf("theme" to string("dark")))
+
+        assertEquals(1234L, Preferences.getLastFmRejectedAt())
+    }
+
+    @Test
+    fun theFallbackToListenBrainzSurvivesARestore() {
+        // A working account, so the refusal is the only reason to fall back.
+        Preferences.setLastFmUser("me")
+        Preferences.setLastFmApiKey("key")
+        preferences.edit().putString(Constants.LISTENBRAINZ_USER, "listener").commit()
+        val backup = export().toString()
+        Preferences.setLastFmRejectedAt(1234)
+
+        restore(backup)
+
+        assertTrue(ScrobbleCountRepository.isFallingBack(Preferences.getScrobbleSource()))
     }
 
     @Test
