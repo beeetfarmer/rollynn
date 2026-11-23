@@ -4,8 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Rect;
-import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
@@ -36,7 +38,6 @@ import androidx.navigation.ui.NavigationUI;
 import com.cappielloantonio.tempo.App;
 import com.cappielloantonio.tempo.BuildConfig;
 import com.cappielloantonio.tempo.R;
-import com.cappielloantonio.tempo.broadcast.receiver.ConnectivityStatusBroadcastReceiver;
 import com.cappielloantonio.tempo.databinding.ActivityMainBinding;
 import com.cappielloantonio.tempo.github.utils.UpdateUtil;
 import com.cappielloantonio.tempo.subsonic.api.navidrome.NavidromeClient;
@@ -75,6 +76,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ExecutionException;
+import java.util.HashSet;
+import java.util.Set;
 
 @UnstableApi
 public class MainActivity extends BaseActivity {
@@ -107,7 +110,24 @@ public class MainActivity extends BaseActivity {
     private AssetLinkUtil.AssetLink pendingAssetLink;
 
     private ViewGroup dockContainer;
-    ConnectivityStatusBroadcastReceiver connectivityStatusBroadcastReceiver;
+    private ConnectivityManager connectivityManager;
+    /** Networks with internet that aren't a VPN. Main thread only. */
+    private final Set<Network> realNetworks = new HashSet<>();
+    private Boolean online;
+
+    // Not the connectivity broadcast: with a VPN such as Tailscale on, it never reports Wi-Fi and
+    // mobile data going away, as the VPN is still a network. Requests leave VPNs out by default.
+    private final ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback() {
+        @Override
+        public void onAvailable(@NonNull Network network) {
+            runOnUiThread(() -> onRealNetworkChanged(network, true));
+        }
+
+        @Override
+        public void onLost(@NonNull Network network) {
+            runOnUiThread(() -> onRealNetworkChanged(network, false));
+        }
+    };
     private Intent pendingDownloadPlaybackIntent;
     private final MutableLiveData<Boolean> serverReachable = new MutableLiveData<>(true);
 
@@ -152,7 +172,6 @@ public class MainActivity extends BaseActivity {
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
         assetLinkNavigator = new AssetLinkNavigator(this);
 
-        connectivityStatusBroadcastReceiver = new ConnectivityStatusBroadcastReceiver(this);
         connectivityStatusReceiverManager(true);
 
         isLandscape = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
@@ -1010,11 +1029,36 @@ public class MainActivity extends BaseActivity {
     // CONNECTION
     private void connectivityStatusReceiverManager(boolean isActive) {
         if (isActive) {
-            IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-            registerReceiver(connectivityStatusBroadcastReceiver, filter);
+            connectivityManager = getSystemService(ConnectivityManager.class);
+            realNetworks.addAll(NetworkUtil.realNetworks(connectivityManager));
+            setOnline(!realNetworks.isEmpty());
+            connectivityManager.registerNetworkCallback(
+                    new NetworkRequest.Builder().addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build(),
+                    networkCallback);
         } else {
-            unregisterReceiver(connectivityStatusBroadcastReceiver);
+            connectivityManager.unregisterNetworkCallback(networkCallback);
         }
+    }
+
+    private void onRealNetworkChanged(Network network, boolean available) {
+        if (bind == null) return;
+        if (available) {
+            realNetworks.add(network);
+        } else {
+            realNetworks.remove(network);
+        }
+        boolean nowOnline = !realNetworks.isEmpty();
+        // Another network coming or going doesn't override what a server ping found since.
+        if (online == null || online != nowOnline) setOnline(nowOnline);
+    }
+
+    private void setOnline(boolean isOnline) {
+        online = isOnline;
+        NetworkUtil.setServerReachable(isOnline);
+        bind.offlineModeTextView.setTag(isOnline ? null : true);
+        bind.offlineModeTextView.setVisibility(isOnline ? View.GONE : View.VISIBLE);
+        serverReachable.setValue(isOnline);
+        if (isOnline) MediaManager.submitPendingScrobbles();
     }
 
     private void pingServer() {
