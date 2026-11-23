@@ -161,6 +161,7 @@ object Constants {
     const val LAST_FM_REJECTED_AT = "last_fm_rejected_at"
     const val LISTENBRAINZ_USER = "listenbrainz_user"
     const val SCROBBLE_SOURCE = "scrobble_source"
+    const val WHATS_NEW_SEEN_VERSION = "whats_new_seen_version"
     const val SCROBBLE_SOURCE_LASTFM = "lastfm"
     const val SCROBBLE_SOURCE_LISTENBRAINZ = "listenbrainz"
 

@@ -14964,4 +14964,37 @@
             column="13"/>
     </issue>
 
+    <issue
+        id="MissingTranslation"
+        message="&quot;settings_release_notes_title&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_release_notes_title&quot;>Release notes&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="466"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;settings_release_notes_summary&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_release_notes_summary&quot;>What changed in each version&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="467"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;whats_new_dialog_title&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;whats_new_dialog_title&quot;>What\&apos;s new in %1$s&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="469"
+            column="13"/>
+    </issue>
+
 </issues>

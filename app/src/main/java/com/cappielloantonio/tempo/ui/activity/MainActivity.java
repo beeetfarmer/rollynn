@@ -44,6 +44,7 @@ import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.ui.activity.base.BaseActivity;
 import com.cappielloantonio.tempo.ui.dialog.ConnectionAlertDialog;
 import com.cappielloantonio.tempo.ui.dialog.GithubTempoUpdateDialog;
+import com.cappielloantonio.tempo.ui.dialog.WhatsNewDialog;
 import com.cappielloantonio.tempo.ui.dialog.ServerUnreachableDialog;
 import com.cappielloantonio.tempo.ui.fragment.PlayerBottomSheetFragment;
 import com.cappielloantonio.tempo.util.AssetLinkNavigator;
@@ -53,6 +54,7 @@ import com.cappielloantonio.tempo.util.DockLayout;
 import com.cappielloantonio.tempo.util.NetworkUtil;
 import com.cappielloantonio.tempo.util.Preferences;
 import com.cappielloantonio.tempo.util.UIUtil;
+import com.cappielloantonio.tempo.util.WhatsNew;
 import com.cappielloantonio.tempo.viewmodel.MainViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -158,7 +160,10 @@ public class MainActivity extends BaseActivity {
         init();
         checkConnectionType();
         getOpenSubsonicExtensions();
-        checkTempoUpdate();
+        // The update dialog waits for the next launch rather than open on top of the notes.
+        if (!showWhatsNew()) {
+            checkTempoUpdate();
+        }
 
         maybeSchedulePlaybackIntent(getIntent());
     }
@@ -1103,6 +1108,16 @@ public class MainActivity extends BaseActivity {
                 }
             });
         }
+    }
+
+    private boolean showWhatsNew() {
+        if (getSupportFragmentManager().findFragmentByTag(WhatsNewDialog.TAG) != null) return true;
+
+        String notes = WhatsNew.notesToShow(this);
+        if (notes == null) return false;
+
+        WhatsNewDialog.newInstance(BuildConfig.VERSION_NAME, notes).show(getSupportFragmentManager(), WhatsNewDialog.TAG);
+        return true;
     }
 
     private void checkTempoUpdate() {

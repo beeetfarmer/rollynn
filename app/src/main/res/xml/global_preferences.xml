@@ -740,6 +740,15 @@
             </Preference>
 
             <Preference
+                app:title="@string/settings_release_notes_title"
+                app:summary="@string/settings_release_notes_summary"
+                app:icon="@drawable/ic_link">
+                <intent
+                    android:action="android.intent.action.VIEW"
+                    android:data="@string/settings_release_notes_link" />
+            </Preference>
+
+            <Preference
                 android:key="export_logs"
                 android:title="@string/settings_export_logs_title"
                 android:summary="@string/settings_export_logs_summary"

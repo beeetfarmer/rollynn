@@ -463,6 +463,10 @@
     <string name="settings_system_equalizer_title">System equalizer</string>
     <string name="settings_github_link">https://github.com/beeetfarmer/tempus-ng</string>
     <string name="settings_github_summary">Follow the development</string>
+    <string name="settings_release_notes_title">Release notes</string>
+    <string name="settings_release_notes_summary">What changed in each version</string>
+    <string name="settings_release_notes_link" translatable="false">https://github.com/beeetfarmer/rollynn/releases</string>
+    <string name="whats_new_dialog_title">What\'s new in %1$s</string>
     <string name="settings_github_title">Github</string>
 
     <string name="settings_github_update">Updates</string>

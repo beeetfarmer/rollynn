@@ -115,7 +115,9 @@ public final class SettingsBackupUtil {
             "low_security",
             "in_use_server_address",
             // Device state
-            Constants.LAST_FM_REJECTED_AT
+            Constants.LAST_FM_REJECTED_AT,
+            // An older backup would bring back notes already seen.
+            Constants.WHATS_NEW_SEEN_VERSION
     ));
 
     /** Per-server passwords are stored as "password_<serverId>". */

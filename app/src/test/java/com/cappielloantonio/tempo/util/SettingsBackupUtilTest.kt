@@ -265,6 +265,21 @@ class SettingsBackupUtilTest {
     }
 
     @Test
+    fun theSeenNotesVersionIsNotExported() {
+        Preferences.setWhatsNewSeenVersion("v1.0.0")
+
+        assertFalse(export().getJSONObject("settings").has(Constants.WHATS_NEW_SEEN_VERSION))
+    }
+
+    @Test
+    fun anOlderSeenNotesVersionIsNotRestored() {
+        Preferences.setWhatsNewSeenVersion("v2.0.0")
+
+        assertEquals(0, restore(backupOf(Constants.WHATS_NEW_SEEN_VERSION to """{"type":"string","value":"v1.0.0"}""")))
+        assertEquals("v2.0.0", Preferences.getWhatsNewSeenVersion())
+    }
+
+    @Test
     fun aRefusedLastFmKeyIsNotExported() {
         Preferences.setLastFmRejectedAt(1234)
 

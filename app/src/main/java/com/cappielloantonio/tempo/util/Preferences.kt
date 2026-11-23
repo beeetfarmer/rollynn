@@ -1190,6 +1190,17 @@ object Preferences {
         }
     }
 
+    /** The app version whose "What's new" notes were last handled. */
+    @JvmStatic
+    fun getWhatsNewSeenVersion(): String? {
+        return App.getInstance().preferences.getString(Constants.WHATS_NEW_SEEN_VERSION, null)
+    }
+
+    @JvmStatic
+    fun setWhatsNewSeenVersion(version: String) {
+        App.getInstance().preferences.edit().putString(Constants.WHATS_NEW_SEEN_VERSION, version).apply()
+    }
+
     /** When Last.fm last refused the API key, or 0 while it accepts it. */
     @JvmStatic
     fun getLastFmRejectedAt(): Long {

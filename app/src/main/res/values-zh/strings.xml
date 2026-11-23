@@ -379,6 +379,9 @@
     <string name="settings_download_storage_title">下载存储</string>
     <string name="settings_github_link">https://github.com/eddyizm/tempus</string>
     <string name="settings_github_summary">关注开发进展</string>
+    <string name="settings_release_notes_title">更新日志</string>
+    <string name="settings_release_notes_summary">各版本的更新内容</string>
+    <string name="whats_new_dialog_title">%1$s 新功能</string>
     <string name="settings_github_title">Github</string>
     <string name="settings_github_update">更新</string>
     <string name="settings_github_update_summary">GitHub 版本默认会自动检查 APK 更新。您可以关闭此开关以禁用自动检查。</string>
