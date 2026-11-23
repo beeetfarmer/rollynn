@@ -78,6 +78,21 @@ class WhatsNewTest {
     }
 
     @Test
+    fun thisVersionShipsItsNotes() {
+        val text = WhatsNew.read(App.getContext(), com.cappielloantonio.tempo.BuildConfig.VERSION_NAME)
+
+        assertTrue("add app/src/main/assets/changelog/<versionName>.txt", !text.isNullOrBlank())
+        // Section headings (Added, Changed, Fixed), each followed by its bullets.
+        val sections = text!!.split(Regex("\n\\s*\n"))
+        for (section in sections) {
+            val lines = section.lines()
+            assertTrue("heading: ${lines[0]}", lines[0] in setOf("Added", "Changed", "Fixed"))
+            assertTrue(lines.size > 1)
+            assertTrue(lines.drop(1).all { it.startsWith("• ") })
+        }
+    }
+
+    @Test
     fun aMissingNotesFileReadsAsNothing() {
         assertNull(WhatsNew.read(App.getContext(), "v0.0.0-missing"))
     }

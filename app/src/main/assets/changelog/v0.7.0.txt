@@ -1,0 +1,22 @@
+Added
+• Immersive lyrics: while music plays, the player controls fade away after a few seconds so the lyrics fill the screen. Tap anywhere to bring the controls back.
+• Setting for immersive lyrics: "Hide controls behind lyrics" sets how many seconds to wait (0–10, default 4). Set it to 0 to keep the controls showing.
+• Animated lyrics background made from the album art's colours.
+• Background vocals from TTML lyrics now show under their line, alongside romanization and translations.
+• ListenBrainz scrobble counts for the track you're playing.
+• "What's new" dialog after an update.
+• Backups now include pinned playlists, playlist folders, the home screen layout and ListenBrainz settings.
+• Restore server logins from a backup on a fresh install.
+
+Changed
+• New app icon: blue for the normal app, purple for degoogled.
+• One tap on the mini player opens Now Playing.
+• Last.fm keys refused by Last.fm (it requires Pro from 1 December 2026) now show up in settings instead of failing silently, and are tried again once a day.
+
+Fixed
+• The app now goes offline when a VPN is the only connection left.
+• The app now tells you when a new version is out.
+• Closing the player no longer flashes a solid block behind the mini player.
+• The Settings tab is kept when the screen is recreated.
+• The album list is kept when you go back to it.
+• Album shuffle now uses the clock as its seed, so it isn't the same every time.

@@ -100,12 +100,14 @@ class WhatsNewDialogTest {
     }
 
     @Test
-    fun launchingAVersionWithoutNotesShowsNothingAndRemembersIt() {
+    fun launchingAnUpdateShowsThisVersionsNotesOnce() {
+        // Notes for versions without a file are covered in WhatsNewTest.
         Preferences.setWhatsNewSeenVersion("v0.0.1")
 
         start()
 
-        assertNull(shownDialog())
+        val dialog = shownDialog()!!
+        assertEquals("What's new in ${BuildConfig.VERSION_NAME}", dialog.text(androidx.appcompat.R.id.alertTitle))
         assertEquals(BuildConfig.VERSION_NAME, Preferences.getWhatsNewSeenVersion())
     }
 
@@ -115,5 +117,23 @@ class WhatsNewDialogTest {
 
         assertNull(shownDialog())
         assertEquals(BuildConfig.VERSION_NAME, Preferences.getWhatsNewSeenVersion())
+    }
+
+    @Test
+    fun longNotesScrollWithTheTitleAndButtonKeptOnScreen() {
+        start()
+        val notes = com.cappielloantonio.tempo.util.WhatsNew.read(activity, BuildConfig.VERSION_NAME)!!
+        WhatsNewDialog.newInstance(BuildConfig.VERSION_NAME, notes).show(activity.supportFragmentManager, WhatsNewDialog.TAG)
+        idle()
+        val dialog = shownDialog()!!
+
+        val message = dialog.findViewById<TextView>(android.R.id.message)!!
+        var parent = message.parent
+        while (parent != null && parent !is android.widget.ScrollView && parent !is androidx.core.widget.NestedScrollView) {
+            parent = parent.parent
+        }
+        assertTrue("the notes sit in a scrolling view", parent != null)
+        assertTrue(dialog.getButton(DialogInterface.BUTTON_POSITIVE).isShown)
+        assertEquals(notes, message.text.toString())
     }
 }
