@@ -65,6 +65,7 @@ import com.cappielloantonio.tempo.ui.dialog.StarredSyncDialog;
 import com.cappielloantonio.tempo.ui.dialog.StarredAlbumSyncDialog;
 import com.cappielloantonio.tempo.ui.dialog.StarredArtistSyncDialog;
 import com.cappielloantonio.tempo.ui.dialog.StreamingCacheStorageDialog;
+import com.cappielloantonio.tempo.ui.dialog.BackupRestoreFlow;
 import com.cappielloantonio.tempo.util.Constants;
 import com.cappielloantonio.tempo.util.DownloadUtil;
 import com.cappielloantonio.tempo.util.Preferences;
@@ -73,7 +74,6 @@ import com.cappielloantonio.tempo.util.SettingsBackupUtil;
 import com.cappielloantonio.tempo.util.UIUtil;
 import com.cappielloantonio.tempo.util.ExternalAudioReader;
 import com.cappielloantonio.tempo.viewmodel.SettingViewModel;
-import com.cappielloantonio.tempo.viewmodel.HomeViewModel;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -1022,19 +1022,15 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
     /** Asked after the file is chosen, so no password waits in memory behind the file picker. */
     private void askBackupPassword(Uri destination) {
-        if (!SettingsBackupUtil.hasApiKeys()) {
-            backUpSettings(destination, null);
-            return;
-        }
-
+        // Always asked: being logged in means there is at least one server login to offer.
         DialogBackupPasswordBinding dialogBind = DialogBackupPasswordBinding.inflate(getLayoutInflater());
         AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.settings_backup_keys_title)
-                .setMessage(R.string.settings_backup_keys_message)
+                .setTitle(R.string.settings_backup_secrets_title)
+                .setMessage(R.string.settings_backup_secrets_message)
                 .setView(dialogBind.getRoot())
                 .setCancelable(false)
-                .setNegativeButton(R.string.settings_backup_keys_skip, (d, which) -> backUpSettings(destination, null))
-                .setPositiveButton(R.string.settings_backup_keys_include, null)
+                .setNegativeButton(R.string.settings_backup_secrets_skip, (d, which) -> backUpSettings(destination, null))
+                .setPositiveButton(R.string.settings_backup_secrets_include, null)
                 .show();
 
         // Set here rather than on the builder, which would close the dialog on an invalid password.
@@ -1075,70 +1071,16 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
                 .setTitle(R.string.settings_restore_confirm_title)
                 .setMessage(R.string.settings_restore_confirm_message)
                 .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(R.string.settings_restore_confirm_button, (dialog, which) -> {
-                    if (SettingsBackupUtil.hasEncryptedApiKeys(requireContext(), source)) {
-                        askRestorePassword(source, false);
-                    } else {
-                        restoreSettings(source, null);
-                    }
-                })
-                .show();
-    }
-
-    private void askRestorePassword(Uri source, boolean wrongPassword) {
-        DialogBackupPasswordBinding dialogBind = DialogBackupPasswordBinding.inflate(getLayoutInflater());
-        dialogBind.backupPasswordConfirmLayout.setVisibility(View.GONE);
-        if (wrongPassword) {
-            dialogBind.backupPasswordLayout.setError(getString(R.string.settings_restore_keys_wrong_password));
-        }
-
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.settings_restore_keys_title)
-                .setMessage(R.string.settings_restore_keys_message)
-                .setView(dialogBind.getRoot())
-                .setNeutralButton(android.R.string.cancel, null)
-                .setNegativeButton(R.string.settings_backup_keys_skip, (dialog, which) -> restoreSettings(source, null))
                 .setPositiveButton(R.string.settings_restore_confirm_button, (dialog, which) ->
-                        restoreSettings(source, String.valueOf(dialogBind.backupPasswordText.getText()).toCharArray()))
+                        BackupRestoreFlow.start(this, source, (restored, loginServerId) -> onSettingsRestored()))
                 .show();
     }
 
-    private void restoreSettings(Uri source, @Nullable char[] password) {
-        Activity activity = requireActivity();
-        Context context = activity.getApplicationContext();
-
-        new Thread(() -> {
-            int restored = SettingsBackupUtil.restore(context, source, password);
-            activity.runOnUiThread(() -> {
-                if (isAdded()) onSettingsRestored(source, restored);
-            });
-        }).start();
-    }
-
-    private void onSettingsRestored(Uri source, int restored) {
-        if (restored == SettingsBackupUtil.RESTORE_WRONG_PASSWORD) {
-            askRestorePassword(source, true);
-            return;
-        }
-
-        if (restored < 0) {
-            Toast.makeText(requireContext(), R.string.settings_restore_failure, Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        Toast.makeText(requireContext(), getString(R.string.settings_restore_success, restored), Toast.LENGTH_LONG).show();
-
-        // The Popinn client caches its server and login, both of which may have changed.
-        PopinnClient.reset();
-        PopinnRepository.clearCache();
-
-        // The home screen keeps its section order in a model that outlives the activity.
-        new ViewModelProvider(requireActivity()).get(HomeViewModel.class).refreshHomeSectorList();
-
-        // Theme and language are read once at startup, and the preference
-        // screen shows values it cached, so the activity is rebuilt rather than
+    /** Logins in the backup are only added to the server list; the current one stays. */
+    private void onSettingsRestored() {
+        BackupRestoreFlow.applyRestoredSettings(requireActivity());
+        // The preference screen shows values it cached, so the activity is rebuilt rather than
         // left displaying the settings that were just replaced.
-        ThemeHelper.applyTheme(App.getInstance().getPreferences().getString(Preferences.THEME, ThemeHelper.DEFAULT_MODE));
         requireActivity().recreate();
     }
 

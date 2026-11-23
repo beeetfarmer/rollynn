@@ -298,24 +298,15 @@ class EncryptedBackupKeysTest {
     }
 
     @Test
-    fun hasApiKeysFollowsWhatIsSet() {
-        assertFalse(SettingsBackupUtil.hasApiKeys())
-
-        Preferences.setKoitoApiKey("koito-secret")
-
-        assertTrue(SettingsBackupUtil.hasApiKeys())
-    }
-
-    @Test
     fun tellsWhetherAFileHoldsKeys() {
         setAllKeys()
         register(export(password))
-        assertTrue(SettingsBackupUtil.hasEncryptedApiKeys(context, uri))
+        assertTrue(SettingsBackupUtil.hasEncryptedSecrets(context, uri))
 
         register(export(null))
-        assertFalse(SettingsBackupUtil.hasEncryptedApiKeys(context, uri))
+        assertFalse(SettingsBackupUtil.hasEncryptedSecrets(context, uri))
 
         register("not json")
-        assertFalse(SettingsBackupUtil.hasEncryptedApiKeys(context, uri))
+        assertFalse(SettingsBackupUtil.hasEncryptedSecrets(context, uri))
     }
 }

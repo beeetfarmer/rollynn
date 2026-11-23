@@ -719,7 +719,7 @@
             <Preference
                 android:key="settings_backup"
                 android:title="@string/settings_backup_title"
-                android:summary="@string/settings_backup_summary"
+                android:summary="@string/settings_backup_details_summary"
                 app:icon="@drawable/ic_download" />
 
             <Preference

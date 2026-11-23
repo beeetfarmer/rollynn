@@ -1,5 +1,9 @@
 package com.cappielloantonio.tempo.util;
 
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.HashMap;
+import com.cappielloantonio.tempo.model.Server;
+import com.cappielloantonio.tempo.database.dao.ServerDao;
 import androidx.media3.common.util.UnstableApi;
 import androidx.annotation.OptIn;
 import java.util.ArrayList;
@@ -69,6 +73,8 @@ public final class SettingsBackupUtil {
     private static final String KEY_VERSION_NAME = "versionName";
     private static final String KEY_SETTINGS = "settings";
     private static final String KEY_API_KEYS = "apiKeys";
+    private static final String KEY_SERVERS = "servers";
+    private static final String KEY_ACTIVE_SERVER = "activeServerId";
     private static final String KEY_PLAYLISTS = "playlists";
     private static final String KEY_PINNED = "pinned";
     private static final String KEY_FOLDERS = "folders";
@@ -209,19 +215,13 @@ public final class SettingsBackupUtil {
     }
 
     /** Whether there are any API keys a backup could carry. */
-    public static boolean hasApiKeys() {
-        try {
-            return readApiKeys().length() > 0;
-        } catch (JSONException exception) {
-            return false;
-        }
-    }
-
-    /** Whether the file holds encrypted API keys, and so needs a password to restore them. */
-    public static boolean hasEncryptedApiKeys(Context context, Uri source) {
+    /** Whether the file holds encrypted API keys or server logins, and so needs a password to restore them. */
+    public static boolean hasEncryptedSecrets(Context context, Uri source) {
         try {
             String content = read(context, source);
-            return content != null && new JSONObject(content).optJSONObject(KEY_API_KEYS) != null;
+            if (content == null) return false;
+            JSONObject root = new JSONObject(content);
+            return root.optJSONObject(KEY_API_KEYS) != null || root.optJSONObject(KEY_SERVERS) != null;
         } catch (JSONException exception) {
             return false;
         }
@@ -255,11 +255,17 @@ public final class SettingsBackupUtil {
             root.put(KEY_SETTINGS, settings);
             root.put(KEY_PLAYLISTS, exportPlaylists());
 
+            // Secrets only go in encrypted, so only with a password.
             if (password != null) {
                 JSONObject keys = readApiKeys();
                 if (keys.length() > 0) {
                     root.put(KEY_API_KEYS, encrypt(keys, password));
                     exported += keys.length();
+                }
+                JSONObject servers = readServers();
+                if (servers.getJSONArray(KEY_SERVERS).length() > 0) {
+                    root.put(KEY_SERVERS, encrypt(servers, password));
+                    exported += servers.getJSONArray(KEY_SERVERS).length();
                 }
             }
 
@@ -281,6 +287,14 @@ public final class SettingsBackupUtil {
      * only the settings. With a password this must run off the main thread, as for {@link #export}.
      */
     public static int restore(Context context, Uri source, @Nullable char[] password) {
+        return restore(context, source, password, null);
+    }
+
+    /**
+     * As {@link #restore(Context, Uri, char[])}, also setting {@code loginServerId} to the server that
+     * was in use when the backup was made, if its login was restored.
+     */
+    public static int restore(Context context, Uri source, @Nullable char[] password, @Nullable AtomicReference<String> loginServerId) {
         try {
             String content = read(context, source);
             if (content == null) return -1;
@@ -295,6 +309,11 @@ public final class SettingsBackupUtil {
             // Decrypted first, so a wrong password leaves the settings untouched.
             JSONObject encryptedKeys = root.optJSONObject(KEY_API_KEYS);
             JSONObject apiKeys = password != null && encryptedKeys != null ? decrypt(encryptedKeys, password) : null;
+            JSONObject encryptedServers = root.optJSONObject(KEY_SERVERS);
+            JSONObject servers = password != null && encryptedServers != null ? decrypt(encryptedServers, password) : null;
+            List<Server> serverList = new ArrayList<>();
+            Map<String, String> serverPasswords = new HashMap<>();
+            if (servers != null) parseServers(servers, serverList, serverPasswords);
 
             // Older backups have no playlists section, and leave them as they are.
             JSONObject playlists = root.optJSONObject(KEY_PLAYLISTS);
@@ -324,6 +343,13 @@ public final class SettingsBackupUtil {
             // straight after, and the write has to have landed by then.
             editor.commit();
             if (apiKeys != null) restored += writeApiKeys(apiKeys);
+            if (servers != null) {
+                restored += writeServers(serverList, serverPasswords);
+                String active = optString(servers, KEY_ACTIVE_SERVER);
+                if (loginServerId != null && active != null && Preferences.getPasswordForServer(active) != null) {
+                    loginServerId.set(active);
+                }
+            }
             return restored;
         } catch (BadPaddingException exception) {
             return RESTORE_WRONG_PASSWORD;
@@ -331,6 +357,61 @@ public final class SettingsBackupUtil {
             Log.w(TAG, "Settings restore failed", exception);
             return -1;
         }
+    }
+
+    /** The saved servers with their passwords, and which one is in use. */
+    @OptIn(markerClass = UnstableApi.class)
+    private static JSONObject readServers() throws JSONException {
+        JSONArray servers = new JSONArray();
+        for (Server server : AppDatabase.getInstance().serverDao().getAllSync()) {
+            String password = Preferences.getPasswordForServer(server.getServerId());
+            servers.put(new JSONObject()
+                    .put("id", server.getServerId())
+                    .put("name", server.getServerName())
+                    .put("username", server.getUsername())
+                    .put("address", server.getAddress())
+                    .put("localAddress", server.getLocalAddress() == null ? JSONObject.NULL : server.getLocalAddress())
+                    .put("timestamp", server.getTimestamp())
+                    .put("lowSecurity", server.isLowSecurity())
+                    .put("password", password == null ? JSONObject.NULL : password));
+        }
+        String active = Preferences.getServerId();
+        return new JSONObject().put(KEY_SERVERS, servers).put(KEY_ACTIVE_SERVER, active == null ? JSONObject.NULL : active);
+    }
+
+    private static void parseServers(JSONObject section, List<Server> servers, Map<String, String> passwords) throws JSONException {
+        JSONArray array = section.getJSONArray(KEY_SERVERS);
+        for (int i = 0; i < array.length(); i++) {
+            JSONObject s = array.getJSONObject(i);
+            String id = s.getString("id");
+            servers.add(new Server(id, s.getString("name"), s.getString("username"), s.getString("address"),
+                    optString(s, "localAddress"), s.optLong("timestamp", System.currentTimeMillis()), s.optBoolean("lowSecurity")));
+            String password = optString(s, "password");
+            if (password != null) passwords.put(id, password);
+        }
+    }
+
+    /**
+     * Adds the servers this phone doesn't have yet, so a restore never changes a login already set
+     * up here. Returns how many were added.
+     */
+    @OptIn(markerClass = UnstableApi.class)
+    private static int writeServers(List<Server> servers, Map<String, String> passwords) {
+        ServerDao dao = AppDatabase.getInstance().serverDao();
+        Set<String> existing = new HashSet<>();
+        for (Server server : dao.getAllSync()) existing.add(server.getServerId());
+
+        int added = 0;
+        for (Server server : servers) {
+            if (existing.contains(server.getServerId())) continue;
+            dao.insert(server);
+            String password = passwords.get(server.getServerId());
+            if (password != null) {
+                App.getInstance().getEncryptedPreferences().edit().putString("password_" + server.getServerId(), password).commit();
+            }
+            added++;
+        }
+        return added;
     }
 
     /** Pinned playlists and playlist folders live in the database, not the preferences. */

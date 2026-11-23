@@ -14997,4 +14997,103 @@
             column="13"/>
     </issue>
 
+    <issue
+        id="MissingTranslation"
+        message="&quot;settings_backup_details_summary&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_backup_details_summary&quot;>Save your settings, pinned playlists and folders to a file. Server logins and API keys can be included, encrypted with a password.&lt;/string>"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="138"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;settings_backup_secrets_title&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_backup_secrets_title&quot;>Include server logins and API keys?&lt;/string>"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="139"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;settings_backup_secrets_message&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_backup_secrets_message&quot;>Set a password to keep your server logins and API keys in this backup, encrypted. Skip to back up everything else without them. If you forget the password they cannot be recovered, but everything else will still restore.&lt;/string>"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="140"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;settings_backup_secrets_include&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_backup_secrets_include&quot;>Include&lt;/string>"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="141"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;settings_backup_secrets_skip&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_backup_secrets_skip&quot;>Skip&lt;/string>"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="142"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;settings_restore_secrets_title&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_restore_secrets_title&quot;>Enter the backup password&lt;/string>"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="143"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;settings_restore_secrets_message&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_restore_secrets_message&quot;>This backup holds encrypted server logins or API keys. Enter its password to restore them, or skip them to restore everything else.&lt;/string>"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="144"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;login_restore_backup&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;login_restore_backup&quot;>Restore from backup&lt;/string>"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="145"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;login_restore_add_server&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;login_restore_add_server&quot;>Add your server to finish restoring&lt;/string>"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="146"
+            column="18"/>
+    </issue>
+
 </issues>

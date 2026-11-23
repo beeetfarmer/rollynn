@@ -18,6 +18,7 @@ import com.google.gson.Gson
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -28,7 +29,6 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
-import org.robolectric.util.ReflectionHelpers.ClassParameter
 import java.io.ByteArrayInputStream
 
 // Dynamic colours crash Robolectric's theme code, and only exist from SDK 31.
@@ -77,10 +77,8 @@ class HomeOrderRestoreTest {
         idle()
         val host = activity.supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val settings = host.childFragmentManager.primaryNavigationFragment as SettingsFragment
-        ReflectionHelpers.callInstanceMethod<Any?>(
-            settings, "onSettingsRestored",
-            ClassParameter.from(Uri::class.java, uri), ClassParameter.from(Int::class.javaPrimitiveType, restored),
-        )
+        assertTrue(restored >= 0)
+        ReflectionHelpers.callInstanceMethod<Any?>(settings, "onSettingsRestored")
         idle()
 
         assertEquals(listOf(Constants.HOME_SECTOR_PINNED_PLAYLISTS, Constants.HOME_SECTOR_DISCOVERY), homeOrder())

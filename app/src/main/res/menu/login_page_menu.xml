@@ -7,4 +7,8 @@
         android:iconTint="@color/titleTextColor"
         android:title="@string/menu_add_button"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/action_restore"
+        android:title="@string/login_restore_backup"
+        app:showAsAction="never" />
 </menu>
