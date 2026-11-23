@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Three dots for an instrumental break. The adapter sets the bottom padding (the gap to the next line). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:contentDescription="@string/lyrics_instrumental_break"
+    android:orientation="horizontal"
+    android:paddingBottom="30dp">
+
+    <View
+        android:id="@+id/lyrics_dot_1"
+        android:layout_width="11dp"
+        android:layout_height="11dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="7dp"
+        android:alpha="0.32"
+        android:background="@drawable/bg_lyrics_dot" />
+
+    <View
+        android:id="@+id/lyrics_dot_2"
+        android:layout_width="11dp"
+        android:layout_height="11dp"
+        android:layout_marginStart="9dp"
+        android:layout_marginTop="6dp"
+        android:alpha="0.32"
+        android:background="@drawable/bg_lyrics_dot" />
+
+    <View
+        android:id="@+id/lyrics_dot_3"
+        android:layout_width="11dp"
+        android:layout_height="11dp"
+        android:layout_marginStart="9dp"
+        android:layout_marginTop="6dp"
+        android:alpha="0.32"
+        android:background="@drawable/bg_lyrics_dot" />
+</LinearLayout>

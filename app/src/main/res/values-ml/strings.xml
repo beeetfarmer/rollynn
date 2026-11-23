@@ -59,7 +59,6 @@
     <string name="artist_page_title_single_section">സിംഗിളുകൾ</string>
     <string name="connection_alert_dialog_title">Wi-Fi കണക്റ്റ് ചെയ്തിട്ടില്ല</string>
     <string name="delete_download_storage_dialog_title">സംരക്ഷിച്ചവ ഇല്ലാതാക്കുക</string>
-    <string name="description_empty_title">വരികൾ ലഭ്യമല്ല</string>
     <string name="dock_max_items">ഡോക്കിൽ ‘കൂടുതൽ’ കൂടാതെ പരമാവധി 4 ഇനങ്ങൾ കാണിക്കാം</string>
     <string name="dock_more">കൂടുതൽ</string>
     <string name="download_directory_dialog_title">ട്രാക്കുകൾ ഡൗൺലോഡ് ചെയ്യുക</string>

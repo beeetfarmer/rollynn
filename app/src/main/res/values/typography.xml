@@ -74,11 +74,6 @@
     </style>
 
 
-    <style name="BodyLarge" parent="InterFontFamily">
-        <item name="android:textSize">24sp</item>
-        <item name="android:textFontWeight">700</item>
-        <item name="android:textColor">@color/titleTextColor</item>
-    </style>
 
     <style name="BodyMedium" parent="InterFontFamily">
         <item name="android:textSize">14sp</item>

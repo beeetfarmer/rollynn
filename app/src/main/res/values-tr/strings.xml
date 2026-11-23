@@ -61,7 +61,6 @@
     <string name="delete_download_storage_dialog_positive_button">Devam ettir</string>
     <string name="delete_download_storage_dialog_summary">Lütfen dikkat edin, bu işleme devam etmek tüm sunuculardan indirilen kayıtlı öğelerin kalıcı olarak silinmesine yol açacaktır.</string>
     <string name="delete_download_storage_dialog_title">Kayıtlı öğeleri sil</string>
-    <string name="description_empty_title">Açıklama yok</string>
     <string name="disc_titlefull">Disk %1$s - %2$s</string>
     <string name="disc_titleless">Disk %1$s</string>
     <string name="download_directory_dialog_negative_button">İptal</string>

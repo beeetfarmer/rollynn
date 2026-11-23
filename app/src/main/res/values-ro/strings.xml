@@ -65,7 +65,6 @@
     <string name="delete_download_storage_dialog_positive_button">Continuaţi</string>
     <string name="delete_download_storage_dialog_summary">Vă rugăm să fiți conștienți că continuarea cu această acțiune va duce la ștergerea permanentă a tuturor articolelor salvate descărcate de pe toți serverele.</string>
     <string name="delete_download_storage_dialog_title">Ștergeți articolele salvate</string>
-    <string name="description_empty_title">Nu sunt versuri disponibile</string>
     <string name="disc_titlefull">Disc %1$s - %2$s</string>
     <string name="disc_titleless">Disc %1$s</string>
     <string name="download_directory_dialog_negative_button">Anulati</string>

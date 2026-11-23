@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Watches touches for the lyrics view, which hides the controls when left alone. -->
+<com.cappielloantonio.tempo.ui.view.TouchWatchConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/now_playing_media_controller_layout"
     android:layout_width="match_parent"
@@ -499,4 +500,4 @@
             app:tint="?attr/colorOnSurface" />
 
     </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+</com.cappielloantonio.tempo.ui.view.TouchWatchConstraintLayout>

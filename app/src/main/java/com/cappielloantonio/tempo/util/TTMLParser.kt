@@ -61,13 +61,16 @@ object TTMLParser {
         val startMs = (parseTime(begin) * 1000).toInt()
 
         val words = mutableListOf<Word>()
+        val background = StringBuilder()
         var child = p.firstChild
         while (child != null) {
             if (child is Element) {
                 val name = child.localName ?: child.nodeName.substringAfterLast(':')
                 if (name == "span") {
                     val role = getRole(child)
-                    if (role != "x-translation" && role != "x-roman" && role != "x-bg") {
+                    if (role == "x-bg") {
+                        background.append(' ').append(child.textContent ?: "")
+                    } else if (role != "x-translation" && role != "x-roman") {
                         parseSpanWords(child, words)
                     }
                 }
@@ -86,6 +89,7 @@ object TTMLParser {
             line.start = startMs
             line.value = lineText
             if (words.isNotEmpty()) line.words = words
+            line.background = background.toString().replace(Regex("\\s+"), " ").trim().ifEmpty { null }
             lines.add(line)
         }
     }

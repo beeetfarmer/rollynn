@@ -59,7 +59,6 @@
     <string name="artist_page_title_single_section">சிங்கிள்கள்</string>
     <string name="connection_alert_dialog_title">Wi-Fi இணைக்கப்படவில்லை</string>
     <string name="delete_download_storage_dialog_title">சேமித்தவற்றை நீக்கு</string>
-    <string name="description_empty_title">பாடல் வரிகள் இல்லை</string>
     <string name="dock_max_items">டாக்கில் ‘மேலும்’ தவிர அதிகபட்சம் 4 உருப்படிகளைக் காட்டலாம்</string>
     <string name="dock_more">மேலும்</string>
     <string name="download_directory_dialog_title">பாடல்களைப் பதிவிறக்கு</string>

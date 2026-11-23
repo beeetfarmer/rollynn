@@ -174,12 +174,13 @@ public class PlayerQueueFragment extends Fragment implements ClickCallback {
         bind.playerQueueRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         bind.playerQueueRecyclerView.setHasFixedSize(true);
 
-        // The player body no longer pads the top (so album art can bleed under the
-        // status bar), so keep the queue list below the status bar itself.
+        // The player body leaves the system bars to its pages, so keep the queue
+        // list clear of the status and navigation bars itself.
         int basePaddingTop = bind.playerQueueRecyclerView.getPaddingTop();
+        int basePaddingBottom = bind.playerQueueRecyclerView.getPaddingBottom();
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(bind.playerQueueRecyclerView, (v, insets) -> {
-            int statusTop = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()).top;
-            v.setPadding(v.getPaddingLeft(), basePaddingTop + statusTop, v.getPaddingRight(), v.getPaddingBottom());
+            androidx.core.graphics.Insets bars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars());
+            v.setPadding(v.getPaddingLeft(), basePaddingTop + bars.top, v.getPaddingRight(), basePaddingBottom + bars.bottom);
             return insets;
         });
 
@@ -189,7 +190,7 @@ public class PlayerQueueFragment extends Fragment implements ClickCallback {
             @Override
             public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
                 if (parent.getChildAdapterPosition(view) == state.getItemCount() - 1) {
-                    outRect.bottom = Math.max(0, parent.getHeight() - parent.getPaddingTop() - rowHeight);
+                    outRect.bottom = Math.max(0, parent.getHeight() - parent.getPaddingTop() - parent.getPaddingBottom() - rowHeight);
                 }
             }
         });

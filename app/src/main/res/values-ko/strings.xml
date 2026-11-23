@@ -60,7 +60,6 @@
     <string name="delete_download_storage_dialog_positive_button">계속</string>
     <string name="delete_download_storage_dialog_summary">계속할 시 서버에서 다운로드한 모든 저장 항목이 영구적으로 삭제됩니다.</string>
     <string name="delete_download_storage_dialog_title">저장된 항목 삭제</string>
-    <string name="description_empty_title">설명 란이 비어있습니다.</string>
     <string name="disc_titlefull">디스크 %1$s - %2$s</string>
     <string name="disc_titleless">디스크 %1$s</string>
     <string name="download_directory_dialog_negative_button">취소</string>

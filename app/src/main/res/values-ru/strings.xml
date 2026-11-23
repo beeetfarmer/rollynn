@@ -61,7 +61,6 @@
     <string name="delete_download_storage_dialog_positive_button">Продолжить</string>
     <string name="delete_download_storage_dialog_summary">Имейте в виду, что продолжение этого действия приведет к безвозвратному удалению всех сохраненных элементов, загруженных со всех серверов.</string>
     <string name="delete_download_storage_dialog_title">Удалить сохраненные элементы</string>
-    <string name="description_empty_title">Нет описания</string>
     <string name="disc_titlefull">Диск %1$s - %2$s</string>
     <string name="disc_titleless">Диск %1$s</string>
     <string name="download_directory_dialog_negative_button">Отмена</string>

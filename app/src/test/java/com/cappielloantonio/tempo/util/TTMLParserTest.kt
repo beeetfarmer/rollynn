@@ -120,6 +120,27 @@ class TTMLParserTest {
     }
 
     @Test
+    fun keepsBackgroundVocalsAsTheirOwnText() {
+        val line = lines(
+            """
+            <p begin="1">
+              ${word("Hold")}
+              ${word("on")}
+              <span ttm:role="x-bg">${word("(don't", "1.5", "2")} ${word("let", "2", "2.2")}
+                ${word("go)", "2.2", "3")}</span>
+            </p>
+            """
+        ).single()
+        assertEquals("Hold on", line.value)
+        assertEquals("(don't let go)", line.background)
+    }
+
+    @Test
+    fun aLineWithoutBackgroundVocalsHasNone() {
+        assertNull(lines("""<p begin="1">${word("Hello")}</p>""").single().background)
+    }
+
+    @Test
     fun leavesTranslationsOutOfPlainLines() {
         val line = lines("""<p begin="1">Hola<span ttm:role="x-translation">Hello</span></p>""").single()
         assertEquals("Hola", line.value)

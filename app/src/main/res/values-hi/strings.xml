@@ -59,7 +59,6 @@
     <string name="artist_page_title_single_section">सिंगल</string>
     <string name="connection_alert_dialog_title">Wi-Fi कनेक्ट नहीं है</string>
     <string name="delete_download_storage_dialog_title">सहेजे गए आइटम हटाएँ</string>
-    <string name="description_empty_title">कोई गीत उपलब्ध नहीं</string>
     <string name="dock_max_items">डॉक में ‘और’ के अलावा अधिकतम 4 आइटम दिख सकते हैं</string>
     <string name="dock_more">और</string>
     <string name="download_directory_dialog_title">ट्रैक डाउनलोड करें</string>

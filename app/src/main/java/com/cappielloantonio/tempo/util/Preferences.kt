@@ -62,6 +62,9 @@ object Preferences {
     private const val RADIO_SECTION_VISIBILITY = "radio_section_visibility"
     private const val AUTO_DOWNLOAD_LYRICS = "auto_download_lyrics"
     private const val LYRICS_ROMANIZATION = "lyrics_romanization"
+    private const val LYRICS_IMMERSIVE_DELAY = "lyrics_immersive_delay"
+    const val LYRICS_IMMERSIVE_DELAY_DEFAULT = 4
+    const val LYRICS_IMMERSIVE_DELAY_MAX = 10
     private const val TRANSLATION_PROVIDER = "translation_provider"
     private const val TRANSLATION_API_KEY = "translation_api_key"
     private const val TRANSLATION_TARGET_LANGUAGE = "translation_target_language"
@@ -441,6 +444,19 @@ object Preferences {
     fun setLyricsRomanizationEnabled(isEnabled: Boolean) {
         App.getInstance().preferences.edit()
             .putBoolean(LYRICS_ROMANIZATION, isEnabled)
+            .apply()
+    }
+
+    /** Seconds without a touch before the lyrics hide the player controls; 0 never hides them. */
+    @JvmStatic
+    fun getLyricsImmersiveDelaySeconds(): Int =
+        App.getInstance().preferences.getInt(LYRICS_IMMERSIVE_DELAY, LYRICS_IMMERSIVE_DELAY_DEFAULT)
+            .coerceIn(0, LYRICS_IMMERSIVE_DELAY_MAX)
+
+    @JvmStatic
+    fun setLyricsImmersiveDelaySeconds(seconds: Int) {
+        App.getInstance().preferences.edit()
+            .putInt(LYRICS_IMMERSIVE_DELAY, seconds.coerceIn(0, LYRICS_IMMERSIVE_DELAY_MAX))
             .apply()
     }
 

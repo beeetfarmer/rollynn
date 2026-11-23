@@ -7,4 +7,6 @@ class Line {
     var start: Int? = null
     lateinit var value: String
     var words: List<Word>? = null
+    /** Background vocals sung under this line, from TTML. */
+    var background: String? = null
 }

@@ -59,7 +59,6 @@
     <string name="artist_page_title_single_section">ಸಿಂಗಲ್ಸ್</string>
     <string name="connection_alert_dialog_title">Wi-Fi ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ</string>
     <string name="delete_download_storage_dialog_title">ಉಳಿಸಿದವುಗಳನ್ನು ಅಳಿಸಿ</string>
-    <string name="description_empty_title">ಸಾಹಿತ್ಯ ಲಭ್ಯವಿಲ್ಲ</string>
     <string name="dock_max_items">ಡಾಕ್‌ನಲ್ಲಿ ‘ಇನ್ನಷ್ಟು’ ಹೊರತುಪಡಿಸಿ ಗರಿಷ್ಠ 4 ಐಟಂಗಳನ್ನು ತೋರಿಸಬಹುದು</string>
     <string name="dock_more">ಇನ್ನಷ್ಟು</string>
     <string name="download_directory_dialog_title">ಟ್ರ್ಯಾಕ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ</string>

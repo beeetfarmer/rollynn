@@ -62,7 +62,6 @@
     <string name="delete_download_storage_dialog_positive_button">Continua</string>
     <string name="delete_download_storage_dialog_summary">Tingueu en compte que, si continueu, se suprimiran permanentment tots els elements baixats de tots els servidors.</string>
     <string name="delete_download_storage_dialog_title">Suprimeix els elements desats</string>
-    <string name="description_empty_title">No hi ha cap descripció disponible</string>
     <string name="disc_titlefull">Disc %1$s - %2$s</string>
     <string name="disc_titleless">Disc %1$s</string>
     <string name="download_directory_dialog_negative_button">Cancel·la</string>

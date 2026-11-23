@@ -7409,6 +7409,28 @@
 
     <issue
         id="MissingTranslation"
+        message="&quot;settings_lyrics_immersive_delay&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_lyrics_immersive_delay&quot;>Hide controls behind lyrics&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="507"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;settings_lyrics_immersive_delay_summary&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;settings_lyrics_immersive_delay_summary&quot;>Seconds without a touch, while music plays, before the lyrics fill the screen. 0 keeps the controls showing.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="508"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
         message="&quot;settings_collapsible_nav_dock&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
         errorLine1="    &lt;string name=&quot;settings_collapsible_nav_dock&quot;>Minimize navigation dock&lt;/string>"
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
@@ -15093,6 +15115,72 @@
         <location
             file="src/main/res/values/strings.xml"
             line="146"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;lyrics_not_available&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;lyrics_not_available&quot;>Lyrics aren\'t available for this song.&lt;/string>"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="519"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;lyrics_not_synced&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;lyrics_not_synced&quot;>Lyrics not synced&lt;/string>"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="520"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;lyrics_tap_to_show_controls&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;lyrics_tap_to_show_controls&quot;>Tap anywhere to show controls&lt;/string>"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="521"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;lyrics_jump_to_line&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;lyrics_jump_to_line&quot;>Jump to line: %1$s&lt;/string>"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="522"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;lyrics_instrumental_break&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;lyrics_instrumental_break&quot;>Instrumental break&lt;/string>"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="523"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;player_lyrics_shown&quot; is not translated in &quot;de&quot; (German), &quot;hi&quot; (Hindi), &quot;kn&quot; (Kannada), &quot;ru&quot; (Russian), &quot;ko&quot; (Korean), &quot;pt&quot; (Portuguese), &quot;it&quot; (Italian), &quot;bn&quot; (Bangla), &quot;fr&quot; (French), &quot;ta&quot; (Tamil), &quot;es&quot; (Spanish), &quot;pa&quot; (Punjabi), &quot;te&quot; (Telugu), &quot;pl&quot; (Polish), &quot;ro&quot; (Romanian), &quot;ca&quot; (Catalan), &quot;tr&quot; (Turkish), &quot;ml&quot; (Malayalam)"
+        errorLine1="    &lt;string name=&quot;player_lyrics_shown&quot;>Lyrics shown&lt;/string>"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="524"
             column="18"/>
     </issue>
 

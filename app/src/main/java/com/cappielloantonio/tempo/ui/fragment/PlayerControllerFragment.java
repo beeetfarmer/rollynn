@@ -143,6 +143,9 @@ public class PlayerControllerFragment extends Fragment {
     private Integer playerContentColor;
     private ImageButton overflowMenuButton;
     private ImageButton lyricsButton;
+    private android.graphics.drawable.Drawable lyricsButtonBackground;
+    private LyricsModeController lyricsMode;
+    private com.cappielloantonio.tempo.ui.view.BlobBackgroundView lyricsBackground;
     private ChipGroup assetLinkChipGroup;
     private Chip playerSongLinkChip;
     private Chip playerAlbumLinkChip;
@@ -221,6 +224,7 @@ public class PlayerControllerFragment extends Fragment {
 
         init();
         initQuickActionView();
+        initLyricsMode();
         initCoverLyricsSlideView();
         initMediaListenable();
         initEqualizerButton();
@@ -303,7 +307,80 @@ public class PlayerControllerFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         if (videoMode) teardownVideo();
+        if (lyricsMode != null) lyricsMode.release();
+        lyricsMode = null;
+        lyricsBackground = null;
         bind = null;
+    }
+
+    /**
+     * The lyrics page gets a background of drifting colours from the album art, white controls
+     * on it, and hides the controls after a while (see {@link LyricsModeController}).
+     */
+    private void initLyricsMode() {
+        lyricsBackground = new com.cappielloantonio.tempo.ui.view.BlobBackgroundView(requireContext());
+        lyricsBackground.setVisibility(View.GONE);
+        bind.nowPlayingMediaControllerView.addView(lyricsBackground, 0, new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        View root = bind.getRoot().findViewById(R.id.now_playing_media_controller_layout);
+        // The background runs under the navigation bar; the controls stay above it.
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(),
+                    insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom);
+            return insets;
+        });
+        // Typed as View: otherwise each lookup is inferred, and cast, as the pager's type.
+        java.util.Set<View> keep = new java.util.HashSet<>(java.util.Arrays.<View>asList(
+                playerMediaCoverViewPager,
+                bind.getRoot().findViewById(R.id.player_video_container),
+                bind.getRoot().findViewById(R.id.guideline),
+                bind.getRoot().findViewById(R.id.player_asset_link_row)));
+        lyricsMode = new LyricsModeController(
+                (com.cappielloantonio.tempo.ui.view.TouchWatchConstraintLayout) root,
+                playerMediaCoverViewPager, keep, lyricsBackground,
+                getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE,
+                () -> Preferences.getLyricsImmersiveDelaySeconds() * 1000L,
+                immersive -> {
+                    playerBottomSheetViewModel.setLyricsImmersive(immersive);
+                    return kotlin.Unit.INSTANCE;
+                });
+
+        playerBottomSheetViewModel.getLyricsPalette().observe(getViewLifecycleOwner(), colors -> {
+            if (lyricsBackground == null) return;
+            lyricsBackground.setColors(colors != null ? colors : com.cappielloantonio.tempo.util.LyricsPalette.DEFAULT, true);
+            styleLyricsButton();
+        });
+    }
+
+    private void setLyricsShown(boolean shown) {
+        if (lyricsMode == null || lyricsMode.getLyricsShown() == shown) return;
+        lyricsMode.setLyricsShown(shown);
+        applyPlayerContentColor();
+    }
+
+    /** While the lyrics show, the Lyrics button is a filled white circle, its icon in the background colour. */
+    private void styleLyricsButton() {
+        if (lyricsButton == null || lyricsMode == null) return;
+        if (lyricsButtonBackground == null) lyricsButtonBackground = lyricsButton.getBackground();
+        boolean shown = lyricsMode.getLyricsShown();
+        if (shown) {
+            int size = UIUtil.dpToPx(requireContext(), 44);
+            android.graphics.drawable.GradientDrawable circle = new android.graphics.drawable.GradientDrawable();
+            circle.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+            circle.setColor(androidx.core.graphics.ColorUtils.setAlphaComponent(Color.WHITE, 235));
+            android.graphics.drawable.LayerDrawable layers = new android.graphics.drawable.LayerDrawable(
+                    new android.graphics.drawable.Drawable[]{circle, lyricsButtonBackground});
+            layers.setLayerSize(0, size, size);
+            layers.setLayerGravity(0, android.view.Gravity.CENTER);
+            lyricsButton.setBackground(layers);
+            int[] colors = playerBottomSheetViewModel.getLyricsPalette().getValue();
+            int base = colors != null ? colors[0] : com.cappielloantonio.tempo.util.LyricsPalette.DEFAULT_BASE;
+            lyricsButton.setImageTintList(android.content.res.ColorStateList.valueOf(base));
+        } else {
+            lyricsButton.setBackground(lyricsButtonBackground);
+        }
+        androidx.core.view.ViewCompat.setStateDescription(lyricsButton, shown ? getString(R.string.player_lyrics_shown) : null);
     }
 
     private void init() {
@@ -401,6 +478,7 @@ public class PlayerControllerFragment extends Fragment {
                 MediaBrowser mediaBrowser = mediaBrowserListenableFuture.get();
 
                 bind.nowPlayingMediaControllerView.setPlayer(mediaBrowser);
+                if (lyricsMode != null) lyricsMode.setPlaying(mediaBrowser.isPlaying());
                 mediaBrowser.setShuffleModeEnabled(Preferences.isShuffleModeEnabled());
                 mediaBrowser.setRepeatMode(Preferences.getRepeatMode());
                 setMediaControllerListener(mediaBrowser);
@@ -416,6 +494,11 @@ public class PlayerControllerFragment extends Fragment {
         setMediaInfo(mediaBrowser.getMediaMetadata());
 
         mediaBrowser.addListener(new Player.Listener() {
+            @Override
+            public void onIsPlayingChanged(boolean isPlaying) {
+                if (lyricsMode != null) lyricsMode.setPlaying(isPlaying);
+            }
+
             @Override
             public void onMediaMetadataChanged(@NonNull MediaMetadata mediaMetadata) {
                 setMediaControllerUI(mediaBrowser);
@@ -659,6 +742,8 @@ public class PlayerControllerFragment extends Fragment {
     }
 
     private int contentColor() {
+        // The lyrics background is always dark.
+        if (lyricsMode != null && lyricsMode.getLyricsShown()) return Color.WHITE;
         return playerContentColor != null ? playerContentColor
                 : UIUtil.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface);
     }
@@ -681,6 +766,7 @@ public class PlayerControllerFragment extends Fragment {
 
         // Shows an active state in the accent colour; let it re-apply it.
         setSwitchButtonActive(videoMode);
+        styleLyricsButton();
     }
 
     private void tintPlayerViews(View view, int color) {
@@ -952,6 +1038,7 @@ public class PlayerControllerFragment extends Fragment {
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
                 updateTrackInfoVisibility(position);
+                setLyricsShown(position == 1);
 
                 PlayerBottomSheetFragment playerBottomSheetFragment = (PlayerBottomSheetFragment) requireActivity().getSupportFragmentManager().findFragmentByTag("PlayerBottomSheet");
 
@@ -1877,11 +1964,13 @@ public class PlayerControllerFragment extends Fragment {
     public void onResume() {
         super.onResume();
         bindMediaService();
+        if (lyricsMode != null) lyricsMode.setActive(true);
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        if (lyricsMode != null) lyricsMode.setActive(false);
         if (isServiceBound) {
             requireActivity().unbindService(serviceConnection);
             isServiceBound = false;

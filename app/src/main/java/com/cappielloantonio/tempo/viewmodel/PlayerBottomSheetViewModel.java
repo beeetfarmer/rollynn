@@ -89,6 +89,27 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
         playerDominantColor.setValue(color);
     }
 
+    private final MutableLiveData<int[]> lyricsPalette = new MutableLiveData<>(null);
+    private final MutableLiveData<Boolean> lyricsImmersive = new MutableLiveData<>(false);
+
+    /** The lyrics background colours from the album art (see LyricsPalette), or null for the default. */
+    public LiveData<int[]> getLyricsPalette() {
+        return lyricsPalette;
+    }
+
+    public void setLyricsPalette(int[] colors) {
+        lyricsPalette.setValue(colors);
+    }
+
+    /** Whether the lyrics are shown with the player controls hidden. */
+    public LiveData<Boolean> getLyricsImmersive() {
+        return lyricsImmersive;
+    }
+
+    public void setLyricsImmersive(boolean immersive) {
+        if (!Boolean.valueOf(immersive).equals(lyricsImmersive.getValue())) lyricsImmersive.setValue(immersive);
+    }
+
     private boolean lyricsSyncState = true;
     private LiveData<LyricsCache> cachedLyricsSource;
     private String currentSongId;

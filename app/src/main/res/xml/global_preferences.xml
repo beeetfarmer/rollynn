@@ -332,6 +332,17 @@
                 android:key="lyrics_romanization"
                 app:icon="@drawable/ic_lyrics" />
 
+            <SeekBarPreference
+                android:key="lyrics_immersive_delay"
+                android:title="@string/settings_lyrics_immersive_delay"
+                android:summary="@string/settings_lyrics_immersive_delay_summary"
+                app:showSeekBarValue="true"
+                android:defaultValue="4"
+                app:min="0"
+                android:max="10"
+                app:seekBarIncrement="1"
+                app:icon="@drawable/ic_lyrics" />
+
             <ListPreference
                 app:defaultValue="top"
                 app:dialogTitle="@string/settings_play_next_behavior_title"

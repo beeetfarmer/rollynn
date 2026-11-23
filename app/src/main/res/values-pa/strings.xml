@@ -59,7 +59,6 @@
     <string name="artist_page_title_single_section">ਸਿੰਗਲ</string>
     <string name="connection_alert_dialog_title">Wi-Fi ਨਾਲ ਕਨੈਕਟ ਨਹੀਂ</string>
     <string name="delete_download_storage_dialog_title">ਸੰਭਾਲੀਆਂ ਆਈਟਮਾਂ ਮਿਟਾਓ</string>
-    <string name="description_empty_title">ਕੋਈ ਬੋਲ ਉਪਲਬਧ ਨਹੀਂ</string>
     <string name="dock_max_items">ਡੌਕ ਵਿੱਚ ‘ਹੋਰ’ ਤੋਂ ਇਲਾਵਾ ਵੱਧ ਤੋਂ ਵੱਧ 4 ਆਈਟਮਾਂ ਦਿਖ ਸਕਦੀਆਂ ਹਨ</string>
     <string name="dock_more">ਹੋਰ</string>
     <string name="download_directory_dialog_title">ਟਰੈਕ ਡਾਊਨਲੋਡ ਕਰੋ</string>

@@ -59,7 +59,6 @@
     <string name="artist_page_title_single_section">సింగిల్స్</string>
     <string name="connection_alert_dialog_title">Wi-Fi కనెక్ట్ కాలేదు</string>
     <string name="delete_download_storage_dialog_title">సేవ్ చేసినవి తొలగించండి</string>
-    <string name="description_empty_title">సాహిత్యం అందుబాటులో లేదు</string>
     <string name="dock_max_items">డాక్‌లో ‘మరిన్ని’ కాకుండా గరిష్టంగా 4 అంశాలు చూపవచ్చు</string>
     <string name="dock_more">మరిన్ని</string>
     <string name="download_directory_dialog_title">ట్రాక్‌లను డౌన్‌లోడ్ చేయండి</string>

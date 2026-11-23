@@ -140,18 +140,9 @@ public class PlayerBottomSheetFragment extends Fragment {
 
     private void initViewPager() {
         bind.playerBodyLayout.playerBodyBottomSheetViewPager.setOrientation(ViewPager2.ORIENTATION_VERTICAL);
+        // Edge to edge: each page keeps its own content clear of the navigation bar,
+        // so the lyrics background can run under it.
         bind.playerBodyLayout.playerBodyBottomSheetViewPager.setAdapter(new PlayerControllerVerticalPager(this));
-
-        // Edge to edge: keep the player content clear of the navigation bar. The
-        // top is left unpadded so the album art can bleed under the status bar
-        // like the artist page; pages that need it (the queue) inset themselves.
-        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(
-                bind.playerBodyLayout.playerBodyBottomSheetViewPager, (v, insets) -> {
-                    androidx.core.graphics.Insets bars =
-                            insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars());
-                    v.setPadding(0, 0, 0, bars.bottom);
-                    return insets;
-                });
     }
 
     private void applyPlayerBackgroundColor() {
@@ -325,6 +316,7 @@ public class PlayerBottomSheetFragment extends Fragment {
         if (coverId == null) {
             bind.playerBodyLayout.playerBodyBottomSheetViewPager.setBackgroundColor(UIUtil.getPlayerBackgroundColor(requireContext()));
             playerBottomSheetViewModel.setPlayerDominantColor(null);
+            playerBottomSheetViewModel.setLyricsPalette(null);
             ((MainActivity) requireActivity()).clearPlayerDynamicBarColors();
             return;
         }
@@ -339,6 +331,9 @@ public class PlayerBottomSheetFragment extends Fragment {
 
                         int dominant = PlayerBackgroundUtil.edgeColor(resource);
                         playerBottomSheetViewModel.setPlayerDominantColor(dominant);
+                        // The lyrics background's colours; quick on this small bitmap.
+                        playerBottomSheetViewModel.setLyricsPalette(com.cappielloantonio.tempo.util.LyricsPalette.from(
+                                androidx.palette.graphics.Palette.from(resource).generate()));
 
                         // One solid colour (as on the album and artist pages) so the
                         // controls' white/black picked from it reads everywhere.
@@ -516,7 +511,7 @@ public class PlayerBottomSheetFragment extends Fragment {
     public void setBodyVisibility(boolean visible) {
         if (bind != null) {
             bind.playerBodyLayout.getRoot().setVisibility(visible ? View.VISIBLE : View.GONE);
-            bind.getRoot().setBackgroundColor(visible ? UIUtil.getPlayerBackgroundColor(requireContext()) : Color.TRANSPARENT);
+            applySheetBackground();
         }
     }
 
@@ -524,7 +519,20 @@ public class PlayerBottomSheetFragment extends Fragment {
     public void setBodyAlpha(float alpha) {
         if (bind != null) {
             bind.playerBodyLayout.getRoot().setAlpha(alpha);
+            applySheetBackground();
         }
+    }
+
+    /**
+     * The sheet's background fades with the full player, or it shows as a solid block behind
+     * the mini player while the player is dragged or settles closed.
+     */
+    private void applySheetBackground() {
+        View body = bind.playerBodyLayout.getRoot();
+        int color = UIUtil.getPlayerBackgroundColor(requireContext());
+        bind.getRoot().setBackgroundColor(body.getVisibility() == View.VISIBLE
+                ? androidx.core.graphics.ColorUtils.setAlphaComponent(color, Math.round(Color.alpha(color) * body.getAlpha()))
+                : Color.TRANSPARENT);
     }
 
     public void setMiniPlayerWidth(int width) {

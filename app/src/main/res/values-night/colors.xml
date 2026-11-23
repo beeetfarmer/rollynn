@@ -5,8 +5,6 @@
     <color name="playerSubtitleTextColor">#B3FFFFFF</color>
     <color name="dividerColor">#404040</color>
 
-    <color name="lyricsTextColor">#DADADA</color>
-    <color name="shadowsLyricsTextColor">#606060</color>
 
     <color name="searchPlaceholderColor">#CFCFCF</color>
     <color name="searchColor">#DADADA</color>

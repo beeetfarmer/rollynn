@@ -82,6 +82,11 @@
         <item name="cornerSize">50%</item>
     </style>
 
+    <style name="ShapeAppearance.Lyrics.HeaderArt" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">9dp</item>
+    </style>
+
     <style name="TabScreenTitle">
         <item name="android:textSize">40sp</item>
         <item name="android:textStyle">bold</item>

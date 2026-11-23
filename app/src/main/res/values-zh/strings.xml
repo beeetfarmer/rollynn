@@ -78,7 +78,6 @@
     <string name="delete_download_storage_dialog_positive_button">继续</string>
     <string name="delete_download_storage_dialog_summary">请注意，继续执行此操作将永久删除从所有服务器下载的所有已保存的项目。</string>
     <string name="delete_download_storage_dialog_title">删除已保存的项目</string>
-    <string name="description_empty_title">没有可用的歌词</string>
     <string name="disc_titlefull">第 %1$s 张光盘 - %2$s</string>
     <string name="disc_titleless">第 %1$s 张光盘</string>
     <string name="download_directory_dialog_negative_button">取消</string>
@@ -571,6 +570,8 @@
     <string name="settings_metadata_alignment">元数据对齐</string>
     <string name="settings_playlist_sort">播放列表排序</string>
     <string name="settings_lyrics_romanization">歌词罗马音</string>
+    <string name="settings_lyrics_immersive_delay">歌词沉浸模式</string>
+    <string name="settings_lyrics_immersive_delay_summary">播放时无操作多少秒后，歌词将铺满屏幕并隐藏控件。设为 0 则始终显示控件。</string>
     <string name="settings_play_next_behavior_title">下一首播放行为</string>
     <string name="settings_scrobble_threshold_title">Scrobble 阈值百分比</string>
     <string name="settings_translation_provider">翻译服务提供商</string>
@@ -751,6 +752,12 @@
     <string name="settings_translation_api_key_summary">所选服务商的 API 密钥</string>
     <string name="settings_translation_model_summary">OpenRouter/Mistral 的模型名称（留空使用默认值）</string>
     <string name="settings_translation_api_url_summary">自定义接口地址（留空使用默认值）</string>
+    <string name="lyrics_not_available">这首歌暂无歌词。</string>
+    <string name="lyrics_not_synced">歌词未同步</string>
+    <string name="lyrics_tap_to_show_controls">轻触任意位置显示控件</string>
+    <string name="lyrics_jump_to_line">跳转到这一行：%1$s</string>
+    <string name="lyrics_instrumental_break">间奏</string>
+    <string name="player_lyrics_shown">歌词已显示</string>
     <string name="lyrics_translating">正在翻译…</string>
     <string name="lyrics_translation_cleared">已清除翻译</string>
     <string name="lyrics_translation_error">翻译失败：%1$s</string>
