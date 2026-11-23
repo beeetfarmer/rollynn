@@ -73,6 +73,7 @@ import com.cappielloantonio.tempo.util.SettingsBackupUtil;
 import com.cappielloantonio.tempo.util.UIUtil;
 import com.cappielloantonio.tempo.util.ExternalAudioReader;
 import com.cappielloantonio.tempo.viewmodel.SettingViewModel;
+import com.cappielloantonio.tempo.viewmodel.HomeViewModel;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -1130,6 +1131,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         // The Popinn client caches its server and login, both of which may have changed.
         PopinnClient.reset();
         PopinnRepository.clearCache();
+
+        // The home screen keeps its section order in a model that outlives the activity.
+        new ViewModelProvider(requireActivity()).get(HomeViewModel.class).refreshHomeSectorList();
 
         // Theme and language are read once at startup, and the preference
         // screen shows values it cached, so the activity is rebuilt rather than

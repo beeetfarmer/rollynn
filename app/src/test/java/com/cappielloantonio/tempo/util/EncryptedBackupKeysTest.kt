@@ -12,6 +12,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -32,7 +33,12 @@ class EncryptedBackupKeysTest {
         // The Android keystore is missing under Robolectric, so a second file stands in for the encrypted store.
         val encrypted = context.getSharedPreferences("fake_encrypted", Context.MODE_PRIVATE)
         AppTestEnv.setStatic(App::class.java, "encryptedPreferences", encrypted)
+        // Backups also carry pinned playlists and folders.
+        AppTestEnv.installDatabase()
     }
+
+    @After
+    fun tearDown() = AppTestEnv.uninstallDatabase()
 
     private fun setAllKeys() {
         Preferences.setLastFmApiKey("lastfm-secret")

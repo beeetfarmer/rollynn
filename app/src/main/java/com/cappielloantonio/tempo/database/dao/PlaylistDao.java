@@ -31,4 +31,7 @@ public interface PlaylistDao {
 
     @Delete
     void delete(Playlist playlist);
+
+    @Query("DELETE FROM playlist")
+    void deleteAll();
 }

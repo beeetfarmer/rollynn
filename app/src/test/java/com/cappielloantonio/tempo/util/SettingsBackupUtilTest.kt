@@ -5,11 +5,14 @@ import android.net.Uri
 import com.cappielloantonio.tempo.App
 import com.cappielloantonio.tempo.BuildConfig
 import com.cappielloantonio.tempo.repository.ScrobbleCountRepository
+import com.cappielloantonio.tempo.testutil.AppTestEnv
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -30,6 +33,13 @@ class SettingsBackupUtilTest {
         "audiomuse_api_token", "password_server1",
     )
     private val sessionKeys = listOf("server", "user", "server_id", "low_security", "in_use_server_address")
+
+    // Backups also carry pinned playlists and folders, which an in-memory database holds here.
+    @Before
+    fun setUp() = AppTestEnv.installDatabase()
+
+    @After
+    fun tearDown() = AppTestEnv.uninstallDatabase()
 
     private fun export(password: CharArray? = null): JSONObject {
         val output = ByteArrayOutputStream()

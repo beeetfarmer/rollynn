@@ -63,4 +63,13 @@ interface PlaylistFolderDao {
 
     @Query("DELETE FROM playlist_folder_entry WHERE playlist_id = :playlistId")
     fun removePlaylistFromFolder(playlistId: String)
+
+    @Query("SELECT * FROM playlist_folder_entry")
+    fun getAllEntriesSync(): List<PlaylistFolderEntry>
+
+    @Query("DELETE FROM playlist_folder_entry")
+    fun deleteAllEntries()
+
+    @Query("DELETE FROM playlist_folder")
+    fun deleteAllFolders()
 }

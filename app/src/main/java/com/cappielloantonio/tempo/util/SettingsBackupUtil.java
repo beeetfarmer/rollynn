@@ -1,5 +1,14 @@
 package com.cappielloantonio.tempo.util;
 
+import androidx.media3.common.util.UnstableApi;
+import androidx.annotation.OptIn;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.LinkedHashMap;
+import com.cappielloantonio.tempo.database.AppDatabase;
+import com.cappielloantonio.tempo.model.PlaylistFolder;
+import com.cappielloantonio.tempo.model.PlaylistFolderEntry;
+import com.cappielloantonio.tempo.subsonic.models.Playlist;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -60,6 +69,10 @@ public final class SettingsBackupUtil {
     private static final String KEY_VERSION_NAME = "versionName";
     private static final String KEY_SETTINGS = "settings";
     private static final String KEY_API_KEYS = "apiKeys";
+    private static final String KEY_PLAYLISTS = "playlists";
+    private static final String KEY_PINNED = "pinned";
+    private static final String KEY_FOLDERS = "folders";
+    private static final String KEY_FOLDER_ENTRIES = "folderEntries";
     private static final String KEY_ITERATIONS = "iterations";
     private static final String KEY_SALT = "salt";
     private static final String KEY_IV = "iv";
@@ -240,6 +253,7 @@ public final class SettingsBackupUtil {
             root.put(KEY_PACKAGE, context.getPackageName());
             root.put(KEY_VERSION_NAME, BuildConfig.VERSION_NAME);
             root.put(KEY_SETTINGS, settings);
+            root.put(KEY_PLAYLISTS, exportPlaylists());
 
             if (password != null) {
                 JSONObject keys = readApiKeys();
@@ -282,6 +296,10 @@ public final class SettingsBackupUtil {
             JSONObject encryptedKeys = root.optJSONObject(KEY_API_KEYS);
             JSONObject apiKeys = password != null && encryptedKeys != null ? decrypt(encryptedKeys, password) : null;
 
+            // Older backups have no playlists section, and leave them as they are.
+            JSONObject playlists = root.optJSONObject(KEY_PLAYLISTS);
+            if (playlists != null) restorePlaylists(playlists);
+
             SharedPreferences preferences = App.getInstance().getPreferences();
             SharedPreferences.Editor editor = preferences.edit();
             int restored = 0;
@@ -313,6 +331,119 @@ public final class SettingsBackupUtil {
             Log.w(TAG, "Settings restore failed", exception);
             return -1;
         }
+    }
+
+    /** Pinned playlists and playlist folders live in the database, not the preferences. */
+    @OptIn(markerClass = UnstableApi.class) // AppDatabase carries the media3 marker.
+    private static JSONObject exportPlaylists() throws JSONException {
+        AppDatabase db = AppDatabase.getInstance();
+
+        JSONArray pinned = new JSONArray();
+        for (Playlist playlist : db.playlistDao().getAllSync()) {
+            pinned.put(new JSONObject()
+                    .put("id", playlist.getId())
+                    .put("name", playlist.getName())
+                    .put("duration", playlist.getDuration())
+                    .put("songCount", playlist.getSongCount())
+                    .put("coverArt", playlist.getCoverArtId()));
+        }
+
+        JSONArray folders = new JSONArray();
+        for (PlaylistFolder folder : db.playlistFolderDao().getAllFoldersSync()) {
+            folders.put(new JSONObject()
+                    .put("id", folder.getId())
+                    .put("name", folder.getName())
+                    .put("parentId", folder.getParentId() == null ? JSONObject.NULL : folder.getParentId())
+                    .put("sortOrder", folder.getSortOrder())
+                    .put("createdAt", folder.getCreatedAt()));
+        }
+
+        JSONArray entries = new JSONArray();
+        for (PlaylistFolderEntry entry : db.playlistFolderDao().getAllEntriesSync()) {
+            entries.put(new JSONObject()
+                    .put("playlistId", entry.getPlaylistId())
+                    .put("folderId", entry.getFolderId() == null ? JSONObject.NULL : entry.getFolderId())
+                    .put("sortOrder", entry.getSortOrder()));
+        }
+
+        return new JSONObject().put(KEY_PINNED, pinned).put(KEY_FOLDERS, folders).put(KEY_FOLDER_ENTRIES, entries);
+    }
+
+    /** Replaces the pins and folders with the backup's. Parsed in full first, so a bad file changes nothing. */
+    @OptIn(markerClass = UnstableApi.class)
+    private static void restorePlaylists(JSONObject section) throws JSONException {
+        List<Playlist> pinned = new ArrayList<>();
+        JSONArray pinnedJson = section.optJSONArray(KEY_PINNED);
+        for (int i = 0; pinnedJson != null && i < pinnedJson.length(); i++) {
+            JSONObject p = pinnedJson.getJSONObject(i);
+            pinned.add(new Playlist(p.getString("id"), optString(p, "name"), p.optLong("duration"), p.optInt("songCount"), optString(p, "coverArt")));
+        }
+
+        Map<Long, PlaylistFolder> folders = new LinkedHashMap<>();
+        JSONArray foldersJson = section.optJSONArray(KEY_FOLDERS);
+        for (int i = 0; foldersJson != null && i < foldersJson.length(); i++) {
+            JSONObject f = foldersJson.getJSONObject(i);
+            long id = f.getLong("id");
+            if (id <= 0) throw new JSONException("Bad folder id " + id);
+            Long parentId = f.isNull("parentId") ? null : f.getLong("parentId");
+            folders.put(id, new PlaylistFolder(id, f.getString("name"), parentId, f.optInt("sortOrder"), f.optLong("createdAt", System.currentTimeMillis())));
+        }
+
+        List<PlaylistFolderEntry> entries = new ArrayList<>();
+        JSONArray entriesJson = section.optJSONArray(KEY_FOLDER_ENTRIES);
+        for (int i = 0; entriesJson != null && i < entriesJson.length(); i++) {
+            JSONObject e = entriesJson.getJSONObject(i);
+            Long folderId = e.isNull("folderId") ? null : e.getLong("folderId");
+            // An entry for a folder the file doesn't have would point nowhere.
+            if (folderId != null && !folders.containsKey(folderId)) continue;
+            entries.add(new PlaylistFolderEntry(e.getString("playlistId"), folderId, e.optInt("sortOrder")));
+        }
+
+        AppDatabase db = AppDatabase.getInstance();
+        db.runInTransaction(() -> {
+            db.playlistFolderDao().deleteAllEntries();
+            db.playlistFolderDao().deleteAllFolders();
+            db.playlistDao().deleteAll();
+            for (Playlist playlist : pinned) db.playlistDao().insert(playlist);
+            for (PlaylistFolder folder : parentsFirst(folders)) db.playlistFolderDao().insertFolder(folder);
+            for (PlaylistFolderEntry entry : entries) db.playlistFolderDao().assignPlaylist(entry);
+        });
+    }
+
+    /**
+     * Each folder after its parent, as the parent must exist first. A parent missing from the file,
+     * or a loop the app could never have made, leaves the folder at the top level instead.
+     */
+    static List<PlaylistFolder> parentsFirst(Map<Long, PlaylistFolder> folders) {
+        List<PlaylistFolder> ordered = new ArrayList<>();
+        Set<Long> placed = new HashSet<>();
+        List<PlaylistFolder> waiting = new ArrayList<>(folders.values());
+
+        while (!waiting.isEmpty()) {
+            boolean progressed = false;
+            for (Iterator<PlaylistFolder> it = waiting.iterator(); it.hasNext(); ) {
+                PlaylistFolder folder = it.next();
+                Long parent = folder.getParentId();
+                if (parent == null || placed.contains(parent) || !folders.containsKey(parent)) {
+                    if (parent != null && !folders.containsKey(parent)) folder.setParentId(null);
+                    ordered.add(folder);
+                    placed.add(folder.getId());
+                    it.remove();
+                    progressed = true;
+                }
+            }
+            if (!progressed) {
+                PlaylistFolder stuck = waiting.remove(0);
+                stuck.setParentId(null);
+                ordered.add(stuck);
+                placed.add(stuck.getId());
+            }
+        }
+        return ordered;
+    }
+
+    private static String optString(JSONObject object, String key) {
+        return object.isNull(key) ? null : object.optString(key, null);
     }
 
     private static String read(Context context, Uri source) {

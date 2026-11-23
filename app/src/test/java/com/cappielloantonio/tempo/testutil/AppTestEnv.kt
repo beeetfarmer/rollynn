@@ -36,11 +36,21 @@ object AppTestEnv {
     private val gson = GsonBuilder().registerTypeAdapter(Date::class.java, EmptyDateTypeAdapter()).create()
     private val bareThread = Regex("Thread-\\d+")
 
-    fun install() {
+    /** Just the database, for tests that need nothing else from [install]. */
+    fun installDatabase() {
         db = Room.inMemoryDatabaseBuilder(App.getContext(), AppDatabase::class.java)
             .allowMainThreadQueries()
             .build()
         setStatic(AppDatabase::class.java, "instance", db)
+    }
+
+    fun uninstallDatabase() {
+        db.close()
+        setStatic(AppDatabase::class.java, "instance", null)
+    }
+
+    fun install() {
+        installDatabase()
 
         subsonic = mock(Subsonic::class.java, RETURNS_DEEP_STUBS)
         `when`(subsonic.url).thenReturn("http://server/")
@@ -53,8 +63,7 @@ object AppTestEnv {
 
     fun uninstall() {
         settle()
-        db.close()
-        setStatic(AppDatabase::class.java, "instance", null)
+        uninstallDatabase()
         setStatic(App::class.java, "subsonic", null)
     }
 
