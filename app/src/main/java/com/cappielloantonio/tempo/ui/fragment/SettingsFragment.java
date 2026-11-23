@@ -108,11 +108,16 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     private MediaService.LocalBinder mediaServiceBinder;
     private boolean isServiceBound = false;
 
+    private static final String STATE_CATEGORY = "selected_category";
     private String selectedCategory = DEFAULT_CATEGORY;
     private ChipGroup chipGroup;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+        // Before super, which builds the preferences: a restored dialog looks for its setting there.
+        if (savedInstanceState != null) {
+            selectedCategory = savedInstanceState.getString(STATE_CATEGORY, DEFAULT_CATEGORY);
+        }
         super.onCreate(savedInstanceState);
 
         equalizerResultLauncher = registerForActivityResult(
@@ -267,6 +272,12 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
                 chip.setTextColor(onSurfaceVariantColor);
             }
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(STATE_CATEGORY, selectedCategory);
     }
 
     private void switchCategory(String rootKey) {
