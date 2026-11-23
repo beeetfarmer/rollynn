@@ -591,7 +591,7 @@
     <string name="dock_max_items">除“更多”外，底栏最多显示 4 项</string>
     <string name="dock_more">更多</string>
     <string name="dock_show_navigation">显示导航</string>
-    <string name="player_show_mini_player">显示迷你播放器</string>
+    <string name="player_open_now_playing">打开正在播放</string>
     <string name="settings_collapsible_nav_dock">最小化导航栏</string>
     <string name="settings_collapsible_nav_dock_summary">将导航栏缩小为圆形按钮，点按即可展开。仅限竖屏</string>
     <string name="settings_collapsible_mini_player">最小化迷你播放器</string>

@@ -1,5 +1,7 @@
 package com.cappielloantonio.tempo.ui.fragment;
 
+import androidx.core.view.ViewCompat;
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 import android.content.ComponentName;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -9,6 +11,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.HapticFeedbackConstants;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -113,6 +116,7 @@ public class PlayerBottomSheetFragment extends Fragment {
         if (progressBarHandler != null) progressBarHandler.removeCallbacks(progressBarRunnable);
         releaseMediaBrowser();
         mediaBrowserListenableFuture = null;
+        player = null;
         super.onDestroyView();
         bind = null;
         lastOffsetX = Float.NaN;
@@ -120,8 +124,17 @@ public class PlayerBottomSheetFragment extends Fragment {
 
     private void customizeBottomSheetAction() {
         bind.playerHeaderLayout.getRoot().setOnClickListener(view -> ((MainActivity) requireActivity()).expandBottomSheet());
-        // Tapping the minimized player opens the mini player; a swipe still drags the sheet.
-        bind.playerCompactLayout.setOnClickListener(view -> ((MainActivity) requireActivity()).expandMiniPlayer());
+        // The minimized player opens the full player in one tap, like the mini player; a swipe still
+        // drags the sheet. A long press plays or pauses without leaving the page.
+        bind.playerCompactLayout.setOnClickListener(view -> ((MainActivity) requireActivity()).expandBottomSheet());
+        bind.playerCompactLayout.setOnLongClickListener(view -> {
+            if (player == null) return false;
+            view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+            togglePlayback(player);
+            return true;
+        });
+        ViewCompat.replaceAccessibilityAction(bind.playerCompactLayout, AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_LONG_CLICK,
+                getString(R.string.widget_content_desc_play_pause), null);
         setMiniPlayerCompact(((MainActivity) requireActivity()).isMiniPlayerCompact());
     }
 
@@ -393,14 +406,20 @@ public class PlayerBottomSheetFragment extends Fragment {
         runProgressBarHandler(isPlaying);
     }
 
+    /** Set once connected; until then the minimized player's long press does nothing. */
+    private Player player;
+
+    private static void togglePlayback(Player player) {
+        if (player.isPlaying()) {
+            player.pause();
+        } else {
+            player.play();
+        }
+    }
+
     private void setHeaderMediaController(MediaBrowser mediaBrowser) {
-        bind.playerHeaderLayout.playerHeaderButton.setOnClickListener(view -> {
-            if (mediaBrowser.isPlaying()) {
-                mediaBrowser.pause();
-            } else {
-                mediaBrowser.play();
-            }
-        });
+        player = mediaBrowser;
+        bind.playerHeaderLayout.playerHeaderButton.setOnClickListener(view -> togglePlayback(mediaBrowser));
         bind.playerHeaderLayout.playerHeaderNextMediaButton.setOnClickListener(view -> mediaBrowser.seekToNext());
         bind.playerHeaderLayout.playerHeaderRewindMediaButton.setOnClickListener(view -> mediaBrowser.seekBack());
         bind.playerHeaderLayout.playerHeaderFastForwardMediaButton.setOnClickListener(view -> mediaBrowser.seekForward());

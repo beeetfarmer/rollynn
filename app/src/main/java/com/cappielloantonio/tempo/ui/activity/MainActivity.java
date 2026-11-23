@@ -559,11 +559,6 @@ public class MainActivity extends BaseActivity {
         applyDockLayout(true);
     }
 
-    /** Tap on the minimized player: grow it back into the mini player. */
-    public void expandMiniPlayer() {
-        setPlayerCompact(false);
-    }
-
     public boolean isMiniPlayerCompact() {
         return playerCompact;
     }

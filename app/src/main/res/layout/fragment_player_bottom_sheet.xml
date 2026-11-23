@@ -30,7 +30,7 @@
         android:layout_gravity="center_horizontal"
         android:background="@drawable/bg_mini_player_circle"
         android:clickable="true"
-        android:contentDescription="@string/player_show_mini_player"
+        android:contentDescription="@string/player_open_now_playing"
         android:elevation="4dp"
         android:focusable="true"
         android:visibility="gone">

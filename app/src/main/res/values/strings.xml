@@ -685,7 +685,7 @@
     <string name="ai_playlist_created">Created \"%1$s\" with %2$d songs</string>
     <string name="dock_more">More</string>
     <string name="dock_show_navigation">Show navigation</string>
-    <string name="player_show_mini_player">Show mini player</string>
+    <string name="player_open_now_playing">Open now playing</string>
     <string name="settings_collapsible_nav_dock">Minimize navigation dock</string>
     <string name="settings_collapsible_nav_dock_summary">Shrink the dock to a round button; tap it to open. Portrait only</string>
     <string name="settings_collapsible_mini_player">Minimize mini player</string>
