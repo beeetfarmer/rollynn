@@ -149,13 +149,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
                 }
         );
 
-        if (!BuildConfig.FLAVOR.equals("tempus")) {
-            PreferenceCategory githubUpdateCategory = findPreference("settings_github_update_category_key");
-            if (githubUpdateCategory != null) {
-                getPreferenceScreen().removePreference(githubUpdateCategory);
-            }
-        }
-
         directoryPickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {

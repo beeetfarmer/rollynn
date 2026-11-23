@@ -94,7 +94,6 @@
     <string name="genre_catalogue_title">Genre Übersicht</string>
     <string name="genre_catalogue_title_expanded">Genres durchsuchen</string>
     <string name="github_update_dialog_negative_button">Später erinnern</string>
-    <string name="github_update_dialog_neutral_button">Unterstütze mich</string>
     <string name="github_update_dialog_positive_button">Jetzt herunterladen</string>
     <string name="github_update_dialog_summary">Es gibt eine neue Version der App auf Github.</string>
     <string name="github_update_dialog_title">Update verfügbar</string>
@@ -387,7 +386,6 @@
     <string name="streaming_cache_storage_dialog_title">Speicherort auswählen</string>
     <string name="streaming_cache_storage_external_dialog_positive_button">Extern</string>
     <string name="streaming_cache_storage_internal_dialog_negative_button">Intern</string>
-    <string name="support_url">https://buymeacoffee.com/a.cappiello</string>
 
     <string name="track_info_dialog_positive_button">OK</string>
     <string name="track_info_dialog_title">Titel Info</string>

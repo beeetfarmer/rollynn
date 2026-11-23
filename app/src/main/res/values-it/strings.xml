@@ -111,7 +111,6 @@
     <string name="genre_catalogue_title">Catalogo dei Generi</string>
     <string name="genre_catalogue_title_expanded">Sfoglia Generi</string>
     <string name="github_update_dialog_negative_button">Ricordamelo più tardi</string>
-    <string name="github_update_dialog_neutral_button">Supportami</string>
     <string name="github_update_dialog_positive_button">Scarica ora</string>
     <string name="github_update_dialog_summary">È disponibile una nuova versione dell\'app su Github.</string>
     <string name="github_update_dialog_title">Aggiornamento disponibile</string>
@@ -489,7 +488,6 @@
     <string name="streaming_cache_storage_dialog_title">Seleziona opzione di archiviazione</string>
     <string name="streaming_cache_storage_external_dialog_positive_button">Esterno</string>
     <string name="streaming_cache_storage_internal_dialog_negative_button">Interno</string>
-    <string name="support_url">https://ko-fi.com/eddyizm</string>
     <string name="track_info_album">Album</string>
     <string name="track_info_artist">Artista</string>
     <string name="track_info_bit_depth">Profondità bit</string>

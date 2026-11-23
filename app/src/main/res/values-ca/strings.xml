@@ -110,7 +110,6 @@
     <string name="genre_catalogue_title">Catàleg de gèneres</string>
     <string name="genre_catalogue_title_expanded">Exploració de gèneres</string>
     <string name="github_update_dialog_negative_button">Recorda-m\'ho més tard</string>
-    <string name="github_update_dialog_neutral_button">Fes una aportació</string>
     <string name="github_update_dialog_positive_button">Baixa-ho ara</string>
     <string name="github_update_dialog_summary">Hi ha una versió nova de l\'aplicació disponible a Github.</string>
     <string name="github_update_dialog_title">Actualització disponible</string>
@@ -470,7 +469,6 @@
     <string name="streaming_cache_storage_dialog_title">Selecció de l\'opció d\'emmagatzematge</string>
     <string name="streaming_cache_storage_external_dialog_positive_button">Extern</string>
     <string name="streaming_cache_storage_internal_dialog_negative_button">Intern</string>
-    <string name="support_url">https://ko-fi.com/eddyizm</string>
     <string name="track_info_album">Àlbum</string>
     <string name="track_info_artist">Artista</string>
     <string name="track_info_bit_depth">Profunditat de bits</string>

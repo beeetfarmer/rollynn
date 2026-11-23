@@ -3,8 +3,8 @@ package com.cappielloantonio.tempo.github;
 import com.cappielloantonio.tempo.github.api.release.ReleaseClient;
 
 public class Github {
-    private static final String OWNER = "eddyizm";
-    private static final String REPO = "Tempus";
+    private static final String OWNER = "beeetfarmer";
+    private static final String REPO = "rollynn";
     private ReleaseClient releaseClient;
 
     public ReleaseClient getReleaseClient() {

@@ -113,7 +113,6 @@
     <string name="genre_catalogue_title">Catalogul Genuri</string>
     <string name="genre_catalogue_title_expanded">Răsfoiți Genuri</string>
     <string name="github_update_dialog_negative_button">Reamintitor mai târziu</string>
-    <string name="github_update_dialog_neutral_button">Susțineți-mă</string>
     <string name="github_update_dialog_positive_button">Descărcați acum</string>
     <string name="github_update_dialog_summary">Există o nouă versiune a aplicației disponibilă pe Github.</string>
     <string name="github_update_dialog_title">Actualizare disponibilă</string>
@@ -483,7 +482,6 @@
     <string name="streaming_cache_storage_dialog_title">Selectați opțiunea de stocare</string>
     <string name="streaming_cache_storage_external_dialog_positive_button">Extern</string>
     <string name="streaming_cache_storage_internal_dialog_negative_button">Intern</string>
-    <string name="support_url">https://ko-fi.com/eddyizm</string>
     <string name="track_info_album">Album</string>
     <string name="track_info_artist">Artist</string>
     <string name="track_info_bit_depth">Adâncime bit</string>

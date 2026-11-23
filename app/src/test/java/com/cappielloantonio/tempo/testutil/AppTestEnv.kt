@@ -47,6 +47,8 @@ object AppTestEnv {
         setStatic(App::class.java, "subsonic", subsonic)
 
         NetworkUtil.setServerReachable(true)
+        // Starting MainActivity would otherwise ask the real GitHub for a newer release.
+        App.getInstance().preferences.edit().putBoolean("github_update_check", false).commit()
     }
 
     fun uninstall() {

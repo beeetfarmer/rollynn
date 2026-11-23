@@ -105,7 +105,6 @@
     <string name="genre_catalogue_title">Géneros</string>
     <string name="genre_catalogue_title_expanded">Explorar géneros</string>
     <string name="github_update_dialog_negative_button">Recuérdamelo más tarde</string>
-    <string name="github_update_dialog_neutral_button">Apóyame</string>
     <string name="github_update_dialog_positive_button">Descargar ahora</string>
     <string name="github_update_dialog_summary">Hay una nueva versión de la app disponible en Github.</string>
     <string name="github_update_dialog_title">Actualización disponible</string>

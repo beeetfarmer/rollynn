@@ -95,7 +95,6 @@
     <string name="genre_catalogue_title">Каталог жанров</string>
     <string name="genre_catalogue_title_expanded">Просмотр жанров</string>
     <string name="github_update_dialog_negative_button">Напомнить позже</string>
-    <string name="github_update_dialog_neutral_button">Поддержать меня</string>
     <string name="github_update_dialog_positive_button">Скачать сейчас</string>
     <string name="github_update_dialog_summary">На Github доступна новая версия приложения.</string>
     <string name="github_update_dialog_title">Доступно обновление</string>

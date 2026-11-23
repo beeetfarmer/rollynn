@@ -1121,11 +1121,14 @@ public class MainActivity extends BaseActivity {
     }
 
     private void checkTempoUpdate() {
-        if (BuildConfig.FLAVOR.equals("tempus") && Preferences.isGithubUpdateEnabled() && Preferences.showTempusUpdateDialog()) {
+        // Both builds are published on GitHub, so both check it.
+        if (Preferences.isGithubUpdateEnabled() && Preferences.showTempusUpdateDialog()
+                && getSupportFragmentManager().findFragmentByTag(GithubTempoUpdateDialog.TAG) == null) {
             mainViewModel.checkTempoUpdate().observe(this, latestRelease -> {
-                if (latestRelease != null && UpdateUtil.showUpdateDialog(latestRelease)) {
-                    GithubTempoUpdateDialog dialog = new GithubTempoUpdateDialog(latestRelease);
-                    dialog.show(getSupportFragmentManager(), null);
+                if (latestRelease != null && UpdateUtil.showUpdateDialog(latestRelease)
+                        && getSupportFragmentManager().findFragmentByTag(GithubTempoUpdateDialog.TAG) == null) {
+                    GithubTempoUpdateDialog.newInstance(latestRelease.getHtmlUrl())
+                            .show(getSupportFragmentManager(), GithubTempoUpdateDialog.TAG);
                 }
             });
         }

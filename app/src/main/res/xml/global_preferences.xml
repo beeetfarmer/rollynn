@@ -748,6 +748,13 @@
                     android:data="@string/settings_release_notes_link" />
             </Preference>
 
+            <SwitchPreference
+                android:key="github_update_check"
+                android:defaultValue="true"
+                android:title="@string/settings_github_update_title"
+                android:summary="@string/settings_github_update_summary"
+                app:icon="@drawable/ic_refresh" />
+
             <Preference
                 android:key="export_logs"
                 android:title="@string/settings_export_logs_title"
